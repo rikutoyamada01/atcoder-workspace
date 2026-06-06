@@ -4,9 +4,8 @@
 [![Manifest V3](https://img.shields.io/badge/Chrome--Extension-Manifest--V3-blue.svg)](#)
 [![AtCoder Compatible](https://img.shields.io/badge/AtCoder-Compatible-brightgreen.svg)](#)
 
-> **「AtCoder × Obsidian × Google Docs」**  
-> AtCoderの画面上だけで「問題を解く ➔ テストする ➔ 提出する ➔ 記録する」を完結。  
-> 環境構築不要で、今すぐ始められる初心者のためのオールインワン学習ワークスペース（Chrome拡張機能）。
+> **AtCoderのページを、エディタ・テスト・提出が統合された「ブラウザ上の開発環境（オンラインIDE）」に変える拡張機能**  
+> 環境構築不要、サンプルのコピペ不要、画面・タブ移動不要で、問題画面を開いたその瞬間からコーディングとテストが完結します。
 
 ---
 
