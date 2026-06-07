@@ -270,16 +270,29 @@
               isDark = brightness < 125; // standard luminance threshold (less than 125 is dark)
             }
 
-            notifyEditor({
-              type: 'init-config',
-              contestId,
-              problemId,
-              selectedLanguageId: langSelect ? langSelect.value : null,
-              languages: options,
-              prevUrl,
-              nextUrl,
-              isDark
-            });
+            // Wait for AtCoder script to set default language if currently empty
+            function sendConfigWithRetry(retriesLeft) {
+              const selectedLanguageId = langSelect ? langSelect.value : null;
+
+              if (!selectedLanguageId && retriesLeft > 0) {
+                console.log('[AtCoder Workspace] Language selection empty, retrying in 100ms...');
+                setTimeout(() => sendConfigWithRetry(retriesLeft - 1), 100);
+                return;
+              }
+
+              notifyEditor({
+                type: 'init-config',
+                contestId,
+                problemId,
+                selectedLanguageId: selectedLanguageId || (options.length > 0 ? options[0].value : null),
+                languages: options,
+                prevUrl,
+                nextUrl,
+                isDark
+              });
+            }
+
+            sendConfigWithRetry(5);
           });
           break;
 
@@ -630,6 +643,17 @@
       iframe.contentWindow.postMessage(message, '*');
     }
   }
+
+  // Listen for Ctrl+J shortcut globally on parent page to toggle console in iframe
+  window.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'j') {
+      // Toggle console only if the workspace panel is currently open
+      if (panelOpen && iframe && iframe.contentWindow) {
+        e.preventDefault();
+        notifyEditor({ type: 'toggle-console' });
+      }
+    }
+  });
 
   // Run initial setup
   if (document.readyState === 'complete' || document.readyState === 'interactive') {

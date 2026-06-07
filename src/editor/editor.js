@@ -17,9 +17,9 @@
   const nextBtn = document.getElementById('next-btn');
   const testBtn = document.getElementById('test-btn');
   const submitBtn = document.getElementById('submit-btn');
+  const consoleToggleBtn = document.getElementById('console-slider-btn');
   const testSummary = document.getElementById('test-summary');
   const consolePanel = document.getElementById('console-panel');
-  const consoleCloseBtn = document.getElementById('console-close-btn');
   const consoleResults = document.getElementById('console-results');
 
   let isTesting = false;
@@ -44,16 +44,35 @@
     langSelect.disabled = disabled;
   }
 
+  function toggleConsole(forceState) {
+    const isVisible = consolePanel.style.display === 'flex';
+    const nextState = forceState !== undefined ? forceState : !isVisible;
+    
+    if (nextState) {
+      consolePanel.style.display = 'flex';
+      consoleToggleBtn.textContent = '▼';
+      consoleToggleBtn.classList.add('active');
+    } else {
+      consolePanel.style.display = 'none';
+      consoleToggleBtn.textContent = '▲';
+      consoleToggleBtn.classList.remove('active');
+    }
+    
+    // Defer editor layout to let DOM updates reflect first
+    setTimeout(() => {
+      if (editor) {
+        editor.layout();
+      }
+    }, 0);
+  }
+
   testBtn.onclick = () => {
     if (isTesting || !editor) return;
     saveCodeSync();
     
     // Open console drawer
-    consolePanel.style.display = 'flex';
+    toggleConsole(true);
     consoleResults.innerHTML = '<div style="font-size: 12px; color: #777;">準備中...</div>';
-    
-    // Notify Monaco to resize since layout changed
-    editor.layout();
 
     console.log('[AtCoder Workspace] Editor: Sending run-tests message to parent', {
       languageId: currentLanguageId,
@@ -72,11 +91,8 @@
     alert('提出機能は次のフェーズ (Phase 1.3) で実装されます。');
   };
 
-  consoleCloseBtn.onclick = () => {
-    consolePanel.style.display = 'none';
-    if (editor) {
-      editor.layout();
-    }
+  consoleToggleBtn.onclick = () => {
+    toggleConsole();
   };
 
   // Helper to map AtCoder language names to Monaco Editor language IDs
@@ -132,6 +148,8 @@
 
       case 'language-change':
         if (e.data.languageId && e.data.languageId !== currentLanguageId) {
+          // Save code under the OLD language ID before switching
+          saveCodeSync();
           currentLanguageId = e.data.languageId;
           langSelect.value = currentLanguageId;
           onLanguageChanged();
@@ -142,6 +160,10 @@
         if (editor) {
           editor.layout();
         }
+        break;
+
+      case 'toggle-console':
+        toggleConsole();
         break;
 
       case 'test-start':
@@ -155,18 +177,20 @@
         testSummary.className = 'summary-running';
 
         consoleResults.innerHTML = '';
+        consoleResults.scrollTop = 0; // Reset scroll to top
         for (let i = 0; i < totalCount; i++) {
-          const card = document.createElement('div');
-          card.className = 'case-card';
-          card.id = `case-card-${i}`;
-          card.innerHTML = `
-            <div class="case-card-header">
-              <span>ケース ${i + 1}</span>
+          const row = document.createElement('div');
+          row.className = 'case-row';
+          row.id = `case-row-${i}`;
+          row.innerHTML = `
+            <div class="case-row-header">
+              <span class="case-icon">▶</span>
+              <span class="case-label">ケース ${i + 1}:</span>
               <span class="case-status status-running">実行中</span>
             </div>
-            <div class="case-card-body" style="display: none;"></div>
+            <div class="case-row-body" style="display: none;"></div>
           `;
-          consoleResults.appendChild(card);
+          consoleResults.appendChild(row);
         }
         break;
 
@@ -174,14 +198,14 @@
         if (!isTesting) return;
         resultsCount++;
         
-        const card = document.getElementById(`case-card-${e.data.index}`);
-        if (card) {
+        const row = document.getElementById(`case-row-${e.data.index}`);
+        if (row) {
           const status = e.data.status;
           if (status === 'AC') {
             acCount++;
           }
 
-          const statusBadge = card.querySelector('.case-status');
+          const statusBadge = row.querySelector('.case-status');
           statusBadge.textContent = status;
           statusBadge.className = `case-status status-${status.toLowerCase()}`;
 
@@ -190,15 +214,16 @@
           if (e.data.time !== undefined) {
             const timeVal = typeof e.data.time === 'number' ? `${e.data.time} ms` : e.data.time;
             const memoryVal = typeof e.data.memory === 'number' ? `${Math.round(e.data.memory / 1024)} MB` : e.data.memory;
-            metaStr = `<span class="case-meta">${timeVal} / ${memoryVal}</span>`;
-            card.querySelector('.case-card-header').insertAdjacentHTML('beforeend', metaStr);
+            metaStr = `<span class="case-meta">(${timeVal} / ${memoryVal})</span>`;
+            row.querySelector('.case-row-header').insertAdjacentHTML('beforeend', metaStr);
           }
 
-          const body = card.querySelector('.case-card-body');
-          body.style.display = 'block';
-
+          const body = row.querySelector('.case-row-body');
+          const icon = row.querySelector('.case-icon');
           let bodyHtml = '';
-          if (status === 'WA') {
+          if (status === 'AC' || status === 'WA') {
+            body.style.display = status === 'AC' ? 'none' : 'block';
+            icon.textContent = status === 'AC' ? '▶' : '▼';
             bodyHtml = `
               <div class="case-io-grid">
                 <div class="case-io-block">
@@ -212,6 +237,8 @@
               </div>
             `;
           } else if (status === 'RE' || status === 'ERR') {
+            body.style.display = 'block';
+            icon.textContent = '▼';
             const errMsg = e.data.stderr || e.data.message || '実行時エラーまたはその他のエラーが発生しました。';
             bodyHtml = `
               <div class="case-error-block">
@@ -219,13 +246,22 @@
                 <pre class="case-error-content">${escapeHtml(errMsg)}</pre>
               </div>
             `;
-          } else {
-            bodyHtml = `<div style="font-size: 11px; color: #5cb85c; font-weight: bold;">出力値が一致しました。</div>`;
           }
           body.innerHTML = bodyHtml;
+
+          // Add click listener on header to toggle body visibility & icon
+          const header = row.querySelector('.case-row-header');
+          header.onclick = () => {
+            const isVisible = body.style.display === 'block';
+            body.style.display = isVisible ? 'none' : 'block';
+            icon.textContent = isVisible ? '▶' : '▼';
+          };
         }
 
         testSummary.textContent = `実行中... (${resultsCount}/${totalCount})`;
+        
+        // Auto-scroll to the bottom of the console results
+        consoleResults.scrollTop = consoleResults.scrollHeight;
         break;
 
       case 'test-complete':
@@ -254,6 +290,9 @@
             <pre class="case-error-content">${escapeHtml(e.data.message)}</pre>
           </div>
         `;
+        
+        // Auto-scroll to the bottom of the console results
+        consoleResults.scrollTop = consoleResults.scrollHeight;
         break;
     }
   });
@@ -300,6 +339,8 @@
     langSelect.value = selectedId || '';
 
     langSelect.onchange = () => {
+      // Save code under the OLD language ID before switching
+      saveCodeSync();
       currentLanguageId = langSelect.value;
       // Notify parent AtCoder page
       window.parent.postMessage({ type: 'update-language', languageId: currentLanguageId }, '*');
@@ -308,6 +349,9 @@
   }
 
   function initMonaco(isDark) {
+    // Set theme class on body to prevent styling overrides
+    document.body.className = isDark ? 'vs-dark-theme' : 'vs-theme';
+
     // Configure Monaco Loader
     require.config({ paths: { vs: '../../lib/monaco/vs' } });
 
@@ -361,6 +405,11 @@
           }
         });
 
+        // Add Monaco shortcut key for toggling console (Ctrl+J)
+        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyJ, () => {
+          toggleConsole();
+        });
+
         // Trigger layout asynchronously to ensure correct size on load
         setTimeout(() => {
           if (editor) editor.layout();
@@ -386,9 +435,6 @@
     const selectedOption = langSelect.options[langSelect.selectedIndex];
     const langText = selectedOption ? selectedOption.textContent : '';
     const mode = getLanguageMode(langText);
-
-    // Save previous code first
-    saveCodeSync();
 
     // Load new code
     const storageKey = `code:${contestId}:${problemId}:${currentLanguageId}`;
@@ -451,6 +497,14 @@
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
       saveCodeSync();
+    }
+  });
+
+  // Global keyboard shortcut for the editor iframe itself (Ctrl+J)
+  window.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'j') {
+      e.preventDefault();
+      toggleConsole();
     }
   });
 
