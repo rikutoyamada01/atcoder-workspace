@@ -5,7 +5,7 @@ const path = require('path');
 const VALID_FEATURES = [
   'monaco', 'template', 'test', 'notes', 'submit',
   'dashboard', 'library', 'error', 'export', 'queue',
-  'safety', 'autopush'
+  'safety', 'autopush', 'customtest'
 ];
 
 const featureId = process.argv[2];

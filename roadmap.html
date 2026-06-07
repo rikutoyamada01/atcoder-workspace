@@ -411,7 +411,7 @@
       </div>
       <div style="text-align: center;">
         <div class="score-value" id="scoreCompleted">0</div>
-        <div class="score-sub">/ 12 features</div>
+        <div class="score-sub">/ 13 features</div>
       </div>
       <div style="text-align: right;">
         <div class="score-title">Score</div>
@@ -453,7 +453,7 @@
           <!-- Node 3: Auto Test -->
           <div class="skill-node locked" id="node-test" onclick="openPeek('test')">
             <div class="node-phase">Phase 1</div>
-            <div class="node-title">カスタムテスト＆自動実行</div>
+            <div class="node-title">自動テスト実行</div>
             <div class="node-footer">
               <span class="node-pts">200 pts</span>
               <span class="node-status status-locked">未実装</span>
@@ -491,6 +491,16 @@
             <div class="node-title">テンプレート＆スニペット</div>
             <div class="node-footer">
               <span class="node-pts">200 pts</span>
+              <span class="node-status status-locked">未実装</span>
+            </div>
+          </div>
+
+          <!-- Node 13: Custom Test Cases -->
+          <div class="skill-node locked" id="node-customtest" onclick="openPeek('customtest')">
+            <div class="node-phase">Phase 2</div>
+            <div class="node-title">カスタムテストケース追加</div>
+            <div class="node-footer">
+              <span class="node-pts">100 pts</span>
               <span class="node-status status-locked">未実装</span>
             </div>
           </div>
@@ -670,26 +680,44 @@
         pts: 200
       },
       test: {
-        title: "カスタムテスト＆自動実行",
+        title: "自動テスト実行",
         phase: 1,
         prereqs: "前提条件: [Monaco エディタ埋込] の実装完了後",
-        desc: "問題ページ内のサンプル入出力を自動的に抽出し、エディタに書いたコードを実行して自動で判定テストを行います。出力の差分をグラフィカルに表示し、デバッグを加速させます。",
+        desc: "AtCoderの問題文からサンプル入出力（入力例・出力例）を自動的にスクレイピングし、AtCoderのコードテストAPIを叩いてバックグラウンドで実行・判定します。",
         key_features: [
           "問題文HTMLからのサンプル入出力データ自動抽出（スクレイピング）",
-          "サーバーを汚さない、ローカルWebAssembly / JS仮想環境での実行",
-          "テスト結果（AC / WA / RE / TLE）の一括実行と判定結果表示",
-          "自作のテストケース（コーナーケース等）の追加・永続化保存機能",
+          "AtCoderコードテストAPIとの非同期バックグラウンド連携",
+          "テスト結果（AC / WA / RE / TLE）の判定結果一括表示",
           "期待される出力と実際の出力のテキスト差分（Diffビューア）表示"
         ],
         technical_specs: [
           "DOMParser scraping engine",
-          "WebAssembly compiler runtime (e.g. Pyodide, clang-wasm)",
-          "Diff-match-patch algorithm",
-          "Local storage for custom test cases"
+          "AtCoder Custom Test API integration",
+          "Diff-match-patch algorithm"
         ],
-        user_impact: "サンプル入出力のコピー＆ペースト、ターミナルでのコンパイル、出力の目視比較の手間をすべて排除し、デバッグの摩擦をゼロにします。",
-        verification: "テスト実行ボタンをクリックし、自動で問題文のサンプルケースがロードされて実行され、結果がDiff付きで表示されることを確認します。",
+        user_impact: "テストケースのコピペやコンパイル、出力の目視比較の手間をすべて排除し、デバッグを加速させます。",
+        verification: "テスト実行ボタンをクリックし、自動でサンプルケースが実行され、結果がDiff付きで表示されることを確認します。",
         pts: 200
+      },
+      customtest: {
+        title: "カスタムテストケース追加",
+        phase: 2,
+        prereqs: "前提条件: [自動テスト実行] の実装完了後",
+        desc: "サンプルケース以外に、ユーザー自身で任意の入力・出力値を設定し、テストケースとして追加して一括テストできる機能です。境界値やコーナーケースの検証に威力を発揮します。",
+        key_features: [
+          "任意の入力値・期待値の追加・編集インターフェース",
+          "追加したカスタムテストケースのローカル保存・永続化",
+          "サンプルケースとカスタムケースの一括自動テスト実行",
+          "ケースごとの有効・無効化の切り替え機能"
+        ],
+        technical_specs: [
+          "IndexedDB / chrome.storage.local for cases",
+          "Dynamic UI forms & list editing",
+          "Unified test runner harness"
+        ],
+        user_impact: "問題特有のコーナーケースやエッジケースをごく短時間で検証可能になり、提出時の無駄なWAを防ぎます。",
+        verification: "カスタムケースを追加し、サンプルケースと一緒にテスト実行され、期待した結果になることを確認します。",
+        pts: 100
       },
       notes: {
         title: "問題別学習メモ (Note)",
@@ -775,7 +803,7 @@
       error: {
         title: "エラー解析＆コンパイル",
         phase: 3,
-        prereqs: "前提条件: [自動提出 ＆ 提出結果ログ] の実装完了後",
+        prereqs: "前提条件: [学習ダッシュボード＆エラー] の実装完了後",
         desc: "C++などのコンパイルエラー出力や、実行時エラー（RE）のメッセージを構文解析し、バグの原因やデバッグのヒントをローカルでわかりやすく親切に表示します。",
         key_features: [
           "GCC / Clangなどのエラー出力の構文解析（行番号、エラー箇所のピンポイント特定）",
@@ -795,7 +823,7 @@
       export: {
         title: "Markdown一括エクスポート",
         phase: 3,
-        prereqs: "前提条件: [自動提出 ＆ 提出結果ログ] の実装完了後",
+        prereqs: "前提条件: [学習ダッシュボード＆エラー] の実装完了後",
         desc: "これまでに書き溜めたソースコードと学習メモを、ObsidianやNotionといったドキュメントツールでそのまま扱えるMarkdownファイル（YAMLメタデータ付き）として一括エクスポートします。",
         key_features: [
           "YAMLフロントマター（問題ID、スコア、難易度、解答日時、言語）の自動付与",
@@ -915,13 +943,13 @@
     // Connections definition: [from_node_id, to_node_id]
     const connections = [
       ['node-monaco', 'node-template'],
-      ['node-monaco', 'node-test'],
-      ['node-monaco', 'node-submit'],
       ['node-monaco', 'node-notes'],
+      ['node-monaco', 'node-test'],
       ['node-test', 'node-submit'],
+      ['node-test', 'node-customtest'],
       ['node-submit', 'node-dashboard'],
-      ['node-submit', 'node-error'],
-      ['node-submit', 'node-export'],
+      ['node-dashboard', 'node-error'],
+      ['node-dashboard', 'node-export'],
       ['node-notes', 'node-library'],
       ['node-library', 'node-queue'],
       ['node-export', 'node-safety'],
@@ -951,13 +979,13 @@
 
         // Soft colored stroke lines matching the source node phase in light mode
         let strokeColor = '#ccc';
-        if (fromId.includes('monaco') || fromId.includes('template') || fromId.includes('test')) {
+        if (fromId === 'node-monaco' || fromId === 'node-test' || fromId === 'node-submit') {
           strokeColor = '#91d5ff'; // Phase 1: Soft Blue-Cyan
-        } else if (fromId.includes('submit') || fromId.includes('dashboard') || fromId.includes('notes')) {
+        } else if (fromId === 'node-notes' || fromId === 'node-template' || fromId === 'node-dashboard' || fromId === 'node-customtest') {
           strokeColor = '#b7eb8f'; // Phase 2: Soft Green
-        } else if (fromId.includes('library') || fromId.includes('queue') || fromId.includes('error') || fromId.includes('export')) {
+        } else if (fromId === 'node-library' || fromId === 'node-queue' || fromId === 'node-error' || fromId === 'node-export') {
           strokeColor = '#ffe58f'; // Phase 3: Soft Amber
-        } else if (fromId.includes('safety') || fromId.includes('autopush')) {
+        } else if (fromId === 'node-safety' || fromId === 'node-autopush') {
           strokeColor = '#d3adf7'; // Phase 4: Soft Purple
         }
 
