@@ -3,11 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AtCoder Workspace - 製品コンセプト</title>
+  <title>AtCoder Workspace - コンセプトプレゼンテーション</title>
   <style>
+    /* Reset & Clean AtCoder Typography */
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
     body {
-      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
       background-color: #ffffff;
       color: #333333;
       font-size: 14px;
@@ -15,6 +17,8 @@
       padding-bottom: 80px;
     }
     
+    .container { max-width: 1000px; margin: 0 auto; padding: 0 15px; }
+
     /* Navbar */
     .navbar {
       background-color: #222222;
@@ -61,108 +65,605 @@
       color: #ffffff;
       font-weight: bold;
     }
-
-    .container { max-width: 1000px; margin: 0 auto; padding: 0 15px; }
     
     /* Page Header */
     .page-header {
       padding-bottom: 9px;
-      margin: 30px 0 30px;
-      border-bottom: 1px solid #eee;
+      margin: 40px 0 20px;
+      border-bottom: 1px solid #eeeeee;
     }
-    .page-header h1 { font-size: 28px; font-weight: 500; color: #333; }
-    .page-header small { font-size: 18px; color: #777; font-weight: 300; margin-left: 10px; }
+    .page-header h1 {
+      font-size: 26px;
+      font-weight: 700;
+      color: #333333;
+      line-height: 1.2;
+    }
+    .page-header small {
+      font-size: 16px;
+      color: #777777;
+      font-weight: 300;
+      margin-left: 10px;
+      display: block;
+      margin-top: 5px;
+    }
     
-    h2 { font-size: 20px; font-weight: 700; margin: 40px 0 20px; padding-bottom: 8px; border-bottom: 2px solid #333; color: #333; }
-    h3 { font-size: 16px; font-weight: 700; margin-bottom: 15px; color: #333; }
-    p { margin-bottom: 15px; color: #555; }
+    /* Headings */
+    h2 {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 40px 0 20px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #333333;
+      color: #333333;
+    }
+    h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #333333;
+    }
+    p {
+      margin-bottom: 15px;
+      color: #333333;
+    }
     
-    .lead { font-size: 16px; color: #555; margin-bottom: 30px; line-height: 1.8; }
+    .lead {
+      font-size: 15px;
+      font-weight: 400;
+      line-height: 1.7;
+      color: #333333;
+      margin-bottom: 30px;
+      padding: 15px 20px;
+      background-color: #f9f9f9;
+      border-left: 4px solid #337ab7;
+      border-radius: 0 4px 4px 0;
+    }
+
+    /* Callout */
+    .callout {
+      padding: 15px 20px;
+      margin: 20px 0;
+      border-left: 5px solid #31708f;
+      background-color: #d9edf7;
+      color: #31708f;
+      border-radius: 0 4px 4px 0;
+      font-size: 13.5px;
+    }
+    .callout h4 {
+      margin-bottom: 8px;
+      font-size: 15px;
+      font-weight: bold;
+      color: #245269;
+    }
+    .callout p {
+      margin-bottom: 0;
+      color: #31708f;
+    }
     
     /* Panels */
     .panel {
-      border: 1px solid #ddd;
+      border: 1px solid #dddddd;
       border-radius: 4px;
       margin-bottom: 25px;
-      background: #fff;
+      background-color: #ffffff;
+      overflow: hidden;
     }
     .panel-heading {
       background-color: #f5f5f5;
       padding: 10px 15px;
-      border-bottom: 1px solid #ddd;
-      border-radius: 4px 4px 0 0;
+      border-bottom: 1px solid #dddddd;
       font-weight: 700;
       font-size: 14px;
-      color: #333;
+      color: #333333;
     }
-    .panel-body { padding: 15px; }
-    .panel-body ul { padding-left: 20px; }
-    .panel-body li { margin-bottom: 6px; color: #555; }
-    
-    /* Comparison Table */
-    .comparison-table { width: 100%; border-collapse: collapse; margin: 20px 0 30px; }
-    .comparison-table th, .comparison-table td { border: 1px solid #ddd; padding: 10px 12px; text-align: left; vertical-align: top; }
-    .comparison-table th { background-color: #f5f5f5; font-weight: 700; font-size: 13px; color: #333; }
-    .comparison-table td { font-size: 13px; color: #555; }
-    .highlight-cell { background-color: #dff0d8; font-weight: 700; color: #3c763d; }
-    
-    /* Metric Row */
-    .metric-row { display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
-    .metric-card {
-      flex: 1;
-      min-width: 200px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      padding: 20px;
-      text-align: center;
-      background-color: #f9f9f9;
+    .panel-body {
+      padding: 15px;
     }
-    .metric-card .metric-label { font-size: 12px; color: #777; text-transform: uppercase; margin-bottom: 5px; }
-    .metric-card .metric-before { font-size: 24px; font-weight: 700; color: #d9534f; }
-    .metric-card .metric-after { font-size: 24px; font-weight: 700; color: #5cb85c; }
-    .metric-card .metric-arrow { font-size: 18px; color: #777; margin: 5px 0; }
-    
-    .phase-section {
-      background: #fafafa;
-      border: 1px solid #eee;
+
+    /* Feature Cards (Highlight triggers) */
+    .feature-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    .feature-card {
+      border: 1px solid #dddddd;
       border-radius: 4px;
       padding: 15px;
-      margin-bottom: 20px;
+      background-color: #ffffff;
+      transition: border-color 0.2s, background-color 0.2s;
+      cursor: pointer;
     }
-    .phase-section h3 {
+    .feature-card:hover {
+      border-color: #337ab7;
+      background-color: #fafafa;
+    }
+    .feature-card h3 {
+      font-size: 14px;
+      color: #337ab7;
+      margin-bottom: 8px;
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 10px;
+      gap: 6px;
     }
-    
-    /* Badges */
-    .phase-badge {
-      display: inline-block;
-      color: #fff;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 3px;
-    }
-    .phase-badge.phase1 { background-color: #337ab7; }
-    .phase-badge.phase2 { background-color: #f0ad4e; }
-    .phase-badge.phase3 { background-color: #5bc0de; }
-    .phase-badge.phase4 { background-color: #777; }
-    
-    /* Callout alert panel */
-    .alert-info {
-      background-color: #fcf8e3;
-      border: 1px solid #faebcc;
-      color: #8a6d3c;
-      padding: 15px;
-      border-radius: 4px;
-      margin-bottom: 30px;
-      border-left: 5px solid #f0ad4e;
+    .feature-card p {
+      font-size: 12.5px;
+      color: #555555;
+      margin-bottom: 0;
       line-height: 1.5;
     }
+
+    /* Static UI Mock Browser */
+    .mock-browser {
+      border: 1px solid #cccccc;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 30px;
+      background-color: #ffffff;
+      transition: outline 0.2s;
+    }
+    .mock-browser-header {
+      background-color: #f5f5f5;
+      padding: 8px 12px;
+      border-bottom: 1px solid #cccccc;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .mock-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .mock-dot-red { background-color: #d9534f; }
+    .mock-dot-yellow { background-color: #f0ad4e; }
+    .mock-dot-green { background-color: #5cb85c; }
+    .mock-tab {
+      background-color: #ffffff;
+      padding: 4px 15px;
+      font-size: 11px;
+      border-radius: 4px 4px 0 0;
+      border: 1px solid #ccc;
+      border-bottom: none;
+      margin-bottom: -9px;
+      margin-left: 10px;
+      font-weight: bold;
+      color: #333333;
+    }
+    .mock-browser-body {
+      display: flex;
+      height: 380px;
+      background-color: #ffffff;
+      position: relative;
+    }
+    .mock-atcoder-side {
+      flex: 1.2;
+      border-right: 2px solid #dddddd;
+      padding: 15px;
+      overflow-y: auto;
+      font-size: 12px;
+      transition: outline 0.2s;
+    }
+    .mock-editor-side {
+      flex: 1;
+      background-color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      font-size: 12px;
+    }
+    .mock-editor-toolbar {
+      background-color: #f5f5f5;
+      border-bottom: 1px solid #dddddd;
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+    }
+    .mock-toolbar-btn-green {
+      background-color: #5cb85c;
+      color: white;
+      border: 1px solid #4cae4c;
+      border-radius: 3px;
+      padding: 3px 6px;
+      font-size: 10px;
+      font-weight: bold;
+      transition: outline 0.2s;
+    }
+    .mock-toolbar-btn-blue {
+      background-color: #337ab7;
+      color: white;
+      border: 1px solid #2e6da4;
+      border-radius: 3px;
+      padding: 3px 6px;
+      font-size: 10px;
+      font-weight: bold;
+    }
+    .mock-editor-area {
+      flex: 1;
+      background-color: #1e1e1e; /* Monaco simulated theme */
+      color: #d4d4d4;
+      font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+      padding: 10px;
+      font-size: 11px;
+      line-height: 1.4;
+      position: relative;
+      overflow: hidden;
+      transition: outline 0.2s;
+    }
+    .mock-editor-line {
+      display: flex;
+    }
+    .mock-line-num {
+      color: #858585;
+      width: 18px;
+      text-align: right;
+      margin-right: 8px;
+      user-select: none;
+    }
+    .mock-keyword { color: #569cd6; }
+    .mock-string { color: #ce9178; }
+    .mock-function { color: #dcdcaa; }
+    .mock-comment { color: #6a9955; }
+
+    .mock-console-panel {
+      height: 140px;
+      background-color: #ffffff;
+      border-top: 1px solid #dddddd;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: outline 0.2s;
+    }
+    .mock-console-header {
+      background-color: #f5f5f5;
+      padding: 5px 10px;
+      border-bottom: 1px solid #dddddd;
+      font-weight: bold;
+      font-size: 11px;
+      color: #333333;
+      display: flex;
+      justify-content: space-between;
+    }
+    .mock-console-body {
+      padding: 8px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .mock-case-row {
+      border: 1px solid #dddddd;
+      border-radius: 3px;
+      padding: 4px 8px;
+      font-size: 11px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #ffffff;
+    }
+    .mock-badge-ac {
+      background-color: #dff0d8;
+      color: #3c763d;
+      font-weight: bold;
+      padding: 1px 4px;
+      border-radius: 2px;
+    }
     
-    footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid #eee; color: #999; font-size: 12px; text-align: center; }
+    /* Highlight classes */
+    .highlight-border-editor {
+      outline: 3px solid #337ab7 !important;
+      outline-offset: -3px;
+    }
+    .highlight-border-test {
+      outline: 3px solid #5cb85c !important;
+      outline-offset: -1px;
+    }
+    .highlight-border-console {
+      outline: 3px solid #d9534f !important;
+      outline-offset: -3px;
+    }
+
+    /* Before / After Timeline */
+    .timeline-row {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .timeline-col {
+      flex: 1;
+      border: 1px solid #dddddd;
+      border-radius: 4px;
+      background-color: #ffffff;
+      padding: 15px;
+    }
+    .timeline-col-title {
+      font-size: 14px;
+      font-weight: bold;
+      padding-bottom: 8px;
+      margin-bottom: 15px;
+      border-bottom: 1px solid #eeeeee;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .timeline-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      list-style: none;
+    }
+    .timeline-item {
+      position: relative;
+      padding-left: 20px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: 4px;
+      top: 5px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .timeline-col-bad .timeline-item::before {
+      background-color: #d9534f;
+    }
+    .timeline-col-good .timeline-item::before {
+      background-color: #5cb85c;
+    }
+    .timeline-col-bad .timeline-item::after {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 17px;
+      width: 2px;
+      height: calc(100% + 4px);
+      background-color: #ebccd1;
+    }
+    .timeline-col-good .timeline-item::after {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 17px;
+      width: 2px;
+      height: calc(100% + 4px);
+      background-color: #d6e9c6;
+    }
+    .timeline-item:last-child::after {
+      display: none;
+    }
+    .timeline-step-badge {
+      font-size: 9px;
+      font-weight: bold;
+      padding: 1px 4px;
+      border-radius: 2px;
+      margin-right: 5px;
+      display: inline-block;
+    }
+    .timeline-col-bad .timeline-step-badge {
+      background-color: #f2dede;
+      color: #a94442;
+    }
+    .timeline-col-good .timeline-step-badge {
+      background-color: #dff0d8;
+      color: #3c763d;
+    }
+
+    /* Stress Calculator */
+    .calc-container {
+      display: flex;
+      gap: 20px;
+      background-color: #fafafa;
+      border: 1px solid #dddddd;
+      border-radius: 4px;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+    .calc-inputs {
+      flex: 1.2;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .calc-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .calc-input-group label {
+      font-weight: bold;
+      font-size: 13px;
+      color: #333333;
+    }
+    .calc-input-group input {
+      padding: 8px 10px;
+      font-size: 14px;
+      border: 1px solid #cccccc;
+      border-radius: 4px;
+      outline: none;
+    }
+    .calc-input-group input:focus {
+      border-color: #337ab7;
+    }
+    .calc-results {
+      flex: 1;
+      border-left: 1px solid #dddddd;
+      padding-left: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 15px;
+    }
+    .calc-result-item {
+      display: flex;
+      flex-direction: column;
+    }
+    .calc-result-val {
+      font-size: 24px;
+      font-weight: bold;
+      color: #5cb85c;
+      line-height: 1;
+      margin-top: 5px;
+    }
+    .calc-result-label {
+      font-size: 12px;
+      color: #777777;
+    }
+
+    /* 3-Way Comparison Table */
+    .table-container {
+      overflow-x: auto;
+      margin-bottom: 30px;
+    }
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      border: 1px solid #dddddd;
+      font-size: 13px;
+    }
+    .comparison-table th, .comparison-table td {
+      border: 1px solid #dddddd;
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    .comparison-table th {
+      background-color: #f5f5f5;
+      font-weight: 700;
+      color: #333333;
+    }
+    .cell-bad {
+      background-color: #f2dede;
+      color: #a94442;
+      font-weight: bold;
+    }
+    .cell-warning {
+      background-color: #fcf8e3;
+      color: #8a6d3c;
+      font-weight: bold;
+    }
+    .cell-good {
+      background-color: #dff0d8;
+      color: #3c763d;
+      font-weight: bold;
+    }
+
+    /* Trust / Compliance section */
+    .compliance-box {
+      background-color: #fcf8e3;
+      border: 1px solid #faebcc;
+      border-radius: 4px;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+    .compliance-title {
+      color: #8a6d3c;
+      font-weight: bold;
+      font-size: 14px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .compliance-item {
+      font-size: 13px;
+      color: #66512c;
+      margin-bottom: 8px;
+      padding-left: 15px;
+      position: relative;
+    }
+    .compliance-item::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: #8a6d3c;
+      font-weight: bold;
+    }
+    .compliance-item:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Timeline Roadmap List (Flat Design) */
+    .roadmap-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 35px;
+    }
+    .roadmap-item {
+      border: 1px solid #dddddd;
+      border-radius: 4px;
+      padding: 15px;
+      background-color: #ffffff;
+    }
+    .roadmap-item.completed {
+      border-left: 4px solid #5cb85c;
+    }
+    .roadmap-item.upcoming {
+      border-left: 4px solid #337ab7;
+      background-color: #fafafa;
+    }
+    .roadmap-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .roadmap-title {
+      font-size: 14px;
+      font-weight: bold;
+      color: #333333;
+    }
+    .roadmap-desc {
+      font-size: 12.5px;
+      color: #777777;
+      line-height: 1.6;
+    }
+
+    footer {
+      margin-top: 60px;
+      padding-top: 20px;
+      border-top: 1px solid #eeeeee;
+      color: #777777;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .calc-container {
+        flex-direction: column;
+      }
+      .calc-results {
+        border-left: none;
+        border-top: 1px solid #dddddd;
+        padding-left: 0;
+        padding-top: 15px;
+      }
+      .timeline-row {
+        flex-direction: column;
+      }
+      .mock-browser-body {
+        flex-direction: column;
+        height: auto;
+      }
+      .mock-atcoder-side {
+        border-right: none;
+        border-bottom: 2px solid #dddddd;
+        height: 180px;
+      }
+      .mock-editor-side {
+        height: 250px;
+      }
+      .mock-console-panel {
+        height: 100px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -176,130 +677,372 @@
 
   <div class="container">
     <div class="page-header">
-      <h1>製品コンセプト<small>AtCoder Workspace</small></h1>
+      <h1>競技プログラミングを、もっと本質的で没頭できる体験へ
+        <small>AtCoder Workspace - プロダクトビジョン</small>
+      </h1>
     </div>
 
-    <p class="lead">
-      AtCoderの問題ページを、エディタ・テスト・提出が統合された「ブラウザ上の開発環境」に変えるChrome拡張機能です。<br>
-      環境構築不要、サンプルのコピペ不要、画面・タブ移動不要。問題画面を開いたその瞬間からコーディングとテストが完結します。
+    <div class="lead">
+      AtCoder Workspaceは、問題文の読解から実装、テスト、提出にいたる一連のサイクルにおける「摩擦」を極限まで減らし、アルゴリズムの構築という本質的な思考に100%没頭できるように設計されたオンラインIDE拡張機能です。
+    </div>
+
+    <div class="callout">
+      <h4>プロダクトの約束: 「1つのタブで、思考を分断させないこと」</h4>
+      <p>
+        私たちは、典型コードのコピペやタブの切り替え、ローカル環境の構築といった「プログラミング学習の本質ではない作業」に時間を奪われるべきではないと考えています。AtCoder Workspaceは、ブラウザの1タブの中で、コーディングから提出判定までをシームレスな1つのループに統合します。
+      </p>
+    </div>
+
+    <h2>主要な機能と画面イメージ</h2>
+    <p style="margin-bottom: 20px; font-size: 13.5px; color: #555555;">
+      下記の機能カードにカーソルを合わせると、拡張機能を導入した際の画面レイアウト（スプリットビューとテスト結果コンソール）の該当箇所が強調表示されます。
     </p>
 
-    <div class="alert-info">
-      <strong>💡 MVPの成立条件: 「一画面で問題文・エディタ・テスト・提出ができること」</strong><br>
-      このコア体験を最優先で実現するため、自動提出までのワークフロー（Monacoエディタ、カスタムテスト、自動提出）をPhase 1（MVP）に集約しています。そのため、テンプレート＆スニペット機能はPhase 2（将来ロードマップ）に分類し、まずはこの統合された単一画面での開発フローの完成を最優先としています。
-    </div>
-
-    <h2>解決する課題</h2>
-    <p>競技プログラミングを始めようとするとき、多くの初心者が「高い環境構築の壁」や「エディタ・ブラウザ間の頻繁な往復」で挫折してしまいます。本拡張機能は、AtCoderの問題ページ内に高性能エディタを直接埋め込むことで、ブラウザの1タブだけで完結するノンストレスな学習体験を提供します。</p>
-
-    <h2>定量的な改善効果</h2>
-    <div class="metric-row">
-      <div class="metric-card">
-        <div class="metric-label">環境構築時間</div>
-        <div class="metric-before">約30分</div>
-        <div class="metric-arrow">&#9660;</div>
-        <div class="metric-after">約10秒</div>
+    <div class="feature-list">
+      <div class="feature-card" data-target="split">
+        <h3>問題文一体型の分割ビュー</h3>
+        <p>問題を開いた瞬間、左半分に問題文、右半分に高性能なコードエディタ（Monaco Editor）が並んで自動出現。ドラッグで境界線の幅を自由に調整できます。</p>
       </div>
-      <div class="metric-card">
-        <div class="metric-label">1問あたりの操作ステップ数</div>
-        <div class="metric-before">11ステップ</div>
-        <div class="metric-arrow">&#9660;</div>
-        <div class="metric-after">4ステップ</div>
+      <div class="feature-card" data-target="test">
+        <h3>ワンクリック自動テスト</h3>
+        <p>ツールバーの「テスト実行」を押すだけで、問題文内のサンプル入出力を自動抽出し、AtCoderのコードテストAPIを叩いてバックグラウンドでテストを走らせます。</p>
       </div>
-      <div class="metric-card">
-        <div class="metric-label">タブ切り替え回数</div>
-        <div class="metric-before">12回</div>
-        <div class="metric-arrow">&#9660;</div>
-        <div class="metric-after">0回</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">クリック数</div>
-        <div class="metric-before">15回</div>
-        <div class="metric-arrow">&#9660;</div>
-        <div class="metric-after">3回</div>
+      <div class="feature-card" data-target="console">
+        <h3>スライド式テストコンソール</h3>
+        <p>テスト結果は画面最下部からスライド展開。余計なスペースを占有せず、<code>Ctrl + J</code> キーや境界のスライダーつまみでいつでも瞬時に開閉可能です。</p>
       </div>
     </div>
 
-    <h2>ワークフロー比較</h2>
-    <table class="comparison-table">
-      <thead><tr><th>ステップ</th><th>従来のフロー</th><th>AtCoder Workspace</th></tr></thead>
-      <tbody>
-        <tr><td>1</td><td>VS Codeを起動（環境構築済み前提）</td><td class="highlight-cell">問題ページを開く（エディタ自動出現）</td></tr>
-        <tr><td>2</td><td>ブラウザで問題文を開く</td><td class="highlight-cell">コードを書く（自動保存）</td></tr>
-        <tr><td>3</td><td>サンプル入出力をコピー＆ペースト</td><td class="highlight-cell">「テスト実行」ボタンをクリック</td></tr>
-        <tr><td>4</td><td>ターミナルでコンパイル＆実行</td><td class="highlight-cell">「提出」ボタンをクリック（完了）</td></tr>
-        <tr><td>5</td><td>出力を手動比較</td><td class="highlight-cell">-</td></tr>
-        <tr><td>6</td><td>提出ページに移動しコードをペースト</td><td class="highlight-cell">-</td></tr>
-        <tr><td>7</td><td>提出後、別タブに強制遷移</td><td class="highlight-cell">-</td></tr>
-        <tr><td>8</td><td>問題一覧に手動で戻る</td><td class="highlight-cell">-</td></tr>
-      </tbody>
-    </table>
+    <!-- Static UI Mock Browser -->
+    <div class="mock-browser" id="mockBrowser">
+      <div class="mock-browser-header">
+        <div class="mock-dot mock-dot-red"></div>
+        <div class="mock-dot mock-dot-yellow"></div>
+        <div class="mock-dot mock-dot-green"></div>
+        <div class="mock-tab">AtCoder Workspace [A問題]</div>
+      </div>
+      <div class="mock-browser-body">
+        
+        <!-- Left Side: AtCoder Description Mock -->
+        <div class="mock-atcoder-side" id="mockAtcoderSide">
+          <h3 style="font-size: 14px; margin-bottom: 10px;">A - Welcome to AtCoder</h3>
+          <p style="font-size: 11px; color: #666; margin-bottom: 10px;">実行時間制限: 2.0 sec / メモリ制限: 256 MB</p>
+          <h4 style="font-size: 12px; margin-bottom: 5px; border-left: 3px solid #337ab7; padding-left: 5px;">問題文</h4>
+          <p style="font-size: 11px; margin-bottom: 10px; line-height: 1.4;">整数 a, b, c と、文字列 s が与えられます。 a+b+c の計算結果と、文字列 s を並べて出力しなさい。</p>
+          <h4 style="font-size: 12px; margin-bottom: 5px; border-left: 3px solid #337ab7; padding-left: 5px;">制約</h4>
+          <p style="font-size: 11px; margin-bottom: 10px;">1 &le; a, b, c &le; 1,000</p>
+        </div>
 
-    <h2>MVP機能一覧 (Phase 1)</h2>
-    <div class="panel">
-      <div class="panel-heading"><span class="phase-badge phase1">Phase 1</span>分割画面エディタ (Monaco Editor)</div>
-      <div class="panel-body">
-        <ul>
-          <li>左側に問題文、右側にMonaco Editorを配置。ドラッグで分割幅を変更可能。</li>
-          <li>括弧補完・自動インデント・コード整形は搭載。</li>
+        <!-- Right Side: Editor Mock -->
+        <div class="mock-editor-side">
+          <div class="mock-editor-toolbar">
+            <div>
+              <span class="mock-toolbar-btn mock-toolbar-btn-green" id="mockTestBtn">テスト実行</span>
+              <span class="mock-toolbar-btn mock-toolbar-btn-blue">提出</span>
+            </div>
+            <div style="color: #777;">Python (3.8.2)</div>
+          </div>
+          <div class="mock-editor-area" id="mockEditorArea">
+            <div class="mock-editor-line">
+              <span class="mock-line-num">1</span>
+              <span><span class="mock-keyword">a</span> = int(input())</span>
+            </div>
+            <div class="mock-editor-line">
+              <span class="mock-line-num">2</span>
+              <span><span class="mock-keyword">b</span>, <span class="mock-keyword">c</span> = map(int, input().split())</span>
+            </div>
+            <div class="mock-editor-line">
+              <span class="mock-line-num">3</span>
+              <span><span class="mock-keyword">s</span> = input()</span>
+            </div>
+            <div class="mock-editor-line">
+              <span class="mock-line-num">4</span>
+              <span>print(<span class="mock-string">f"{a+b+c} {s}"</span>)</span>
+            </div>
+            <div class="mock-editor-line" style="margin-top: 15px;">
+              <span class="mock-line-num">5</span>
+              <span class="mock-comment"># ここでコードを記述・編集できます</span>
+            </div>
+          </div>
+          
+          <!-- Bottom Console Mock -->
+          <div class="mock-console-panel" id="mockConsolePanel">
+            <div class="mock-console-header">
+              <span>テスト結果コンソール</span>
+              <span style="cursor: default;">▲/▼ (Ctrl+J)</span>
+            </div>
+            <div class="mock-console-body">
+              <div class="mock-case-row">
+                <span>[ケース 1] 入力例 1</span>
+                <span class="mock-badge-ac">AC (12ms)</span>
+              </div>
+              <div class="mock-case-row">
+                <span>[ケース 2] 入力例 2</span>
+                <span class="mock-badge-ac">AC (14ms)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <h2>普段の開発フローとの比較 (Before / After)</h2>
+    <p style="margin-bottom: 20px; font-size: 13.5px; color: #555555;">
+      Workspaceを導入することで、ブラウザとローカルエディタの往復や手動テストのコピペといった「思考を中断する摩擦」が削減されます。
+    </p>
+
+    <div class="timeline-row">
+      <!-- Traditional flow -->
+      <div class="timeline-col timeline-col-bad">
+        <div class="timeline-col-title" style="color: #d9534f;">
+          <span style="font-size: 16px;">✗</span> 従来のフロー (摩擦の多い体験)
+        </div>
+        <ul class="timeline-list">
+          <li class="timeline-item"><span class="timeline-step-badge">Step 1</span>ブラウザで問題ページを開く</li>
+          <li class="timeline-item"><span class="timeline-step-badge">Step 2</span>ローカルでファイルを作成し、テンプレートを貼る</li>
+          <li class="timeline-item"><span class="timeline-step-badge">Step 3</span>エディタにコードを実装する</li>
+          <li class="timeline-item"><span class="timeline-step-badge">Step 4</span>問題文から入力例をドラッグ選択してコピーする</li>
+          <li class="timeline-item"><span class="timeline-step-badge">Step 5</span>ターミナルで実行コマンドを叩き、入力を貼り付ける</li>
+          <li class="timeline-item"><span class="timeline-step-badge">Step 6</span>出力結果と問題文の期待値を**目視で突き合わせる**</li>
+          <li class="timeline-item"><span class="timeline-step-badge">Step 7</span>コードを全選択してコピーし、提出ページに切り替える</li>
+          <li class="timeline-item"><span class="timeline-step-badge">Step 8</span>提出後にジャッジ結果ページへ飛ばされる（元の問題が隠れる）</li>
+          <li class="timeline-item"><span class="timeline-step-badge">Step 9</span>問題一覧に戻り、次の問題へのリンクを探して開く</li>
+        </ul>
+      </div>
+
+      <!-- Workspace flow -->
+      <div class="timeline-col timeline-col-good">
+        <div class="timeline-col-title" style="color: #5cb85c;">
+          <span style="font-size: 16px;">✓</span> Workspaceのフロー (思考を分断しない体験)
+        </div>
+        <ul class="timeline-list">
+          <li class="timeline-item"><span class="timeline-step-badge">Step 1</span>問題ページを開く（エディタが右側に自動準備完了）</li>
+          <li class="timeline-item"><span class="timeline-step-badge">Step 2</span>エディタにコードを実装する</li>
+          <li class="timeline-item"><span class="timeline-step-badge">Step 3</span>「テスト実行」をクリック（サンプル自動検証・Diff可視化）</li>
+          <li class="timeline-item"><span class="timeline-step-badge">Step 4</span>「提出」をクリック（バックグラウンド提出、その場で結果確認）</li>
+          <li class="timeline-item" style="color: #777; border: 1px dashed #ddd; background-color: #fafafa; border-radius: 4px; padding: 6px 10px 6px 25px; margin-top: 10px;">
+            <span class="timeline-step-badge" style="background-color: #eee; color: #777;">Next</span>
+            「次の問題へ」をワンクリックして、直ちに次の実装へ没頭
+          </li>
         </ul>
       </div>
     </div>
-    
-    <div class="panel">
-      <div class="panel-heading"><span class="phase-badge phase1">Phase 1</span>ワンクリック自動テスト</div>
-      <div class="panel-body">
-        <ul>
-          <li>サンプルケースの自動抽出・実行。カスタムテストケースの登録・一括実行。</li>
-        </ul>
+
+    <h2>削減できる「無駄なロスタイム」計算機</h2>
+    <p style="margin-bottom: 20px; font-size: 13.5px; color: #555555;">
+      あなたが普段の競プロ活動で消費している「コピペ回数」と「集中力の中断時間」をシミュレーションします。
+    </p>
+
+    <div class="calc-container">
+      <div class="calc-inputs">
+        <div class="calc-input-group">
+          <label for="calc-problems">1週間に解く平均問題数 (問)</label>
+          <input type="number" id="calc-problems" value="5" min="1" max="100">
+        </div>
+        <div class="calc-input-group" style="margin-top: 10px;">
+          <label for="calc-tests">1問あたりに実行する平均テスト回数 (回)</label>
+          <input type="number" id="calc-tests" value="4" min="1" max="50">
+        </div>
+      </div>
+      <div class="calc-results">
+        <div class="calc-result-item">
+          <span class="calc-result-label">年間で削減される無駄なコピペ回数:</span>
+          <span class="calc-result-val" id="calc-val-copypaste">0 回</span>
+        </div>
+        <div class="calc-result-item">
+          <span class="calc-result-label">年間で失われずに済む集中時間（ロスタイム）:</span>
+          <span class="calc-result-val" id="calc-val-time">0 分</span>
+        </div>
       </div>
     </div>
-    
-    <div class="panel">
-      <div class="panel-heading"><span class="phase-badge phase1">Phase 1</span>シームレス自動提出</div>
-      <div class="panel-body">
-        <ul>
-          <li>バックグラウンド提出。インラインポップアップで結果通知（タブ遷移なし）。</li>
-        </ul>
+
+    <h2>競プロ開発環境の3択比較</h2>
+    <div class="table-container">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>評価軸 / 機能</th>
+            <th>AtCoder 標準 (公式Web)</th>
+            <th>ローカル VS Code 環境</th>
+            <th>AtCoder Workspace</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>導入・環境構築の手間</strong></td>
+            <td class="cell-good">なし (ブラウザのみ)</td>
+            <td class="cell-bad">非常に高い (C++コンパイラ, パス設定等)</td>
+            <td class="cell-good">なし (拡張機能を導入するだけ)</td>
+          </tr>
+          <tr>
+            <td><strong>サンプルテスト実行</strong></td>
+            <td class="cell-bad">手動コピペ & 目視判定</td>
+            <td class="cell-warning">スクリプト自作で自動化可能</td>
+            <td class="cell-good">ワンクリック自動実行 (Diff比較)</td>
+          </tr>
+          <tr>
+            <td><strong>画面・タブの切り替え</strong></td>
+            <td class="cell-bad">頻繁に発生 (提出・結果で遷移)</td>
+            <td class="cell-bad">エディタとブラウザを常に行き来</td>
+            <td class="cell-good">0回 (1つのブラウザタブで完結)</td>
+          </tr>
+          <tr>
+            <td><strong>コードの自動保存</strong></td>
+            <td class="cell-bad">なし (ブラウザ戻ると消える)</td>
+            <td class="cell-good">あり (オートセーブ)</td>
+            <td class="cell-good">あり (キー入力停止後1.5秒で保存)</td>
+          </tr>
+          <tr>
+            <td><strong>競技規約への適合性</strong></td>
+            <td class="cell-good">適合 (公式ツール)</td>
+            <td class="cell-good">適合</td>
+            <td class="cell-good">適合 (AI非搭載・公式規約準拠)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>安心・安全に使用するための規約適合性</h2>
+    <div class="compliance-box">
+      <div class="compliance-title">
+        <span>🛡️</span> 競技規約への適合性とセキュリティについて
+      </div>
+      <div class="compliance-item">
+        <strong>生成AI・自動入力補完機能の排除:</strong> アルゴリズム自体の考案・記述プロセスをユーザー自らの力で行えるよう、カンニングや規約違反のリスクに繋がる生成AI補助やインテリセンス機能はあえて非搭載としています。
+      </div>
+      <div class="compliance-item">
+        <strong>完全ローカル完結型設計:</strong> 外部に独自の中継サーバーを一切持たず、提出やコードテストはユーザー自身のブラウザセッション（Cookie）から直接公式APIへ安全に通信するため、不正アクセスや資格情報の流出がありません。
+      </div>
+      <div class="compliance-item">
+        <strong>過度なリクエストの制限:</strong> 提出状況のポーリング間隔やテスト実行は、AtCoder公式のサーバー負荷規約に準拠したウェイト（待機時間）を設けており、意図しない負荷をかけません。
       </div>
     </div>
-    
+
+    <h2>私たちのデザイン哲学</h2>
+    <p style="margin-bottom: 15px; font-size: 13.5px; color: #555555;">
+      多くのモダンな拡張機能は、派手なグラデーションや独自のダークテーマ、過剰な装飾を施しがちです。しかし、競技プログラミングの本質は「思考への極限の集中」です。私たちは以下の設計思想を徹底しています。
+    </p>
     <div class="panel">
-      <div class="panel-heading"><span class="phase-badge phase1">Phase 1</span>コード自動保存 / クイックナビゲーション</div>
-      <div class="panel-body">
-        <ul>
-          <li>1.5秒の入力停止で自動保存。前後の問題への直接遷移ボタン。</li>
+      <div class="panel-body" style="background-color: #fafafa;">
+        <ul style="padding-left: 20px; font-size: 13px; line-height: 1.6;">
+          <li style="margin-bottom: 8px;"><strong>デザインによる適応負荷をゼロに:</strong> AtCoder公式のスタイル（Bootstrap 3風のフラットな構造、枠線、フォント）と同調させることで、使い始めた瞬間に「自分の体の一部」のように馴染む体験を提供します。</li>
+          <li style="margin-bottom: 8px;"><strong>運用の自立性と永続性:</strong> サーバーや外部APIを一切必要としない完全サーバーレス設計。個人開発ツールとして、将来にわたり永続的かつ安全に動作し続けます。</li>
         </ul>
       </div>
     </div>
 
-    <h2>将来のロードマップ</h2>
-    <div class="phase-section">
-      <h3><span class="phase-badge phase2">Phase 2</span>学習の定着、効率化、エラー分析</h3>
-      <p>言語別テンプレートの自動挿入や自作ライブラリのワンクリック挿入（テンプレート＆スニペット）、全提出履歴の自動記録、問題別学習メモ機能 (Note)、学習ダッシュボードとエラー傾向分析。</p>
-    </div>
-    <div class="phase-section">
-      <h3><span class="phase-badge phase3">Phase 3</span>分析・管理・出力</h3>
-      <p>解法ライブラリ検索、復習キュー (Review Queue)、エラー解析、Markdown一括エクスポート。</p>
-    </div>
-    <div class="phase-section">
-      <h3><span class="phase-badge phase4">Phase 4</span>外部連携とセーフティ</h3>
-      <p>コンテストセーフティロック、GitHub Autopush。</p>
-    </div>
+    <h2>成長を支える開発ロードマップ</h2>
+    <p style="margin-bottom: 20px; font-size: 13.5px; color: #555555;">
+      単なる便利ツールに留まらず、学習者がAtCoderで段階的にステップアップし、実力を定着させるためのロードマップを設計しています。詳細は <a href="roadmap.html">開発ロードマップ</a> をご覧ください。
+    </p>
 
-    <h2>設計方針</h2>
-    <div class="panel">
-      <div class="panel-heading">サーバーレス＆AIレス（完全ローカル完結）</div>
-      <div class="panel-body">
-        <ul>
-          <li><strong>運用コスト0円</strong>: サーバー維持費やAI APIトークン利用料が発生しない。</li>
-          <li><strong>AtCoder規制への完全適合</strong>: 生成AI機能を一切搭載しないため、コンテスト中の誤使用リスクがゼロ。</li>
-          <li><strong>データプライバシー</strong>: すべてのデータはユーザーのブラウザ内のみで管理。</li>
-        </ul>
+    <div class="roadmap-list">
+      <div class="roadmap-item completed">
+        <div class="roadmap-item-header">
+          <span class="roadmap-title">Phase 1: 実装と検証の高速化（MVP）</span>
+          <span class="label label-success">実装完了</span>
+        </div>
+        <div class="roadmap-desc">
+          問題文とエディタの同時表示、ワンクリックでのテスト実行、バックグラウンドでの提出の統合。まずは「書いて試す」という最も高頻度なループを最速にすることを目指します。
+        </div>
+      </div>
+      <div class="roadmap-item upcoming">
+        <div class="roadmap-item-header">
+          <span class="roadmap-title">Phase 2: エラー分析と「つまずき」の記録</span>
+          <span class="label label-primary">Next</span>
+        </div>
+        <div class="roadmap-desc">
+          提出履歴から自分が起こしがちなバグ（WA / TLE / RE）の傾向を自動分析するダッシュボード、および各問題の考察プロセスをその場で書き残せる「Markdown学習メモ」の統合。自身の成長の軌跡を可視化します。
+        </div>
+      </div>
+      <div class="roadmap-item upcoming">
+        <div class="roadmap-item-header">
+          <span class="roadmap-title">Phase 3: 解法のストックと復習の体系化</span>
+          <span class="label label-info">Upcoming</span>
+        </div>
+        <div class="roadmap-desc">
+          過去にACしたソースコードや考察メモをアルゴリズムタグ（DP、グラフ等）で整理し高速検索する「解法ライブラリ」と、間違えた問題を忘れかけた頃に再提示する「復習キュー」。知識を実戦力へと昇華させます。
+        </div>
+      </div>
+      <div class="roadmap-item upcoming">
+        <div class="roadmap-item-header">
+          <span class="roadmap-title">Phase 4: コンテストへの適応と外部発信</span>
+          <span class="label label-default">Upcoming</span>
+        </div>
+        <div class="roadmap-desc">
+          コンテスト本番中の誤提出やルール違反（AI機能等の使用）を防止するセーフティロック、およびACコードを自動的にGitHubリポジトリへ同期する「GitHub Autopush」のサポート。
+        </div>
       </div>
     </div>
 
     <footer>AtCoder Workspace - MIT License</footer>
   </div>
+
+  <script>
+    // 1. ロスタイム計算機のロジック
+    const inputProblems = document.getElementById('calc-problems');
+    const inputTests = document.getElementById('calc-tests');
+    const valCopypaste = document.getElementById('calc-val-copypaste');
+    const valTime = document.getElementById('calc-val-time');
+
+    function calculateSavedTime() {
+      const problems = parseInt(inputProblems.value) || 0;
+      const tests = parseInt(inputTests.value) || 0;
+      
+      // 計算モデル:
+      // 年間想定コンテスト数: 50回
+      const annualContests = 50;
+      const totalProblems = problems * annualContests;
+      
+      // コピペ削減数: 
+      // 1回のテストにつき平均3ケースのサンプルコピペが発生 (3 * tests)
+      // コードのコピー(1回)、提出フォームへの貼り付け(1回)、計2回
+      const copypastesSaved = totalProblems * (tests * 3 + 2);
+      
+      // 削減ロスタイム:
+      // 手動テストコピペと目視判定にかかる往復コスト: 1回あたり25秒
+      // コード提出タブ切り替えと待機にかかるコスト: 1回あたり15秒
+      const secondsSaved = totalProblems * (tests * 25 + 15);
+      const minutesSaved = Math.round(secondsSaved / 60);
+      const hoursSaved = (minutesSaved / 60).toFixed(1);
+      
+      valCopypaste.textContent = copypastesSaved.toLocaleString() + ' 回';
+      valTime.textContent = `${minutesSaved.toLocaleString()} 分 (約 ${hoursSaved} 時間)`;
+    }
+
+    if (inputProblems && inputTests) {
+      inputProblems.addEventListener('input', calculateSavedTime);
+      inputTests.addEventListener('input', calculateSavedTime);
+      calculateSavedTime();
+    }
+
+    // 2. 機能説明カードと静的UIモックの連動強調表示 (Highlight Sync)
+    const cards = document.querySelectorAll('.feature-card');
+    const mockAtcoder = document.getElementById('mockAtcoderSide');
+    const mockEditor = document.getElementById('mockEditorArea');
+    const mockTestBtn = document.getElementById('mockTestBtn');
+    const mockConsole = document.getElementById('mockConsolePanel');
+
+    cards.forEach(card => {
+      card.addEventListener('mouseenter', () => {
+        const target = card.getAttribute('data-target');
+        if (target === 'split') {
+          mockAtcoder.classList.add('highlight-border-editor');
+          mockEditor.classList.add('highlight-border-editor');
+        } else if (target === 'test') {
+          mockTestBtn.classList.add('highlight-border-test');
+        } else if (target === 'console') {
+          mockConsole.classList.add('highlight-border-console');
+        }
+      });
+      card.addEventListener('mouseleave', () => {
+        mockAtcoder.classList.remove('highlight-border-editor');
+        mockEditor.classList.remove('highlight-border-editor');
+        mockTestBtn.classList.remove('highlight-border-test');
+        mockConsole.classList.remove('highlight-border-console');
+      });
+    });
+  </script>
 </body>
 </html>
