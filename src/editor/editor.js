@@ -15,6 +15,69 @@
   const saveStatus = document.getElementById('save-status');
   const prevBtn = document.getElementById('prev-btn');
   const nextBtn = document.getElementById('next-btn');
+  const testBtn = document.getElementById('test-btn');
+  const submitBtn = document.getElementById('submit-btn');
+  const testSummary = document.getElementById('test-summary');
+  const consolePanel = document.getElementById('console-panel');
+  const consoleCloseBtn = document.getElementById('console-close-btn');
+  const consoleResults = document.getElementById('console-results');
+
+  let isTesting = false;
+  let resultsCount = 0;
+  let acCount = 0;
+  let totalCount = 0;
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;')
+              .replace(/'/g, '&#039;');
+  }
+
+  function setButtonsDisabled(disabled) {
+    prevBtn.disabled = disabled || !prevUrl;
+    nextBtn.disabled = disabled || !nextUrl;
+    testBtn.disabled = disabled;
+    submitBtn.disabled = disabled;
+    langSelect.disabled = disabled;
+  }
+
+  testBtn.onclick = () => {
+    if (isTesting || !editor) return;
+    saveCodeSync();
+    
+    // Open console drawer
+    consolePanel.style.display = 'flex';
+    consoleResults.innerHTML = '<div style="font-size: 12px; color: #777;">準備中...</div>';
+    
+    // Notify Monaco to resize since layout changed
+    editor.layout();
+
+    console.log('[AtCoder Workspace] Editor: Sending run-tests message to parent', {
+      languageId: currentLanguageId,
+      codeLength: editor.getValue().length
+    });
+
+    window.parent.postMessage({
+      type: 'run-tests',
+      code: editor.getValue(),
+      languageId: currentLanguageId
+    }, '*');
+  };
+
+  submitBtn.onclick = () => {
+    if (isTesting) return;
+    alert('提出機能は次のフェーズ (Phase 1.3) で実装されます。');
+  };
+
+  consoleCloseBtn.onclick = () => {
+    consolePanel.style.display = 'none';
+    if (editor) {
+      editor.layout();
+    }
+  };
 
   // Helper to map AtCoder language names to Monaco Editor language IDs
   function getLanguageMode(langText) {
@@ -47,6 +110,8 @@
   window.addEventListener('message', (e) => {
     if (!e.data || typeof e.data !== 'object') return;
 
+    console.log('[AtCoder Workspace] Editor: Received message from parent', e.data.type, e.data);
+
     switch (e.data.type) {
       case 'init-config':
         contestId = e.data.contestId;
@@ -77,6 +142,118 @@
         if (editor) {
           editor.layout();
         }
+        break;
+
+      case 'test-start':
+        isTesting = true;
+        totalCount = e.data.total;
+        resultsCount = 0;
+        acCount = 0;
+        setButtonsDisabled(true);
+
+        testSummary.textContent = `実行中... (0/${totalCount})`;
+        testSummary.className = 'summary-running';
+
+        consoleResults.innerHTML = '';
+        for (let i = 0; i < totalCount; i++) {
+          const card = document.createElement('div');
+          card.className = 'case-card';
+          card.id = `case-card-${i}`;
+          card.innerHTML = `
+            <div class="case-card-header">
+              <span>ケース ${i + 1}</span>
+              <span class="case-status status-running">実行中</span>
+            </div>
+            <div class="case-card-body" style="display: none;"></div>
+          `;
+          consoleResults.appendChild(card);
+        }
+        break;
+
+      case 'test-case-result':
+        if (!isTesting) return;
+        resultsCount++;
+        
+        const card = document.getElementById(`case-card-${e.data.index}`);
+        if (card) {
+          const status = e.data.status;
+          if (status === 'AC') {
+            acCount++;
+          }
+
+          const statusBadge = card.querySelector('.case-status');
+          statusBadge.textContent = status;
+          statusBadge.className = `case-status status-${status.toLowerCase()}`;
+
+          // Add metadata (Time / Memory)
+          let metaStr = '';
+          if (e.data.time !== undefined) {
+            const timeVal = typeof e.data.time === 'number' ? `${e.data.time} ms` : e.data.time;
+            const memoryVal = typeof e.data.memory === 'number' ? `${Math.round(e.data.memory / 1024)} MB` : e.data.memory;
+            metaStr = `<span class="case-meta">${timeVal} / ${memoryVal}</span>`;
+            card.querySelector('.case-card-header').insertAdjacentHTML('beforeend', metaStr);
+          }
+
+          const body = card.querySelector('.case-card-body');
+          body.style.display = 'block';
+
+          let bodyHtml = '';
+          if (status === 'WA') {
+            bodyHtml = `
+              <div class="case-io-grid">
+                <div class="case-io-block">
+                  <div class="case-io-label">期待される出力:</div>
+                  <pre class="case-io-content">${escapeHtml(e.data.expected)}</pre>
+                </div>
+                <div class="case-io-block">
+                  <div class="case-io-label">実際の出力:</div>
+                  <pre class="case-io-content">${escapeHtml(e.data.output)}</pre>
+                </div>
+              </div>
+            `;
+          } else if (status === 'RE' || status === 'ERR') {
+            const errMsg = e.data.stderr || e.data.message || '実行時エラーまたはその他のエラーが発生しました。';
+            bodyHtml = `
+              <div class="case-error-block">
+                <div class="case-io-label">エラー詳細 (stderr):</div>
+                <pre class="case-error-content">${escapeHtml(errMsg)}</pre>
+              </div>
+            `;
+          } else {
+            bodyHtml = `<div style="font-size: 11px; color: #5cb85c; font-weight: bold;">出力値が一致しました。</div>`;
+          }
+          body.innerHTML = bodyHtml;
+        }
+
+        testSummary.textContent = `実行中... (${resultsCount}/${totalCount})`;
+        break;
+
+      case 'test-complete':
+        isTesting = false;
+        setButtonsDisabled(false);
+
+        if (acCount === totalCount) {
+          testSummary.textContent = `すべてAC (${acCount}/${totalCount})`;
+          testSummary.className = 'summary-ac';
+        } else {
+          testSummary.textContent = `WAあり (${acCount}/${totalCount} AC)`;
+          testSummary.className = 'summary-wa';
+        }
+        break;
+
+      case 'test-error':
+        isTesting = false;
+        setButtonsDisabled(false);
+
+        testSummary.textContent = `エラー: ${e.data.message}`;
+        testSummary.className = 'summary-wa';
+
+        consoleResults.innerHTML = `
+          <div class="case-error-block">
+            <div class="case-io-label">エラー:</div>
+            <pre class="case-error-content">${escapeHtml(e.data.message)}</pre>
+          </div>
+        `;
         break;
     }
   });
