@@ -1,0 +1,12 @@
+{
+  "name": "atcoder-workspace",
+  "version": "1.0.0",
+  "description": "Competitive Programming Workspace for AtCoder",
+  "private": true,
+  "scripts": {
+    "setup": "node scripts/setup-monaco.js"
+  },
+  "devDependencies": {
+    "monaco-editor": "^0.39.0"
+  }
+}

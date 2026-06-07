@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Competitive Programming Workspace - Editor</title>
+  <link rel="stylesheet" href="editor.css">
+</head>
+<body>
+  <div id="editor-wrapper">
+    <div id="toolbar">
+      <div class="toolbar-left">
+        <button id="prev-btn" class="btn btn-default" title="前の問題へ">« 前の問題</button>
+        <button id="next-btn" class="btn btn-default" title="次の問題へ">次の問題 »</button>
+      </div>
+      <div class="toolbar-right">
+        <select id="language-select" class="form-control">
+          <!-- Dynamically populated from AtCoder options -->
+        </select>
+        <span id="save-status">読み込み中...</span>
+      </div>
+    </div>
+    <div id="editor-container"></div>
+  </div>
+
+  <!-- Monaco AMD Loader -->
+  <script src="../../lib/monaco/vs/loader.js"></script>
+  <script src="editor.js"></script>
+</body>
+</html>
