@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Competitive Programming Workspace",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "AtCoderの問題ページ上にエディタを埋め込み、単一タブでコーディング・テスト・提出を完結させるワークスペース拡張",
   "permissions": [
     "storage"
