@@ -243,4 +243,68 @@ describe('Submitter Module Tests', () => {
       isComplete: true
     });
   });
+
+  test('Submission ID parsing with case mismatch and prefix fallback', () => {
+    // Case mismatch in contestId (e.g. ABC100 vs abc100)
+    expect(submitter.parseSubmissionId('href="/contests/abc100/submissions/12345"', 'ABC100')).toBe('12345');
+    // Prefix fallback (e.g. no contests prefix in match or absolute link)
+    expect(submitter.parseSubmissionId('href="https://atcoder.jp/submissions/67890"', 'abc100')).toBe('67890');
+    expect(submitter.parseSubmissionId('href="/submissions/54321"', 'abc100')).toBe('54321');
+  });
+
+  test('Extracting validation error message from HTML', () => {
+    const errorHTML = `
+      <div class="alert alert-danger">
+        <button type="button" class="close">×</button>
+        ソースコードが短すぎます。
+      </div>
+    `;
+    expect(submitter.extractErrorMessage(errorHTML)).toBe('ソースコードが短すぎます。');
+
+    const formErrorHTML = `
+      <div class="has-error">
+        <span class="help-block">言語を選択してください。</span>
+      </div>
+    `;
+    expect(submitter.extractErrorMessage(formErrorHTML)).toBe('言語を選択してください。');
+    expect(submitter.extractErrorMessage('<div>No errors</div>')).toBeNull();
+  });
+
+  test('Submit throws error on login redirect page', async () => {
+    document.body.innerHTML = '<input name="csrf_token" value="my-csrf" />';
+    global.fetch.mockResolvedValue({
+      ok: true,
+      text: () => Promise.resolve('Please Login to AtCoder /login ログインしてください。')
+    });
+
+    const callback = jest.fn();
+    submitter.submit('abc100', 'abc100_a', 'python', 'print(1)', callback);
+
+    await flushPromises();
+
+    expect(callback).toHaveBeenCalledWith({
+      error: 'AtCoderにログインしていません。ログインしてください。'
+    });
+  });
+
+  test('Submit throws validation error if alert-danger is found', async () => {
+    document.body.innerHTML = '<input name="csrf_token" value="my-csrf" />';
+    global.fetch.mockResolvedValue({
+      ok: true,
+      text: () => Promise.resolve(`
+        <div class="alert alert-danger">
+          前回の提出から30秒間は提出できません。
+        </div>
+      `)
+    });
+
+    const callback = jest.fn();
+    submitter.submit('abc100', 'abc100_a', 'python', 'print(1)', callback);
+
+    await flushPromises();
+
+    expect(callback).toHaveBeenCalledWith({
+      error: '前回の提出から30秒間は提出できません。'
+    });
+  });
 });

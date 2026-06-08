@@ -52,6 +52,17 @@
           return res.text();
         })
         .then((html) => {
+          // Check if session has expired / not logged in
+          if (html.includes('/login') || html.includes('ログイン') || html.includes('Sign In')) {
+            throw new Error('AtCoderにログインしていません。ログインしてください。');
+          }
+
+          // Check for validation errors in the HTML response
+          const errorMsg = this.extractErrorMessage(html);
+          if (errorMsg) {
+            throw new Error(errorMsg);
+          }
+
           // Parse submission ID from redirected HTML response
           const submissionId = this.parseSubmissionId(html, contestId);
           if (!submissionId) {
@@ -91,8 +102,15 @@
      * @returns {string|null}
      */
     parseSubmissionId(html, contestId) {
-      const regex = new RegExp(`/contests/${contestId}/submissions/(\\d+)`);
-      const match = html.match(regex);
+      if (!html) return null;
+      // Try with contestId first (case-insensitive)
+      let regex = new RegExp(`/contests/${contestId}/submissions/(\\d+)`, 'i');
+      let match = html.match(regex);
+      if (match) return match[1];
+
+      // Fallback: search for any /submissions/{id} pattern
+      regex = /\/submissions\/(\d+)/i;
+      match = html.match(regex);
       return match ? match[1] : null;
     }
 
@@ -108,9 +126,47 @@
           return res.text();
         })
         .then((html) => {
+          if (html.includes('/login') || html.includes('ログイン') || html.includes('Sign In')) {
+            throw new Error('AtCoderにログインしていません。ログインしてください。');
+          }
           return this.parseSubmissionId(html, contestId);
         })
         .catch(() => null);
+    }
+
+    /**
+     * Extracts validation error messages from the HTML response if any exist.
+     * @param {string} html
+     * @returns {string|null}
+     */
+    extractErrorMessage(html) {
+      if (!html) return null;
+      try {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        
+        // AtCoder bootstrap error alerts
+        const alert = doc.querySelector('.alert-danger, .alert-error');
+        if (alert) {
+          // Exclude close buttons text if present
+          const closeBtn = alert.querySelector('button');
+          if (closeBtn) {
+            try {
+              closeBtn.remove();
+            } catch (e) {}
+          }
+          return alert.textContent.trim().replace(/\s+/g, ' ');
+        }
+        
+        // Form field errors
+        const hasError = doc.querySelector('.has-error, .help-block');
+        if (hasError) {
+          return hasError.textContent.trim().replace(/\s+/g, ' ');
+        }
+      } catch (e) {
+        console.error('Failed to parse error message:', e);
+      }
+      return null;
     }
 
     /**
