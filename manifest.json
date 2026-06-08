@@ -9,7 +9,12 @@
   "content_scripts": [
     {
       "matches": ["https://atcoder.jp/contests/*/tasks/*"],
-      "js": ["src/content/content.js"],
+      "js": [
+        "src/content/layout.js",
+        "src/content/scraper.js",
+        "src/content/runner.js",
+        "src/content/content.js"
+      ],
       "css": ["src/content/content.css"],
       "run_at": "document_idle"
     }
