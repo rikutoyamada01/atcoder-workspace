@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Competitive Programming Workspace - Editor</title>
+  <link rel="stylesheet" href="editor.css">
+</head>
+<body>
+  <div id="editor-wrapper">
+    <div id="toolbar">
+      <div class="toolbar-left">
+        <button id="prev-btn" class="btn btn-default" title="前の問題へ">« 前</button>
+        <button id="next-btn" class="btn btn-default" title="次の問題へ">次 »</button>
+        <button id="test-btn" class="btn btn-success" title="テスト実行">テスト実行</button>
+        <button id="submit-btn" class="btn btn-primary" title="提出">提出</button>
+        <span id="test-summary"></span>
+      </div>
+      <div class="toolbar-right">
+        <select id="language-select" class="form-control">
+          <!-- Dynamically populated from AtCoder options -->
+        </select>
+        <span id="save-status">読み込み中...</span>
+      </div>
+    </div>
+    <div id="editor-container"></div>
+    <div id="console-slider-btn" title="コンソール表示切り替え (Ctrl+J)">▲</div>
+    <div id="console-panel" style="display: none;">
+      <div class="console-header">
+        <span class="console-title">テスト結果</span>
+      </div>
+      <div class="console-body" id="console-results"></div>
+    </div>
+  </div>
+
+  <!-- Monaco AMD Loader -->
+  <script src="../../lib/monaco/vs/loader.js"></script>
+  <script src="editor.js"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "atcoder-workspace",
+  "version": "1.2.0",
+  "description": "Competitive Programming Workspace for AtCoder",
+  "private": true,
+  "scripts": {
+    "setup": "node scripts/setup-monaco.js",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0",
+    "jest-environment-jsdom": "^29.5.0",
+    "monaco-editor": "^0.39.0"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "Competitive Programming Workspace",
+  "version": "1.2.0",
+  "description": "AtCoderの問題ページ上にエディタを埋め込み、単一タブでコーディング・テスト・提出を完結させるワークスペース拡張",
+  "permissions": [
+    "storage"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://atcoder.jp/contests/*/tasks/*"],
+      "js": [
+        "src/content/layout.js",
+        "src/content/scraper.js",
+        "src/content/runner.js",
+        "src/content/content.js"
+      ],
+      "css": ["src/content/content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/editor/editor.html",
+        "src/editor/editor.js",
+        "src/editor/editor.css",
+        "lib/monaco/*",
+        "lib/monaco/**/*"
+      ],
+      "matches": ["https://atcoder.jp/*"]
+    }
+  ]
+}
