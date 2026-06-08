@@ -60,6 +60,9 @@
           // Check for validation errors in the HTML response
           const errorMsg = this.extractErrorMessage(html);
           if (errorMsg) {
+            if (errorMsg.includes('エラーが発生しました') || errorMsg === 'エラーが発生しました。') {
+              throw new Error('エラーが発生しました。（セッション切れ、コンテストの未登録、またはCSRFトークン不一致の可能性があります。一度ページをリロードしてからお試しください。）');
+            }
             throw new Error(errorMsg);
           }
 
