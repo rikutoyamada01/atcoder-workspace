@@ -1,0 +1,46 @@
+name: Version Bump Check
+
+on:
+  pull_request:
+    branches: [ master, main ]
+    paths:
+      - 'manifest.json'
+
+jobs:
+  check-version:
+    name: Check version bump in manifest.json
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v3
+
+      - name: Get PR version
+        id: pr_version
+        run: |
+          VERSION=$(node -p "require('./manifest.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "PR Version is: $VERSION"
+
+      - name: Checkout base branch (master/main)
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.base_ref }}
+          path: base-branch
+
+      - name: Get base branch version
+        id: base_version
+        run: |
+          VERSION=$(node -p "require('./base-branch/manifest.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Base Branch Version is: $VERSION"
+
+      - name: Compare versions
+        run: |
+          PR_VER="${{ steps.pr_version.outputs.version }}"
+          BASE_VER="${{ steps.base_version.outputs.version }}"
+          if [ "$PR_VER" = "$BASE_VER" ]; then
+            echo "::error file=manifest.json::manifest.json version ($PR_VER) has not been bumped from the base branch version ($BASE_VER)!"
+            exit 1
+          else
+            echo "Success: Version successfully bumped from $BASE_VER to $PR_VER"
+          fi
