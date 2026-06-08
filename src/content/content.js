@@ -107,6 +107,74 @@
           }
           break;
 
+        case 'submit-code':
+          try {
+            const submitter = window.AtCoderWorkspace.Submitter;
+            if (!submitter) {
+              notifyEditor({
+                type: 'submit-error',
+                message: '提出モジュールが見つかりません。'
+              });
+              break;
+            }
+            if (!e.data.code || !e.data.code.trim()) {
+              notifyEditor({
+                type: 'submit-error',
+                message: '提出するコードを入力してください。'
+              });
+              break;
+            }
+            if (!e.data.languageId) {
+              notifyEditor({
+                type: 'submit-error',
+                message: 'プログラミング言語が選択されていません。'
+              });
+              break;
+            }
+
+            notifyEditor({
+              type: 'submit-start'
+            });
+
+            submitter.submit(
+              contestId,
+              problemId,
+              e.data.languageId,
+              e.data.code,
+              (res) => {
+                if (res.error) {
+                  notifyEditor({
+                    type: 'submit-error',
+                    message: res.error
+                  });
+                } else if (res.isComplete) {
+                  notifyEditor({
+                    type: 'submit-complete',
+                    submissionId: res.submissionId,
+                    status: res.status,
+                    time: res.time,
+                    memory: res.memory
+                  });
+                } else {
+                  notifyEditor({
+                    type: 'submit-status',
+                    submissionId: res.submissionId,
+                    status: res.status,
+                    time: res.time,
+                    memory: res.memory
+                  });
+                }
+              }
+            );
+          } catch (err) {
+            console.error('Submission execution failed:', err);
+            notifyEditor({
+              type: 'submit-error',
+              message: '提出処理中にエラーが発生しました: ' + err.message
+            });
+          }
+          break;
+
         case 'run-tests':
           try {
             if (!e.data.languageId) {

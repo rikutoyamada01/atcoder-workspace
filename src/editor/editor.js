@@ -23,6 +23,7 @@
   const consoleResults = document.getElementById('console-results');
 
   let isTesting = false;
+  let isSubmitting = false;
   let resultsCount = 0;
   let acCount = 0;
   let totalCount = 0;
@@ -66,8 +67,116 @@
     }, 0);
   }
 
+  // IndexedDB constants and helper functions
+  const DB_NAME = 'AtCoderWorkspaceDB';
+  const DB_VERSION = 1;
+
+  function openDB() {
+    return new Promise((resolve, reject) => {
+      if (typeof indexedDB === 'undefined') {
+        reject(new Error('IndexedDB is not supported'));
+        return;
+      }
+      const request = indexedDB.open(DB_NAME, DB_VERSION);
+      request.onerror = (e) => reject(e.target.error);
+      request.onsuccess = (e) => resolve(e.target.result);
+      request.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains('submissions')) {
+          db.createObjectStore('submissions', { keyPath: 'id' });
+        }
+      };
+    });
+  }
+
+  function saveSubmissionToDB(submission) {
+    return openDB()
+      .then((db) => {
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction('submissions', 'readwrite');
+          const store = tx.objectStore('submissions');
+          const request = store.put(submission);
+          request.onsuccess = () => resolve();
+          request.onerror = (e) => reject(e.target.error);
+        });
+      })
+      .catch((err) => {
+        console.error('[AtCoder Workspace] IndexedDB error:', err);
+      });
+  }
+
+  // Web Audio API synthesized sounds
+  function playChimeAC() {
+    try {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return;
+      const ctx = new AudioContextClass();
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
+      const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+      const noteDuration = 0.15; // 150ms per note
+      const volume = 0.1;
+
+      notes.forEach((freq, index) => {
+        const osc = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + index * noteDuration);
+
+        gainNode.gain.setValueAtTime(0, ctx.currentTime + index * noteDuration);
+        gainNode.gain.linearRampToValueAtTime(volume, ctx.currentTime + index * noteDuration + 0.02);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + (index + 1.5) * noteDuration);
+
+        osc.connect(gainNode);
+        gainNode.connect(ctx.destination);
+
+        osc.start(ctx.currentTime + index * noteDuration);
+        osc.stop(ctx.currentTime + (index + 2) * noteDuration);
+      });
+    } catch (err) {
+      console.error('Audio playback failed:', err);
+    }
+  }
+
+  function playBeepWA() {
+    try {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return;
+      const ctx = new AudioContextClass();
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
+      const freq = 220.00; // A3
+      const beepDuration = 0.15;
+      const gap = 0.1;
+      const volume = 0.15;
+
+      [0, beepDuration + gap].forEach((startTimeOffset) => {
+        const osc = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + startTimeOffset);
+
+        gainNode.gain.setValueAtTime(0, ctx.currentTime + startTimeOffset);
+        gainNode.gain.linearRampToValueAtTime(volume, ctx.currentTime + startTimeOffset + 0.02);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + startTimeOffset + beepDuration);
+
+        osc.connect(gainNode);
+        gainNode.connect(ctx.destination);
+
+        osc.start(ctx.currentTime + startTimeOffset);
+        osc.stop(ctx.currentTime + startTimeOffset + beepDuration);
+      });
+    } catch (err) {
+      console.error('Audio playback failed:', err);
+    }
+  }
+
   testBtn.onclick = () => {
-    if (isTesting || !editor) return;
+    if (isTesting || isSubmitting || !editor) return;
     saveCodeSync();
     
     // Open console drawer
@@ -87,8 +196,23 @@
   };
 
   submitBtn.onclick = () => {
-    if (isTesting) return;
-    alert('提出機能は次のフェーズ (Phase 1.3) で実装されます。');
+    if (isTesting || isSubmitting || !editor) return;
+    saveCodeSync();
+    
+    // Open console drawer
+    toggleConsole(true);
+    consoleResults.innerHTML = '<div style="font-size: 12px; color: #777;">提出準備中...</div>';
+
+    console.log('[AtCoder Workspace] Editor: Sending submit-code message to parent', {
+      languageId: currentLanguageId,
+      codeLength: editor.getValue().length
+    });
+
+    window.parent.postMessage({
+      type: 'submit-code',
+      code: editor.getValue(),
+      languageId: currentLanguageId
+    }, '*');
   };
 
   consoleToggleBtn.onclick = () => {
@@ -164,6 +288,106 @@
 
       case 'toggle-console':
         toggleConsole();
+        break;
+
+      case 'submit-start':
+        isSubmitting = true;
+        setButtonsDisabled(true);
+        toggleConsole(true);
+
+        testSummary.textContent = '提出中...';
+        testSummary.className = 'summary-running';
+
+        consoleResults.innerHTML = '<div style="font-size: 12px; color: #777;">提出処理を開始しました...</div>';
+        break;
+
+      case 'submit-status':
+        // Update Console Results
+        consoleResults.innerHTML = `
+          <div style="font-size: 12px; color: #333;">
+            <div style="margin-bottom: 8px;">ステータス: <span class="case-status status-running">${escapeHtml(e.data.status)}</span></div>
+            <div style="margin-bottom: 4px;">実行時間: ${escapeHtml(e.data.time)}</div>
+            <div style="margin-bottom: 8px;">メモリ: ${escapeHtml(e.data.memory)}</div>
+            <div>
+              <a href="/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">提出詳細ページを開く (ID: ${e.data.submissionId})</a>
+            </div>
+          </div>
+        `;
+        consoleResults.scrollTop = consoleResults.scrollHeight;
+
+        testSummary.textContent = `ジャッジ中... (${e.data.status})`;
+        testSummary.className = 'summary-running';
+        break;
+
+      case 'submit-complete':
+        isSubmitting = false;
+        setButtonsDisabled(false);
+
+        const isAC = e.data.status === 'AC';
+        if (isAC) {
+          testSummary.textContent = `ジャッジ完了: ${e.data.status}`;
+          testSummary.className = 'summary-ac';
+          playChimeAC();
+        } else {
+          testSummary.textContent = `ジャッジ完了: ${e.data.status}`;
+          testSummary.className = 'summary-wa';
+          playBeepWA();
+        }
+        
+        // Update Console Results
+        consoleResults.innerHTML = `
+          <div style="font-size: 12px; color: #333;">
+            <div style="margin-bottom: 8px;">ステータス: <span class="case-status status-${e.data.status.toLowerCase()}">${escapeHtml(e.data.status)}</span></div>
+            <div style="margin-bottom: 4px;">実行時間: ${escapeHtml(e.data.time)}</div>
+            <div style="margin-bottom: 8px;">メモリ: ${escapeHtml(e.data.memory)}</div>
+            <div>
+              <a href="/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">提出詳細ページを開く (ID: ${e.data.submissionId})</a>
+            </div>
+          </div>
+        `;
+        consoleResults.scrollTop = consoleResults.scrollHeight;
+
+        // Trigger Notification
+        if (typeof chrome !== 'undefined' && chrome.notifications && chrome.notifications.create) {
+          chrome.notifications.create({
+            type: 'basic',
+            iconUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+            title: `ジャッジ完了 (${problemId})`,
+            message: `結果: ${e.data.status} | 実行時間: ${e.data.time} | メモリ: ${e.data.memory}`,
+            priority: 1
+          });
+        }
+
+        // Save to IndexedDB
+        if (editor) {
+          saveSubmissionToDB({
+            id: e.data.submissionId,
+            contestId: contestId,
+            problemId: problemId,
+            languageId: currentLanguageId,
+            code: editor.getValue(),
+            status: e.data.status,
+            time: e.data.time,
+            memory: e.data.memory,
+            timestamp: Date.now()
+          });
+        }
+        break;
+
+      case 'submit-error':
+        isSubmitting = false;
+        setButtonsDisabled(false);
+
+        testSummary.textContent = `エラー: ${e.data.message}`;
+        testSummary.className = 'summary-wa';
+
+        consoleResults.innerHTML = `
+          <div class="case-error-block">
+            <div class="case-io-label">エラー:</div>
+            <pre class="case-error-content">${escapeHtml(e.data.message)}</pre>
+          </div>
+        `;
+        consoleResults.scrollTop = consoleResults.scrollHeight;
         break;
 
       case 'test-start':
