@@ -6,6 +6,9 @@ on:
     paths:
       - 'manifest.json'
 
+permissions:
+  contents: read
+
 jobs:
   check-version:
     name: Check version bump in manifest.json
@@ -30,7 +33,11 @@ jobs:
       - name: Get base branch version
         id: base_version
         run: |
-          VERSION=$(node -p "require('./base-branch/manifest.json').version")
+          if [ -f "./base-branch/manifest.json" ]; then
+            VERSION=$(node -p "require('./base-branch/manifest.json').version")
+          else
+            VERSION=""
+          fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Base Branch Version is: $VERSION"
 
