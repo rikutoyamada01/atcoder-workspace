@@ -17,7 +17,7 @@
 
 1. 本リポジトリをクローンします。
    ```bash
-   git clone https://github.com/yamadarikuto/atcoder-workspace.git
+   git clone https://github.com/rikutoyamada01/atcoder-workspace.git
    cd atcoder-workspace
    ```
 2. Google Chromeで `chrome://extensions/` を開きます。
