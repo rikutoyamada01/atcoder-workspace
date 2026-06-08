@@ -54,27 +54,78 @@ describe('Submitter Module Tests', () => {
     expect(submitter.parseSubmissionId(html, 'abc100')).toBe('123456');
   });
 
-  test('Submission POST parameters validation', async () => {
-    document.body.innerHTML = '<input name="csrf_token" value="my-csrf" />';
+  test('Submission POST parameters validation (with fallback token fetching)', async () => {
+    document.body.innerHTML = ''; // Ensure no token in DOM
     
-    global.fetch.mockResolvedValue({
-      ok: true,
-      text: () => Promise.resolve('/contests/abc100/submissions/99999')
+    global.fetch = jest.fn((url, options) => {
+      if (options && options.method === 'POST') {
+        return Promise.resolve({
+          ok: true,
+          text: () => Promise.resolve('/contests/abc100/submissions/99999')
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        text: () => Promise.resolve('<html><body><input name="csrf_token" value="my-csrf" /></body></html>')
+      });
     });
 
     const callback = jest.fn();
     submitter.submit('abc100', 'abc100_a', 'python', 'print(1)', callback);
 
-    await flushPromises();
+    await flushPromises(); // Wait for fetchFreshCsrfToken
+    await flushPromises(); // Wait for POST submit
 
-    expect(global.fetch).toHaveBeenCalledTimes(1);
-    const fetchArgs = global.fetch.mock.calls[0];
-    expect(fetchArgs[0]).toBe('/contests/abc100/submit');
-    expect(fetchArgs[1].method).toBe('POST');
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+    const postArgs = global.fetch.mock.calls[1];
+    expect(postArgs[0]).toBe('/contests/abc100/submit');
+    expect(postArgs[1].method).toBe('POST');
     
     // Check parameters
-    const bodyParams = fetchArgs[1].body;
+    const bodyParams = postArgs[1].body;
     expect(bodyParams.get('csrf_token')).toBe('my-csrf');
+    expect(bodyParams.get('data.TaskScreenName')).toBe('abc100_a');
+    expect(bodyParams.get('data.LanguageId')).toBe('python');
+    expect(bodyParams.get('sourceCode')).toBe('print(1)');
+
+    expect(callback).toHaveBeenCalledWith({
+      submissionId: '99999',
+      status: 'WJ',
+      time: '',
+      memory: '',
+      isComplete: false
+    });
+  });
+
+  test('Submission POST parameters validation (with DOM token directly)', async () => {
+    document.body.innerHTML = '<input name="csrf_token" value="dom-csrf" />';
+    
+    global.fetch = jest.fn((url, options) => {
+      if (options && options.method === 'POST') {
+        return Promise.resolve({
+          ok: true,
+          text: () => Promise.resolve('/contests/abc100/submissions/99999')
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        text: () => Promise.resolve('<html><body><input name="csrf_token" value="should-not-fetch" /></body></html>')
+      });
+    });
+
+    const callback = jest.fn();
+    submitter.submit('abc100', 'abc100_a', 'python', 'print(1)', callback);
+
+    await flushPromises(); // Wait for POST submit (no GET fetch needed)
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    const postArgs = global.fetch.mock.calls[0];
+    expect(postArgs[0]).toBe('/contests/abc100/submit');
+    expect(postArgs[1].method).toBe('POST');
+    
+    // Check parameters
+    const bodyParams = postArgs[1].body;
+    expect(bodyParams.get('csrf_token')).toBe('dom-csrf');
     expect(bodyParams.get('data.TaskScreenName')).toBe('abc100_a');
     expect(bodyParams.get('data.LanguageId')).toBe('python');
     expect(bodyParams.get('sourceCode')).toBe('print(1)');
@@ -92,9 +143,26 @@ describe('Submitter Module Tests', () => {
     document.body.innerHTML = '<input name="csrf_token" value="my-csrf" />';
 
     // 1st fetch: POST submission
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      text: () => Promise.resolve('/contests/abc100/submissions/777')
+    let pollCount = 0;
+    global.fetch = jest.fn((url, options) => {
+      if (options && options.method === 'POST') {
+        return Promise.resolve({
+          ok: true,
+          text: () => Promise.resolve('/contests/abc100/submissions/777')
+        });
+      }
+      if (url.includes('/submissions/me')) {
+        pollCount++;
+        const htmls = [tableHTML_WJ, tableHTML_Progress, tableHTML_AC];
+        return Promise.resolve({
+          ok: true,
+          text: () => Promise.resolve(htmls[pollCount - 1])
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        text: () => Promise.resolve('<html><body><input name="csrf_token" value="my-csrf" /></body></html>')
+      });
     });
 
     // 2nd fetch: polling 1 (WJ status in table row)
@@ -124,10 +192,6 @@ describe('Submitter Module Tests', () => {
         </tbody>
       </table>
     `;
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      text: () => Promise.resolve(tableHTML_WJ)
-    });
 
     // 3rd fetch: polling 2 (1/15 progress status in table row)
     const tableHTML_Progress = `
@@ -156,10 +220,6 @@ describe('Submitter Module Tests', () => {
         </tbody>
       </table>
     `;
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      text: () => Promise.resolve(tableHTML_Progress)
-    });
 
     // 4th fetch: polling 3 (AC final status in table row)
     const tableHTML_AC = `
@@ -188,15 +248,12 @@ describe('Submitter Module Tests', () => {
         </tbody>
       </table>
     `;
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      text: () => Promise.resolve(tableHTML_AC)
-    });
 
     const callback = jest.fn();
     submitter.submit('abc100', 'abc100_a', 'python', 'print(1)', callback);
 
-    await flushPromises();
+    await flushPromises(); // Wait for fetchFreshCsrfToken
+    await flushPromises(); // Wait for POST submit
 
     // After post submit:
     expect(callback).toHaveBeenCalledWith({
@@ -272,15 +329,18 @@ describe('Submitter Module Tests', () => {
 
   test('Submit throws error on login redirect page', async () => {
     document.body.innerHTML = '<input name="csrf_token" value="my-csrf" />';
-    global.fetch.mockResolvedValue({
-      ok: true,
-      text: () => Promise.resolve('Please Login to AtCoder /login ログインしてください。')
+    global.fetch = jest.fn((url, options) => {
+      // Return login page for GET /submit
+      return Promise.resolve({
+        ok: true,
+        text: () => Promise.resolve('Please Login to AtCoder /login ログインしてください。')
+      });
     });
 
     const callback = jest.fn();
     submitter.submit('abc100', 'abc100_a', 'python', 'print(1)', callback);
 
-    await flushPromises();
+    await flushPromises(); // Wait for fetchFreshCsrfToken
 
     expect(callback).toHaveBeenCalledWith({
       error: 'AtCoderにログインしていません。ログインしてください。'
@@ -289,19 +349,28 @@ describe('Submitter Module Tests', () => {
 
   test('Submit throws validation error if alert-danger is found', async () => {
     document.body.innerHTML = '<input name="csrf_token" value="my-csrf" />';
-    global.fetch.mockResolvedValue({
-      ok: true,
-      text: () => Promise.resolve(`
-        <div class="alert alert-danger">
-          前回の提出から30秒間は提出できません。
-        </div>
-      `)
+    global.fetch = jest.fn((url, options) => {
+      if (options && options.method === 'POST') {
+        return Promise.resolve({
+          ok: true,
+          text: () => Promise.resolve(`
+            <div class="alert alert-danger">
+              前回の提出から30秒間は提出できません。
+            </div>
+          `)
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        text: () => Promise.resolve('<html><body><input name="csrf_token" value="my-csrf" /></body></html>')
+      });
     });
 
     const callback = jest.fn();
     submitter.submit('abc100', 'abc100_a', 'python', 'print(1)', callback);
 
-    await flushPromises();
+    await flushPromises(); // Wait for fetchFreshCsrfToken
+    await flushPromises(); // Wait for POST submit
 
     expect(callback).toHaveBeenCalledWith({
       error: '前回の提出から30秒間は提出できません。'

@@ -21,6 +21,31 @@
     }
 
     /**
+     * Fetches a fresh CSRF token from the contest's submit page.
+     * @param {string} contestId
+     * @returns {Promise<string>}
+     */
+    fetchFreshCsrfToken(contestId) {
+      return fetch(`/contests/${contestId}/submit`)
+        .then((res) => {
+          if (!res.ok) throw new Error('CSRFトークンの取得に失敗しました。');
+          return res.text();
+        })
+        .then((html) => {
+          if (html.includes('/login') || html.includes('ログイン') || html.includes('Sign In')) {
+            throw new Error('AtCoderにログインしていません。ログインしてください。');
+          }
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          const tokenInput = doc.querySelector('input[name="csrf_token"]');
+          if (tokenInput && tokenInput.value) {
+            return tokenInput.value;
+          }
+          throw new Error('CSRFトークンが見つかりません。コンテストへの登録状態を確認してください。');
+        });
+    }
+
+    /**
      * Submits code to AtCoder and polls the status.
      * @param {string} contestId
      * @param {string} problemId
@@ -29,22 +54,38 @@
      * @param {Function} callback - Called with progress updates or error
      */
     submit(contestId, problemId, languageId, code, callback) {
-      const csrfToken = this.getCsrfToken();
-      if (!csrfToken) {
-        callback({ error: 'CSRFトークンが見つかりません。' });
-        return;
+      // Log native form inputs on the page for debugging
+      try {
+        const nativeForm = document.querySelector('form[action*="/submit"]');
+        if (nativeForm) {
+          const inputs = Array.from(nativeForm.querySelectorAll('input, select, textarea'))
+            .map(el => `${el.name}=${el.value || el.type}`);
+          console.log('[AtCoder Workspace] Native form inputs:', inputs);
+        } else {
+          console.warn('[AtCoder Workspace] Native submit form not found on the page.');
+        }
+      } catch (e) {
+        console.error('[AtCoder Workspace] Failed to inspect native form:', e);
       }
 
-      const params = new URLSearchParams();
-      params.append('csrf_token', csrfToken);
-      params.append('data.TaskScreenName', problemId);
-      params.append('data.LanguageId', languageId);
-      params.append('sourceCode', code);
+      const domToken = this.getCsrfToken();
+      const tokenPromise = domToken
+        ? Promise.resolve(domToken)
+        : this.fetchFreshCsrfToken(contestId);
 
-      fetch(`/contests/${contestId}/submit`, {
-        method: 'POST',
-        body: params
-      })
+      tokenPromise
+        .then((csrfToken) => {
+          const params = new URLSearchParams();
+          params.append('csrf_token', csrfToken);
+          params.append('data.TaskScreenName', problemId);
+          params.append('data.LanguageId', languageId);
+          params.append('sourceCode', code);
+
+          return fetch(`/contests/${contestId}/submit`, {
+            method: 'POST',
+            body: params
+          });
+        })
         .then((res) => {
           if (!res.ok) {
             throw new Error(`送信に失敗しました (ステータス: ${res.status})`);
