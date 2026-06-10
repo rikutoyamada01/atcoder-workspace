@@ -5,7 +5,7 @@
   let contestId = null;
   let problemId = null;
   let currentLanguageId = null;
-  
+
   let prevUrl = null;
   let nextUrl = null;
   let saveTimeout = null;
@@ -30,11 +30,12 @@
 
   function escapeHtml(str) {
     if (!str) return '';
-    return str.replace(/&/g, '&amp;')
-              .replace(/</g, '&lt;')
-              .replace(/>/g, '&gt;')
-              .replace(/"/g, '&quot;')
-              .replace(/'/g, '&#039;');
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
 
   function setButtonsDisabled(disabled) {
@@ -48,7 +49,7 @@
   function toggleConsole(forceState) {
     const isVisible = consolePanel.style.display === 'flex';
     const nextState = forceState !== undefined ? forceState : !isVisible;
-    
+
     if (nextState) {
       consolePanel.style.display = 'flex';
       consoleToggleBtn.textContent = '▼';
@@ -58,7 +59,7 @@
       consoleToggleBtn.textContent = '▲';
       consoleToggleBtn.classList.remove('active');
     }
-    
+
     // Defer editor layout to let DOM updates reflect first
     setTimeout(() => {
       if (editor) {
@@ -114,7 +115,7 @@
       if (ctx.state === 'suspended') {
         ctx.resume();
       }
-      const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+      const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
       const noteDuration = 0.15; // 150ms per note
       const volume = 0.1;
 
@@ -126,8 +127,14 @@
         osc.frequency.setValueAtTime(freq, ctx.currentTime + index * noteDuration);
 
         gainNode.gain.setValueAtTime(0, ctx.currentTime + index * noteDuration);
-        gainNode.gain.linearRampToValueAtTime(volume, ctx.currentTime + index * noteDuration + 0.02);
-        gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + (index + 1.5) * noteDuration);
+        gainNode.gain.linearRampToValueAtTime(
+          volume,
+          ctx.currentTime + index * noteDuration + 0.02
+        );
+        gainNode.gain.exponentialRampToValueAtTime(
+          0.0001,
+          ctx.currentTime + (index + 1.5) * noteDuration
+        );
 
         osc.connect(gainNode);
         gainNode.connect(ctx.destination);
@@ -148,7 +155,7 @@
       if (ctx.state === 'suspended') {
         ctx.resume();
       }
-      const freq = 220.00; // A3
+      const freq = 220.0; // A3
       const beepDuration = 0.15;
       const gap = 0.1;
       const volume = 0.15;
@@ -162,7 +169,10 @@
 
         gainNode.gain.setValueAtTime(0, ctx.currentTime + startTimeOffset);
         gainNode.gain.linearRampToValueAtTime(volume, ctx.currentTime + startTimeOffset + 0.02);
-        gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + startTimeOffset + beepDuration);
+        gainNode.gain.exponentialRampToValueAtTime(
+          0.0001,
+          ctx.currentTime + startTimeOffset + beepDuration
+        );
 
         osc.connect(gainNode);
         gainNode.connect(ctx.destination);
@@ -178,41 +188,47 @@
   testBtn.onclick = () => {
     if (isTesting || isSubmitting || !editor) return;
     saveCodeSync();
-    
+
     // Open console drawer
     toggleConsole(true);
     consoleResults.innerHTML = '<div style="font-size: 12px; color: #777;">準備中...</div>';
 
     console.log('[AtCoder Workspace] Editor: Sending run-tests message to parent', {
       languageId: currentLanguageId,
-      codeLength: editor.getValue().length
+      codeLength: editor.getValue().length,
     });
 
-    window.parent.postMessage({
-      type: 'run-tests',
-      code: editor.getValue(),
-      languageId: currentLanguageId
-    }, '*');
+    window.parent.postMessage(
+      {
+        type: 'run-tests',
+        code: editor.getValue(),
+        languageId: currentLanguageId,
+      },
+      '*'
+    );
   };
 
   submitBtn.onclick = () => {
     if (isTesting || isSubmitting || !editor) return;
     saveCodeSync();
-    
+
     // Open console drawer
     toggleConsole(true);
     consoleResults.innerHTML = '<div style="font-size: 12px; color: #777;">提出準備中...</div>';
 
     console.log('[AtCoder Workspace] Editor: Sending submit-code message to parent', {
       languageId: currentLanguageId,
-      codeLength: editor.getValue().length
+      codeLength: editor.getValue().length,
     });
 
-    window.parent.postMessage({
-      type: 'submit-code',
-      code: editor.getValue(),
-      languageId: currentLanguageId
-    }, '*');
+    window.parent.postMessage(
+      {
+        type: 'submit-code',
+        code: editor.getValue(),
+        languageId: currentLanguageId,
+      },
+      '*'
+    );
   };
 
   consoleToggleBtn.onclick = () => {
@@ -223,14 +239,21 @@
   function getLanguageMode(langText) {
     if (!langText) return 'plaintext';
     const lower = langText.toLowerCase();
-    
-    if (lower.includes('c++') || lower.includes('gcc') || lower.includes('clang++') || lower.includes('g++')) return 'cpp';
+
+    if (
+      lower.includes('c++') ||
+      lower.includes('gcc') ||
+      lower.includes('clang++') ||
+      lower.includes('g++')
+    )
+      return 'cpp';
     if (lower.includes('python') || lower.includes('pypy')) return 'python';
     if (lower.includes('rust')) return 'rust';
     if (lower.includes('java')) return 'java';
     if (lower.includes('go') || lower.includes('golang')) return 'go';
     if (lower.includes('haskell')) return 'haskell';
-    if (lower.includes('javascript') || lower.includes('node') || lower.includes('js')) return 'javascript';
+    if (lower.includes('javascript') || lower.includes('node') || lower.includes('js'))
+      return 'javascript';
     if (lower.includes('typescript') || lower.includes('ts')) return 'typescript';
     if (lower.includes('ruby')) return 'ruby';
     if (lower.includes('c#') || lower.includes('mono')) return 'csharp';
@@ -239,7 +262,7 @@
     if (lower.includes('swift')) return 'swift';
     if (lower.includes('scala')) return 'scala';
     if (lower.includes('bash') || lower.includes('shell')) return 'shell';
-    
+
     return 'plaintext';
   }
 
@@ -298,7 +321,8 @@
         testSummary.textContent = '提出中...';
         testSummary.className = 'summary-running';
 
-        consoleResults.innerHTML = '<div style="font-size: 12px; color: #777;">提出処理を開始しました...</div>';
+        consoleResults.innerHTML =
+          '<div style="font-size: 12px; color: #777;">提出処理を開始しました...</div>';
         break;
 
       case 'submit-status':
@@ -309,7 +333,7 @@
             <div style="margin-bottom: 4px;">実行時間: ${escapeHtml(e.data.time)}</div>
             <div style="margin-bottom: 8px;">メモリ: ${escapeHtml(e.data.memory)}</div>
             <div>
-              <a href="/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">提出詳細ページを開く (ID: ${e.data.submissionId})</a>
+              <a href="https://atcoder.jp/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">提出詳細ページを開く (ID: ${e.data.submissionId})</a>
             </div>
           </div>
         `;
@@ -319,7 +343,7 @@
         testSummary.className = 'summary-running';
         break;
 
-      case 'submit-complete':
+      case 'submit-complete': {
         isSubmitting = false;
         setButtonsDisabled(false);
 
@@ -333,7 +357,7 @@
           testSummary.className = 'summary-wa';
           playBeepWA();
         }
-        
+
         // Update Console Results
         consoleResults.innerHTML = `
           <div style="font-size: 12px; color: #333;">
@@ -341,7 +365,7 @@
             <div style="margin-bottom: 4px;">実行時間: ${escapeHtml(e.data.time)}</div>
             <div style="margin-bottom: 8px;">メモリ: ${escapeHtml(e.data.memory)}</div>
             <div>
-              <a href="/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">提出詳細ページを開く (ID: ${e.data.submissionId})</a>
+              <a href="https://atcoder.jp/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">提出詳細ページを開く (ID: ${e.data.submissionId})</a>
             </div>
           </div>
         `;
@@ -351,10 +375,11 @@
         if (typeof chrome !== 'undefined' && chrome.notifications && chrome.notifications.create) {
           chrome.notifications.create({
             type: 'basic',
-            iconUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+            iconUrl:
+              'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
             title: `ジャッジ完了 (${problemId})`,
             message: `結果: ${e.data.status} | 実行時間: ${e.data.time} | メモリ: ${e.data.memory}`,
-            priority: 1
+            priority: 1,
           });
         }
 
@@ -369,10 +394,11 @@
             status: e.data.status,
             time: e.data.time,
             memory: e.data.memory,
-            timestamp: Date.now()
+            timestamp: Date.now(),
           });
         }
         break;
+      }
 
       case 'submit-error':
         isSubmitting = false;
@@ -418,10 +444,10 @@
         }
         break;
 
-      case 'test-case-result':
+      case 'test-case-result': {
         if (!isTesting) return;
         resultsCount++;
-        
+
         const row = document.getElementById(`case-row-${e.data.index}`);
         if (row) {
           const status = e.data.status;
@@ -437,7 +463,10 @@
           let metaStr = '';
           if (e.data.time !== undefined) {
             const timeVal = typeof e.data.time === 'number' ? `${e.data.time} ms` : e.data.time;
-            const memoryVal = typeof e.data.memory === 'number' ? `${Math.round(e.data.memory / 1024)} MB` : e.data.memory;
+            const memoryVal =
+              typeof e.data.memory === 'number'
+                ? `${Math.round(e.data.memory / 1024)} MB`
+                : e.data.memory;
             metaStr = `<span class="case-meta">(${timeVal} / ${memoryVal})</span>`;
             row.querySelector('.case-row-header').insertAdjacentHTML('beforeend', metaStr);
           }
@@ -463,7 +492,8 @@
           } else if (status === 'RE' || status === 'ERR') {
             body.style.display = 'block';
             icon.textContent = '▼';
-            const errMsg = e.data.stderr || e.data.message || '実行時エラーまたはその他のエラーが発生しました。';
+            const errMsg =
+              e.data.stderr || e.data.message || '実行時エラーまたはその他のエラーが発生しました。';
             bodyHtml = `
               <div class="case-error-block">
                 <div class="case-io-label">エラー詳細 (stderr):</div>
@@ -483,10 +513,11 @@
         }
 
         testSummary.textContent = `実行中... (${resultsCount}/${totalCount})`;
-        
+
         // Auto-scroll to the bottom of the console results
         consoleResults.scrollTop = consoleResults.scrollHeight;
         break;
+      }
 
       case 'test-complete':
         isTesting = false;
@@ -514,7 +545,7 @@
             <pre class="case-error-content">${escapeHtml(e.data.message)}</pre>
           </div>
         `;
-        
+
         // Auto-scroll to the bottom of the console results
         consoleResults.scrollTop = consoleResults.scrollHeight;
         break;
@@ -553,7 +584,7 @@
       return;
     }
 
-    languages.forEach(lang => {
+    languages.forEach((lang) => {
       const opt = document.createElement('option');
       opt.value = lang.value;
       opt.textContent = lang.text;
@@ -595,7 +626,7 @@
           language: mode,
           theme: isDark ? 'vs-dark' : 'vs',
           automaticLayout: false, // We control it via message events
-          
+
           // F-2 requirements: Disable AI & Intellisense / Auto-suggestions
           quickSuggestions: false,
           parameterHints: { enabled: false },
@@ -603,7 +634,7 @@
           snippetSuggestions: 'none',
           wordBasedSuggestions: false,
           minimap: { enabled: false }, // Keep interface clean
-          
+
           // Coding assist features (still enabled)
           tabSize: 4,
           insertSpaces: true,
@@ -621,12 +652,12 @@
             horizontal: 'visible',
             useShadows: false,
             verticalScrollbarSize: 10,
-            horizontalScrollbarSize: 10
+            horizontalScrollbarSize: 10,
           },
           scrollBeyondLastLine: false,
           padding: {
-            bottom: 100 // Adds a 100px padding (approx. 5 lines) at the bottom
-          }
+            bottom: 100, // Adds a 100px padding (approx. 5 lines) at the bottom
+          },
         });
 
         // Add Monaco shortcut key for toggling console (Ctrl+J)
@@ -664,7 +695,7 @@
     const storageKey = `code:${contestId}:${problemId}:${currentLanguageId}`;
     chrome.storage.local.get([storageKey], (res) => {
       const code = res[storageKey] || '';
-      
+
       // Update Monaco Editor model
       const oldModel = editor.getModel();
       const newModel = monaco.editor.createModel(code, mode);
@@ -717,7 +748,7 @@
 
   // Handle auto-save on tab close / switch / visibility change
   window.addEventListener('beforeunload', saveCodeSync);
-  
+
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
       saveCodeSync();
@@ -731,5 +762,4 @@
       toggleConsole();
     }
   });
-
 })();

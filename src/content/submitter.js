@@ -34,7 +34,9 @@
         })
         .then((html) => {
           if (html.includes('/login') || html.includes('ログイン') || html.includes('Sign In')) {
-            throw new Error('AtCoderにログインしていません。ログインしてください。');
+            throw new Error(
+              'AtCoderにログインしていません。提出するには AtCoder のサイトでログインしてください。'
+            );
           }
           const parser = new DOMParser();
           const doc = parser.parseFromString(html, 'text/html');
@@ -42,7 +44,9 @@
           if (tokenInput && tokenInput.value) {
             return tokenInput.value;
           }
-          throw new Error('CSRFトークンが見つかりません。コンテストへの登録状態を確認してください。');
+          throw new Error(
+            'CSRFトークンが見つかりません。コンテストへの登録状態を確認してください。'
+          );
         });
     }
 
@@ -52,22 +56,38 @@
      * @param {HTMLInputElement|null} input
      * @returns {Promise<void>}
      */
-    waitForTurnstile(input) {
-      // No Turnstile on this page – proceed immediately
-      if (!input) return Promise.resolve();
-      // Already has a valid-looking token (long string, not 'hidden' or empty)
-      if (input.value && input.value.length > 20) return Promise.resolve();
+    waitForTurnstile(input, form) {
+      // Check if there is a Turnstile container on the page
+      let hasTurnstile = false;
+      if (form) {
+        const container = form.querySelector(
+          '.cf-turnstile, #cf-turnstile, [class*="cf-turnstile"], [id*="cf-turnstile"]'
+        );
+        if (container) hasTurnstile = true;
+      } else if (input) {
+        hasTurnstile = true;
+      }
 
-      return new Promise((resolve) => {
+      // No Turnstile on this page – proceed immediately
+      if (!hasTurnstile && !input) return Promise.resolve();
+      // Already has a valid-looking token (long string, not 'hidden' or empty)
+      if (input && input.value && input.value.length > 20) return Promise.resolve();
+
+      return new Promise((resolve, reject) => {
         const start = Date.now();
         const check = () => {
-          if (input.value && input.value.length > 20) {
+          const currentInput =
+            input || (form ? form.querySelector('input[name="cf-turnstile-response"]') : null);
+          if (currentInput && currentInput.value && currentInput.value.length > 20) {
             console.log('[AtCoder Workspace] Turnstile token received.');
             resolve();
           } else if (Date.now() - start > 15000) {
-            // Timeout after 15s – proceed anyway (might fail)
-            console.warn('[AtCoder Workspace] Turnstile token not received within 15s, proceeding without it.');
-            resolve();
+            // Timeout after 15s – reject with a helpful instruction
+            reject(
+              new Error(
+                'ボット判定(Cloudflare Turnstile)の自動認証がタイムアウトしました。提出ページをリロードするか、元の提出フォームのチェックボックスを手動でクリックして認証を完了させてから再度お試しください。'
+              )
+            );
           } else {
             setTimeout(check, 300);
           }
@@ -100,7 +120,9 @@
         this._submitViaNativeForm(nativeForm, contestId, problemId, languageId, code, callback);
       } else {
         // Fallback: POST manually (will likely fail if Turnstile is required)
-        console.warn('[AtCoder Workspace] Native submit form not found, falling back to manual POST.');
+        console.warn(
+          '[AtCoder Workspace] Native submit form not found, falling back to manual POST.'
+        );
         this._submitManual(contestId, problemId, languageId, code, callback);
       }
     }
@@ -127,9 +149,9 @@
       const langInput = form.querySelector('input[name="data.LanguageId"]');
       if (langInput) langInput.value = languageId;
 
-      // Wait for the Turnstile widget to generate a valid token
+      // Wait for the Turnstile widget to generate a valid token (checks both input and form container)
       const turnstileInput = form.querySelector('input[name="cf-turnstile-response"]');
-      this.waitForTurnstile(turnstileInput)
+      this.waitForTurnstile(turnstileInput, form)
         .then(() => {
           // Build FormData from the live native form – captures ALL fields
           // including csrf_token, cf-turnstile-response, and any other hidden inputs
@@ -161,7 +183,7 @@
           return fetch(actionUrl, {
             method: 'POST',
             body: formData,
-            credentials: 'include'
+            credentials: 'include',
           });
         })
         .then((res) => this._handleSubmitResponse(res, contestId, callback))
@@ -195,7 +217,7 @@
           return fetch(`/contests/${contestId}/submit`, {
             method: 'POST',
             body: params,
-            credentials: 'include'
+            credentials: 'include',
           });
         })
         .then((res) => this._handleSubmitResponse(res, contestId, callback))
@@ -210,47 +232,63 @@
      * @private
      */
     _handleSubmitResponse(res, contestId, callback) {
-      return res.text().then((html) => {
-        // Check if session has expired / not logged in
-        if (html.includes('/login') || html.includes('ログイン') || html.includes('Sign In')) {
-          throw new Error('AtCoderにログインしていません。ログインしてください。');
-        }
-
-        // Check for validation errors in the HTML response
-        const errorMsg = this.extractErrorMessage(html);
-        if (errorMsg) {
-          if (errorMsg.includes('エラーが発生しました') || errorMsg === 'エラーが発生しました。') {
-            throw new Error('エラーが発生しました。（セッション切れ、コンテストの未登録、またはCSRFトークン不一致の可能性があります。一度ページをリロードしてからお試しください。）');
+      return res
+        .text()
+        .then((html) => {
+          // Check if session has expired / not logged in
+          if (html.includes('/login') || html.includes('ログイン') || html.includes('Sign In')) {
+            throw new Error(
+              'AtCoderにログインしていません。提出するには AtCoder のサイトでログインしてください。'
+            );
           }
-          throw new Error(errorMsg);
-        }
 
-        // Parse submission ID from redirected HTML response
-        const submissionId = this.parseSubmissionId(html, contestId);
-        if (!submissionId) {
-          console.warn('[AtCoder Workspace] Could not parse submissionId from submit response, checking submissions/me...');
-          return this.fetchLatestSubmissionId(contestId).then((latestId) => {
-            if (!latestId) {
-              throw new Error('提出IDの取得に失敗しました。');
+          // Check for validation errors in the HTML response
+          const errorMsg = this.extractErrorMessage(html);
+          if (errorMsg) {
+            if (
+              errorMsg.includes('エラーが発生しました') ||
+              errorMsg === 'エラーが発生しました。'
+            ) {
+              throw new Error(
+                'エラーが発生しました。（セッション切れ、コンテスト未登録、またはトークン不一致の可能性があります。コンテストに参加登録しているか確認し、ページを一度リロードしてから再度提出をお試しください。）'
+              );
             }
-            return latestId;
-          });
-        }
-        return submissionId;
-      })
-      .then((submissionId) => {
-        // Send initial status update
-        callback({
-          submissionId,
-          status: 'WJ',
-          time: '',
-          memory: '',
-          isComplete: false
-        });
+            if (errorMsg.includes('30秒間は提出できません')) {
+              throw new Error(
+                '前回の提出から30秒間は提出できません。前回の提出完了から30秒以上経過するまでお待ちください。'
+              );
+            }
+            throw new Error(errorMsg);
+          }
 
-        // Start polling
-        this.poll(contestId, submissionId, callback);
-      });
+          // Parse submission ID from redirected HTML response
+          const submissionId = this.parseSubmissionId(html, contestId);
+          if (!submissionId) {
+            console.warn(
+              '[AtCoder Workspace] Could not parse submissionId from submit response, checking submissions/me...'
+            );
+            return this.fetchLatestSubmissionId(contestId).then((latestId) => {
+              if (!latestId) {
+                throw new Error('提出IDの取得に失敗しました。');
+              }
+              return latestId;
+            });
+          }
+          return submissionId;
+        })
+        .then((submissionId) => {
+          // Send initial status update
+          callback({
+            submissionId,
+            status: 'WJ',
+            time: '',
+            memory: '',
+            isComplete: false,
+          });
+
+          // Start polling
+          this.poll(contestId, submissionId, callback);
+        });
     }
 
     /**
@@ -285,7 +323,9 @@
         })
         .then((html) => {
           if (html.includes('/login') || html.includes('ログイン') || html.includes('Sign In')) {
-            throw new Error('AtCoderにログインしていません。ログインしてください。');
+            throw new Error(
+              'AtCoderにログインしていません。提出するには AtCoder のサイトでログインしてください。'
+            );
           }
           return this.parseSubmissionId(html, contestId);
         })
@@ -302,7 +342,7 @@
       try {
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
-        
+
         // AtCoder bootstrap error alerts
         const alert = doc.querySelector('.alert-danger, .alert-error');
         if (alert) {
@@ -311,11 +351,13 @@
           if (closeBtn) {
             try {
               closeBtn.remove();
-            } catch (e) {}
+            } catch (e) {
+              // ignore
+            }
           }
           return alert.textContent.trim().replace(/\s+/g, ' ');
         }
-        
+
         // Form field errors
         const hasError = doc.querySelector('.has-error, .help-block');
         if (hasError) {
@@ -360,7 +402,7 @@
               status: status,
               time: info.time,
               memory: info.memory,
-              isComplete
+              isComplete,
             });
 
             if (!isComplete) {
@@ -384,21 +426,23 @@
      * @param {string} contestId
      * @returns {Object|null}
      */
-    parseSubmissionRow(htmlText, submissionId, contestId) {
+    parseSubmissionRow(htmlText, submissionId, _contestId) {
       const parser = new DOMParser();
       const doc = parser.parseFromString(htmlText, 'text/html');
       const table = doc.querySelector('table');
       if (!table) return null;
 
       // Find header mapping
-      const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim());
+      const headers = Array.from(table.querySelectorAll('thead th')).map((th) =>
+        th.textContent.trim()
+      );
       let statusIdx = 6;
       let timeIdx = 7;
       let memoryIdx = 8;
 
       if (headers.length > 0) {
         const findHeaderIndex = (names) => {
-          return headers.findIndex(h => names.some(name => h.includes(name)));
+          return headers.findIndex((h) => names.some((name) => h.includes(name)));
         };
         const sIdx = findHeaderIndex(['結果', 'Status']);
         if (sIdx !== -1) statusIdx = sIdx;
@@ -427,7 +471,7 @@
             return {
               status: statusText,
               time: timeText,
-              memory: memoryText
+              memory: memoryText,
             };
           }
         }

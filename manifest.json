@@ -3,10 +3,9 @@
   "name": "Competitive Programming Workspace",
   "version": "1.3.0",
   "description": "AtCoderの問題ページ上にエディタを埋め込み、単一タブでコーディング・テスト・提出を完結させるワークスペース拡張",
-  "permissions": [
-    "storage",
-    "notifications"
-  ],
+  "permissions": ["storage", "notifications"],
+  "host_permissions": ["https://atcoder.jp/*"],
+
   "content_scripts": [
     {
       "matches": ["https://atcoder.jp/contests/*/tasks/*"],

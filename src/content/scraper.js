@@ -18,7 +18,7 @@
         return {
           cases: [],
           warning: null,
-          error: '問題文 (task-statement) がページ内に見つかりません。'
+          error: '問題文 (task-statement) がページ内に見つかりません。',
         };
       }
 
@@ -81,7 +81,7 @@
       for (let i = 0; i < len; i++) {
         samples.push({
           input: inputs[i],
-          expected: outputs[i]
+          expected: outputs[i],
         });
       }
 
@@ -98,7 +98,7 @@
       return {
         cases: samples,
         warning,
-        error
+        error,
       };
     }
 
@@ -153,7 +153,11 @@
           anchors.forEach((a) => {
             if (a && typeof a.getAttribute === 'function') {
               const href = a.getAttribute('href');
-              if (href && typeof href === 'string' && href.includes(`/contests/${contestId}/tasks/`)) {
+              if (
+                href &&
+                typeof href === 'string' &&
+                href.includes(`/contests/${contestId}/tasks/`)
+              ) {
                 links.push(href);
               }
             }

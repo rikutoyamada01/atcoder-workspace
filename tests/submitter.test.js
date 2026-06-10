@@ -72,8 +72,12 @@ describe('Submitter Module Tests', () => {
   });
 
   test('Submission ID parsing with case mismatch and prefix fallback', () => {
-    expect(submitter.parseSubmissionId('href="/contests/abc100/submissions/12345"', 'ABC100')).toBe('12345');
-    expect(submitter.parseSubmissionId('href="https://atcoder.jp/submissions/67890"', 'abc100')).toBe('67890');
+    expect(submitter.parseSubmissionId('href="/contests/abc100/submissions/12345"', 'ABC100')).toBe(
+      '12345'
+    );
+    expect(
+      submitter.parseSubmissionId('href="https://atcoder.jp/submissions/67890"', 'abc100')
+    ).toBe('67890');
     expect(submitter.parseSubmissionId('href="/submissions/54321"', 'abc100')).toBe('54321');
   });
 
@@ -112,10 +116,10 @@ describe('Submitter Module Tests', () => {
   test('Submits using native form with all fields (including Turnstile)', async () => {
     setupNativeForm({ turnstile: 'valid-turnstile-token-from-widget-longer-than-20' });
 
-    global.fetch = jest.fn((url, options) => {
+    global.fetch = jest.fn((_url, _options) => {
       return Promise.resolve({
         ok: true,
-        text: () => Promise.resolve('/contests/abc100/submissions/99999')
+        text: () => Promise.resolve('/contests/abc100/submissions/99999'),
       });
     });
 
@@ -136,14 +140,16 @@ describe('Submitter Module Tests', () => {
     expect(body.get('data.TaskScreenName')).toBe('abc100_a');
     expect(body.get('data.LanguageId')).toBe('python');
     expect(body.get('sourceCode')).toBe('print(1)');
-    expect(body.get('cf-turnstile-response')).toBe('valid-turnstile-token-from-widget-longer-than-20');
+    expect(body.get('cf-turnstile-response')).toBe(
+      'valid-turnstile-token-from-widget-longer-than-20'
+    );
 
     expect(callback).toHaveBeenCalledWith({
       submissionId: '99999',
       status: 'WJ',
       time: '',
       memory: '',
-      isComplete: false
+      isComplete: false,
     });
   });
 
@@ -153,7 +159,7 @@ describe('Submitter Module Tests', () => {
     global.fetch = jest.fn(() => {
       return Promise.resolve({
         ok: true,
-        text: () => Promise.resolve('/contests/abc100/submissions/88888')
+        text: () => Promise.resolve('/contests/abc100/submissions/88888'),
       });
     });
 
@@ -174,7 +180,7 @@ describe('Submitter Module Tests', () => {
       status: 'WJ',
       time: '',
       memory: '',
-      isComplete: false
+      isComplete: false,
     });
   });
 
@@ -187,14 +193,17 @@ describe('Submitter Module Tests', () => {
       if (!options || !options.method) {
         return Promise.resolve({
           ok: true,
-          text: () => Promise.resolve('<html><body><input name="csrf_token" value="fresh-csrf" /></body></html>')
+          text: () =>
+            Promise.resolve(
+              '<html><body><input name="csrf_token" value="fresh-csrf" /></body></html>'
+            ),
         });
       }
       // POST
       if (options.method === 'POST') {
         return Promise.resolve({
           ok: true,
-          text: () => Promise.resolve('/contests/abc100/submissions/77777')
+          text: () => Promise.resolve('/contests/abc100/submissions/77777'),
         });
       }
       return Promise.resolve({ ok: true, text: () => Promise.resolve('') });
@@ -217,7 +226,7 @@ describe('Submitter Module Tests', () => {
       status: 'WJ',
       time: '',
       memory: '',
-      isComplete: false
+      isComplete: false,
     });
   });
 
@@ -263,7 +272,7 @@ describe('Submitter Module Tests', () => {
       if (options && options.method === 'POST') {
         return Promise.resolve({
           ok: true,
-          text: () => Promise.resolve('/contests/abc100/submissions/777')
+          text: () => Promise.resolve('/contests/abc100/submissions/777'),
         });
       }
       // GET polling
@@ -272,7 +281,7 @@ describe('Submitter Module Tests', () => {
         const htmls = [tableHTML_WJ, tableHTML_Progress, tableHTML_AC];
         return Promise.resolve({
           ok: true,
-          text: () => Promise.resolve(htmls[pollCount - 1])
+          text: () => Promise.resolve(htmls[pollCount - 1]),
         });
       }
       return Promise.resolve({ ok: true, text: () => Promise.resolve('') });
@@ -289,28 +298,40 @@ describe('Submitter Module Tests', () => {
       status: 'WJ',
       time: '',
       memory: '',
-      isComplete: false
+      isComplete: false,
     });
 
     // Poll 1: WJ
     jest.advanceTimersByTime(2000);
     await flushPromises();
     expect(callback).toHaveBeenLastCalledWith({
-      submissionId: '777', status: 'WJ', time: '', memory: '', isComplete: false
+      submissionId: '777',
+      status: 'WJ',
+      time: '',
+      memory: '',
+      isComplete: false,
     });
 
     // Poll 2: 1/15
     jest.advanceTimersByTime(2000);
     await flushPromises();
     expect(callback).toHaveBeenLastCalledWith({
-      submissionId: '777', status: '1/15', time: '', memory: '', isComplete: false
+      submissionId: '777',
+      status: '1/15',
+      time: '',
+      memory: '',
+      isComplete: false,
     });
 
     // Poll 3: AC
     jest.advanceTimersByTime(2000);
     await flushPromises();
     expect(callback).toHaveBeenLastCalledWith({
-      submissionId: '777', status: 'AC', time: '10 ms', memory: '1024 KB', isComplete: true
+      submissionId: '777',
+      status: 'AC',
+      time: '10 ms',
+      memory: '1024 KB',
+      isComplete: true,
     });
   });
 
@@ -322,7 +343,7 @@ describe('Submitter Module Tests', () => {
     global.fetch = jest.fn(() => {
       return Promise.resolve({
         ok: true,
-        text: () => Promise.resolve('Please Login to AtCoder /login ログインしてください。')
+        text: () => Promise.resolve('Please Login to AtCoder /login ログインしてください。'),
       });
     });
 
@@ -332,7 +353,7 @@ describe('Submitter Module Tests', () => {
     await flushPromises();
 
     expect(callback).toHaveBeenCalledWith({
-      error: 'AtCoderにログインしていません。ログインしてください。'
+      error: 'AtCoderにログインしていません。提出するには AtCoder のサイトでログインしてください。',
     });
   });
 
@@ -342,11 +363,12 @@ describe('Submitter Module Tests', () => {
     global.fetch = jest.fn(() => {
       return Promise.resolve({
         ok: true,
-        text: () => Promise.resolve(`
+        text: () =>
+          Promise.resolve(`
           <div class="alert alert-danger">
             前回の提出から30秒間は提出できません。
           </div>
-        `)
+        `),
       });
     });
 
@@ -357,7 +379,8 @@ describe('Submitter Module Tests', () => {
     await flushPromises();
 
     expect(callback).toHaveBeenCalledWith({
-      error: '前回の提出から30秒間は提出できません。'
+      error:
+        '前回の提出から30秒間は提出できません。前回の提出完了から30秒以上経過するまでお待ちください。',
     });
   });
 });

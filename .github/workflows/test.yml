@@ -1,0 +1,40 @@
+name: CI Tests
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Build, Lint & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run setup (Monaco Editor files)
+        run: npm run setup
+
+      - name: Check code formatting (Prettier)
+        run: npm run format:check
+
+      - name: Run linter (ESLint)
+        run: npm run lint
+
+      - name: Run unit tests (Jest)
+        run: npm test

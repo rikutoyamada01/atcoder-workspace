@@ -3,9 +3,19 @@ const path = require('path');
 
 // 有効な機能IDのリスト
 const VALID_FEATURES = [
-  'monaco', 'template', 'test', 'notes', 'submit',
-  'dashboard', 'library', 'error', 'export', 'queue',
-  'safety', 'autopush', 'customtest'
+  'monaco',
+  'template',
+  'test',
+  'notes',
+  'submit',
+  'dashboard',
+  'library',
+  'error',
+  'export',
+  'queue',
+  'safety',
+  'autopush',
+  'customtest',
 ];
 
 const featureId = process.argv[2];
@@ -70,4 +80,6 @@ content = content.replace(regex, replacement);
 fs.writeFileSync(roadmapPath, content, 'utf8');
 
 console.log(`\x1b[32m[Roadmap Updated]\x1b[0m ${statusMessage}`);
-console.log(`Currently completed features: \x1b[36m[${completedSkills.length > 0 ? completedSkills.join(', ') : 'none'}]\x1b[0m\n`);
+console.log(
+  `Currently completed features: \x1b[36m[${completedSkills.length > 0 ? completedSkills.join(', ') : 'none'}]\x1b[0m\n`
+);

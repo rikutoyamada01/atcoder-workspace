@@ -12,7 +12,7 @@ function copyFolderSync(from, to) {
   if (!fs.existsSync(to)) {
     fs.mkdirSync(to, { recursive: true });
   }
-  fs.readdirSync(from).forEach(element => {
+  fs.readdirSync(from).forEach((element) => {
     const stat = fs.lstatSync(path.join(from, element));
     if (stat.isFile()) {
       fs.copyFileSync(path.join(from, element), path.join(to, element));

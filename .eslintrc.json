@@ -1,0 +1,38 @@
+{
+  "env": {
+    "browser": true,
+    "es2022": true,
+    "webextensions": true
+  },
+  "extends": ["eslint:recommended", "prettier"],
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "script"
+  },
+  "globals": {
+    "monaco": "readonly",
+    "MonacoEnvironment": "writable",
+    "require": "readonly"
+  },
+  "rules": {
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "no-console": "off"
+  },
+  "overrides": [
+    {
+      "files": ["tests/**/*.js"],
+      "env": {
+        "jest": true,
+        "node": true
+      },
+      "plugins": ["jest"],
+      "extends": ["plugin:jest/recommended"]
+    },
+    {
+      "files": ["scripts/**/*.js"],
+      "env": {
+        "node": true
+      }
+    }
+  ]
+}

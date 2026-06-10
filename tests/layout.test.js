@@ -5,10 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const layoutCode = fs.readFileSync(
-  path.resolve(__dirname, '../src/content/layout.js'),
-  'utf8'
-);
+const layoutCode = fs.readFileSync(path.resolve(__dirname, '../src/content/layout.js'), 'utf8');
 
 describe('Layout Module Tests', () => {
   let layout;
@@ -31,19 +28,19 @@ describe('Layout Module Tests', () => {
     global.chrome = {
       runtime: {
         id: 'dummy-extension-id',
-        getURL: (p) => p
+        getURL: (p) => p,
       },
       storage: {
         local: {
           get: jest.fn((keys, callback) => {
             callback({
               'settings:split_ratio': 0.4,
-              'settings:panel_open': true
+              'settings:panel_open': true,
             });
           }),
-          set: jest.fn()
-        }
-      }
+          set: jest.fn(),
+        },
+      },
     };
 
     const script = document.createElement('script');

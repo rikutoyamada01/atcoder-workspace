@@ -43,7 +43,11 @@
       if (!iframe || e.source !== iframe.contentWindow) return;
       if (!e.data || typeof e.data !== 'object') return;
 
-      console.log('[AtCoder Workspace] Content Script: Received message from iframe', e.data.type, e.data);
+      console.log(
+        '[AtCoder Workspace] Content Script: Received message from iframe',
+        e.data.type,
+        e.data
+      );
 
       switch (e.data.type) {
         case 'editor-ready':
@@ -54,7 +58,7 @@
               langSelect.querySelectorAll('option').forEach((opt) => {
                 options.push({
                   value: opt.value,
-                  text: opt.textContent
+                  text: opt.textContent,
                 });
               });
             }
@@ -64,7 +68,8 @@
             const rgb = bodyBg.match(/\d+/g);
             let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             if (rgb && rgb.length >= 3) {
-              const brightness = (parseInt(rgb[0]) * 299 + parseInt(rgb[1]) * 587 + parseInt(rgb[2]) * 114) / 1000;
+              const brightness =
+                (parseInt(rgb[0]) * 299 + parseInt(rgb[1]) * 587 + parseInt(rgb[2]) * 114) / 1000;
               isDark = brightness < 125;
             }
 
@@ -82,11 +87,12 @@
                 type: 'init-config',
                 contestId,
                 problemId,
-                selectedLanguageId: selectedLanguageId || (options.length > 0 ? options[0].value : null),
+                selectedLanguageId:
+                  selectedLanguageId || (options.length > 0 ? options[0].value : null),
                 languages: options,
                 prevUrl,
                 nextUrl,
-                isDark
+                isDark,
               });
             };
 
@@ -113,64 +119,58 @@
             if (!submitter) {
               notifyEditor({
                 type: 'submit-error',
-                message: '提出モジュールが見つかりません。'
+                message: '提出モジュールが見つかりません。',
               });
               break;
             }
             if (!e.data.code || !e.data.code.trim()) {
               notifyEditor({
                 type: 'submit-error',
-                message: '提出するコードを入力してください。'
+                message: '提出するコードを入力してください。',
               });
               break;
             }
             if (!e.data.languageId) {
               notifyEditor({
                 type: 'submit-error',
-                message: 'プログラミング言語が選択されていません。'
+                message: 'プログラミング言語が選択されていません。',
               });
               break;
             }
 
             notifyEditor({
-              type: 'submit-start'
+              type: 'submit-start',
             });
 
-            submitter.submit(
-              contestId,
-              problemId,
-              e.data.languageId,
-              e.data.code,
-              (res) => {
-                if (res.error) {
-                  notifyEditor({
-                    type: 'submit-error',
-                    message: res.error
-                  });
-                } else if (res.isComplete) {
-                  notifyEditor({
-                    type: 'submit-complete',
-                    submissionId: res.submissionId,
-                    status: res.status,
-                    time: res.time,
-                    memory: res.memory
-                  });
-                } else {
-                  notifyEditor({
-                    type: 'submit-status',
-                    submissionId: res.submissionId,
-                    status: res.status,
-                    time: res.time,
-                    memory: res.memory
-                  });
-                }
+            submitter.submit(contestId, problemId, e.data.languageId, e.data.code, (res) => {
+              if (res.error) {
+                notifyEditor({
+                  type: 'submit-error',
+                  message: res.error,
+                });
+              } else if (res.isComplete) {
+                notifyEditor({
+                  type: 'submit-complete',
+                  submissionId: res.submissionId,
+                  status: res.status,
+                  time: res.time,
+                  memory: res.memory,
+                });
+              } else {
+                notifyEditor({
+                  type: 'submit-status',
+                  submissionId: res.submissionId,
+                  status: res.status,
+                  time: res.time,
+                  memory: res.memory,
+                });
               }
-            );
+            });
           } catch (err) {
             console.error('Submission execution failed:', err);
             notifyEditor({
               type: 'submit-error',
-              message: '提出処理中にエラーが発生しました: ' + err.message
+              message: '提出処理中にエラーが発生しました: ' + err.message,
             });
           }
           break;
@@ -180,21 +180,21 @@
             if (!e.data.languageId) {
               notifyEditor({
                 type: 'test-error',
-                message: 'プログラミング言語が選択されていません。'
+                message: 'プログラミング言語が選択されていません。',
               });
               break;
             }
             if (!e.data.code || !e.data.code.trim()) {
               notifyEditor({
                 type: 'test-error',
-                message: '実行するコードを入力してください。'
+                message: '実行するコードを入力してください。',
               });
               break;
             }
             if (!scraper || !runner) {
               notifyEditor({
                 type: 'test-error',
-                message: 'モジュール初期化エラーが発生しました。'
+                message: 'モジュール初期化エラーが発生しました。',
               });
               break;
             }
@@ -204,7 +204,7 @@
             if (scrapeResult.error) {
               notifyEditor({
                 type: 'test-error',
-                message: scrapeResult.error
+                message: scrapeResult.error,
               });
               break;
             }
@@ -217,7 +217,7 @@
 
             notifyEditor({
               type: 'test-start',
-              total: samples.length
+              total: samples.length,
             });
 
             runner.runSampleTests(
@@ -235,7 +235,7 @@
                   output: caseRes.output,
                   expected: caseRes.expected,
                   stderr: caseRes.stderr,
-                  message: caseRes.message
+                  message: caseRes.message,
                 });
               },
               () => {
@@ -246,7 +246,7 @@
             console.error('Test execution failed:', err);
             notifyEditor({
               type: 'test-error',
-              message: 'テスト実行中にエラーが発生しました: ' + err.message
+              message: 'テスト実行中にエラーが発生しました: ' + err.message,
             });
           }
           break;
@@ -258,7 +258,7 @@
       langSelect.addEventListener('change', () => {
         notifyEditor({
           type: 'language-change',
-          languageId: langSelect.value
+          languageId: langSelect.value,
         });
       });
     }
@@ -272,7 +272,11 @@
     const layout = window.AtCoderWorkspace.Layout;
     const iframe = layout ? layout.getIframe() : null;
     if (iframe && iframe.contentWindow) {
-      console.log('[AtCoder Workspace] Content Script: Sending message to iframe', message.type, message);
+      console.log(
+        '[AtCoder Workspace] Content Script: Sending message to iframe',
+        message.type,
+        message
+      );
       iframe.contentWindow.postMessage(message, '*');
     }
   }

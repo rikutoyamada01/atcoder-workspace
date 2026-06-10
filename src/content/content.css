@@ -121,7 +121,10 @@ body.atcoder-workspace-active {
   color: #777777;
   box-shadow: -2px 0 5px rgba(0, 0, 0, 0.08);
   outline: none;
-  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 #atcoder-workspace-toggle-btn:hover {

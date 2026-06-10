@@ -5,10 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const scraperCode = fs.readFileSync(
-  path.resolve(__dirname, '../src/content/scraper.js'),
-  'utf8'
-);
+const scraperCode = fs.readFileSync(path.resolve(__dirname, '../src/content/scraper.js'), 'utf8');
 
 describe('Scraper Module Tests', () => {
   beforeEach(() => {

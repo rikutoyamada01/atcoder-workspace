@@ -5,10 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const runnerCode = fs.readFileSync(
-  path.resolve(__dirname, '../src/content/runner.js'),
-  'utf8'
-);
+const runnerCode = fs.readFileSync(path.resolve(__dirname, '../src/content/runner.js'), 'utf8');
 
 describe('Runner Module Tests', () => {
   let runner;
@@ -38,9 +35,10 @@ describe('Runner Module Tests', () => {
   test('ensureIdle calls onIdle immediately when custom test is completed', async () => {
     const mockResponse = {
       ok: true,
-      json: () => Promise.resolve({
-        Result: { Status: 3 } // 3 = Completed/Idle
-      })
+      json: () =>
+        Promise.resolve({
+          Result: { Status: 3 }, // 3 = Completed/Idle
+        }),
     };
     global.fetch.mockResolvedValue(mockResponse);
 
@@ -58,11 +56,11 @@ describe('Runner Module Tests', () => {
     global.fetch
       .mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ Result: { Status: 1 } })
+        json: () => Promise.resolve({ Result: { Status: 1 } }),
       })
       .mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ Result: { Status: 3 } })
+        json: () => Promise.resolve({ Result: { Status: 3 } }),
       });
 
     const onIdle = jest.fn();
@@ -95,16 +93,17 @@ describe('Runner Module Tests', () => {
   test('pollResult resolves on custom test completed', async () => {
     global.fetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        Result: {
-          Status: 3,
-          ExitCode: 0,
-          TimeConsumption: 10,
-          MemoryConsumption: 2048,
-          Output: btoa('hello\n'),
-          Error: btoa('')
-        }
-      })
+      json: () =>
+        Promise.resolve({
+          Result: {
+            Status: 3,
+            ExitCode: 0,
+            TimeConsumption: 10,
+            MemoryConsumption: 2048,
+            Output: btoa('hello\n'),
+            Error: btoa(''),
+          },
+        }),
     });
 
     const resolve = jest.fn();
@@ -119,7 +118,7 @@ describe('Runner Module Tests', () => {
       Stderr: '',
       ExitCode: 0,
       TimeConsumption: 10,
-      MemoryConsumption: 2048
+      MemoryConsumption: 2048,
     });
     expect(reject).not.toHaveBeenCalled();
   });
@@ -128,7 +127,7 @@ describe('Runner Module Tests', () => {
     // Make sure AtCoder status is idle
     global.fetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({ Result: { Status: 3 } })
+      json: () => Promise.resolve({ Result: { Status: 3 } }),
     });
 
     const onCaseResult = jest.fn();
@@ -142,7 +141,7 @@ describe('Runner Module Tests', () => {
     expect(onCaseResult).toHaveBeenCalledWith({
       index: 0,
       status: 'ERR',
-      message: 'CSRFトークンが見つかりません。'
+      message: 'CSRFトークンが見つかりません。',
     });
 
     jest.advanceTimersByTime(1000); // Wait next case delay
@@ -161,24 +160,25 @@ describe('Runner Module Tests', () => {
     global.fetch
       .mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ Result: { Status: 3 } })
+        json: () => Promise.resolve({ Result: { Status: 3 } }),
       })
       .mockResolvedValueOnce({
         ok: true,
-        text: () => Promise.resolve('') // empty response from submit
+        text: () => Promise.resolve(''), // empty response from submit
       })
       .mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          Result: {
-            Status: 3,
-            ExitCode: 0,
-            TimeConsumption: 5,
-            MemoryConsumption: 1024,
-            Output: btoa('out1\n'),
-            Error: btoa('')
-          }
-        })
+        json: () =>
+          Promise.resolve({
+            Result: {
+              Status: 3,
+              ExitCode: 0,
+              TimeConsumption: 5,
+              MemoryConsumption: 1024,
+              Output: btoa('out1\n'),
+              Error: btoa(''),
+            },
+          }),
       });
 
     const onCaseResult = jest.fn();
@@ -203,7 +203,7 @@ describe('Runner Module Tests', () => {
       memory: 1024,
       output: 'out1\n',
       expected: 'out1',
-      stderr: ''
+      stderr: '',
     });
 
     jest.advanceTimersByTime(1000); // Case completed delay
