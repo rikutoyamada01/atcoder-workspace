@@ -325,6 +325,22 @@
           '<div style="font-size: 12px; color: #777;">提出処理を開始しました...</div>';
         break;
 
+      case 'submit-captcha-waiting':
+        testSummary.textContent = 'ボット認証の待機中...';
+        testSummary.className = 'summary-running';
+
+        consoleResults.innerHTML = `
+          <div style="font-size: 12px; color: #333;">
+            <div style="margin-bottom: 8px; color: #ff8c00; font-weight: bold;">⚠️ ${escapeHtml(e.data.message)}</div>
+            <div style="line-height: 1.6;">
+              ボット判定（Cloudflare Turnstile）の認証完了を待機しています。<br>
+              左側の提出フォーム内のチェックボックス（私は人間です）を必要に応じて手動でクリックして認証を完了させてください。<br>
+              （対象エリアまで画面を自動スクロールし、赤枠でハイライトしています）
+            </div>
+          </div>
+        `;
+        break;
+
       case 'submit-status':
         // Update Console Results
         consoleResults.innerHTML = `

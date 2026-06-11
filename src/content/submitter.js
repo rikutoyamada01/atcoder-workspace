@@ -56,7 +56,7 @@
      * @param {HTMLInputElement|null} input
      * @returns {Promise<void>}
      */
-    waitForTurnstile(input, form) {
+    waitForTurnstile(input, form, callback) {
       // Check if there is a Turnstile container on the page
       let hasTurnstile = false;
       if (form) {
@@ -75,21 +75,72 @@
 
       return new Promise((resolve, reject) => {
         const start = Date.now();
+        let scrolled = false;
+
         const check = () => {
           const currentInput =
             input || (form ? form.querySelector('input[name="cf-turnstile-response"]') : null);
           if (currentInput && currentInput.value && currentInput.value.length > 20) {
             console.log('[AtCoder Workspace] Turnstile token received.');
+            // Remove highlight if applied
+            if (form) {
+              const container = form.querySelector(
+                '.cf-turnstile, #cf-turnstile, [class*="cf-turnstile"], [id*="cf-turnstile"]'
+              );
+              if (container) {
+                container.style.outline = '';
+                container.style.boxShadow = '';
+              }
+            }
             resolve();
-          } else if (Date.now() - start > 15000) {
-            // Timeout after 15s – reject with a helpful instruction
-            reject(
-              new Error(
-                'ボット判定(Cloudflare Turnstile)の自動認証がタイムアウトしました。提出ページをリロードするか、元の提出フォームのチェックボックスを手動でクリックして認証を完了させてから再度お試しください。'
-              )
-            );
           } else {
-            setTimeout(check, 300);
+            const elapsed = Date.now() - start;
+
+            // 4 seconds passed and still no token – ask user to check and solve Turnstile
+            if (elapsed > 4000 && !scrolled) {
+              scrolled = true;
+              if (callback) {
+                callback({
+                  status: 'WAITING_CAPTCHA',
+                  message: 'ボット認証（Cloudflare Turnstile）を待機しています。手動でのクリック（私は人間です）が必要な場合があります。',
+                });
+              }
+
+              // Scroll to the Turnstile container and highlight it
+              if (form) {
+                const container = form.querySelector(
+                  '.cf-turnstile, #cf-turnstile, [class*="cf-turnstile"], [id*="cf-turnstile"]'
+                );
+                if (container) {
+                  container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  container.style.outline = '3px solid #ff4d4f';
+                  container.style.outlineOffset = '4px';
+                  container.style.borderRadius = '4px';
+                  container.style.boxShadow = '0 0 12px rgba(255, 77, 79, 0.7)';
+                  container.style.transition = 'all 0.3s ease';
+                }
+              }
+            }
+
+            if (elapsed > 45000) { // Timeout after 45s
+              // Remove highlight
+              if (form) {
+                const container = form.querySelector(
+                  '.cf-turnstile, #cf-turnstile, [class*="cf-turnstile"], [id*="cf-turnstile"]'
+                );
+                if (container) {
+                  container.style.outline = '';
+                  container.style.boxShadow = '';
+                }
+              }
+              reject(
+                new Error(
+                  'ボット判定(Cloudflare Turnstile)の自動認証がタイムアウトしました。左側の提出フォーム内のチェックボックスを手動でクリックして認証を完了させてから再度お試しください。'
+                )
+              );
+            } else {
+              setTimeout(check, 300);
+            }
           }
         };
         check();
@@ -151,7 +202,7 @@
 
       // Wait for the Turnstile widget to generate a valid token (checks both input and form container)
       const turnstileInput = form.querySelector('input[name="cf-turnstile-response"]');
-      this.waitForTurnstile(turnstileInput, form)
+      this.waitForTurnstile(turnstileInput, form, callback)
         .then(() => {
           // Build FormData from the live native form – captures ALL fields
           // including csrf_token, cf-turnstile-response, and any other hidden inputs

@@ -148,6 +148,11 @@
                   type: 'submit-error',
                   message: res.error,
                 });
+              } else if (res.status === 'WAITING_CAPTCHA') {
+                notifyEditor({
+                  type: 'submit-captcha-waiting',
+                  message: res.message,
+                });
               } else if (res.isComplete) {
                 notifyEditor({
                   type: 'submit-complete',
