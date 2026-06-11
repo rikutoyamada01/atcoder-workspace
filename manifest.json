@@ -1,8 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "Competitive Programming Workspace",
+  "name": "AtCoder Workspace",
   "version": "1.3.0",
   "description": "AtCoderの問題ページ上にエディタを埋め込み、単一タブでコーディング・テスト・提出を完結させるワークスペース拡張",
+  "icons": {
+    "16": "src/icons/icon16.png",
+    "48": "src/icons/icon48.png",
+    "128": "src/icons/icon128.png"
+  },
   "permissions": ["storage", "notifications"],
   "host_permissions": ["https://atcoder.jp/*"],
 

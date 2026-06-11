@@ -11,6 +11,9 @@ out/
 # User Rule: charts folder is git-ignored
 charts/
 
+# Private documents
+docs/private/
+
 # Local configuration files
 .env
 .env.local

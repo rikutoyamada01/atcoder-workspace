@@ -1,0 +1,58 @@
+name: Release Workspace Extension
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run setup (Download Monaco Editor)
+        run: npm run setup
+
+      - name: Run build (Generate ZIP package)
+        run: npm run build
+
+      - name: Get version from package.json
+        id: get_version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/atcoder-workspace-v${{ steps.get_version.outputs.version }}.zip
+          name: Release v${{ steps.get_version.outputs.version }}
+          body: |
+            ## AtCoder Workspace v${{ steps.get_version.outputs.version }}
+
+            ### インストール方法 (手動インストール)
+            1. 添付されている `atcoder-workspace-v${{ steps.get_version.outputs.version }}.zip` をダウンロードして解凍します。
+            2. Google Chrome で `chrome://extensions/` を開きます。
+            3. 右上の「デベロッパー モード」を有効にします。
+            4. 左上の「パッケージ化されていない拡張機能を読み込む」をクリックし、解凍したフォルダを選択します。
+
+            ### ストアからのインストール (公式公開版)
+            ※ Chrome Web Store への公開後は、こちらにリンクが配置されます。
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

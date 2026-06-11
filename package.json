@@ -8,7 +8,8 @@
     "test": "jest",
     "lint": "eslint src tests scripts",
     "format": "prettier --write \"src/**/*.{js,css}\" \"tests/**/*.js\" \"scripts/**/*.js\" \"*.json\" \"README.md\"",
-    "format:check": "prettier --check \"src/**/*.{js,css}\" \"tests/**/*.js\" \"scripts/**/*.js\" \"*.json\" \"README.md\""
+    "format:check": "prettier --check \"src/**/*.{js,css}\" \"tests/**/*.js\" \"scripts/**/*.js\" \"*.json\" \"README.md\"",
+    "build": "node scripts/build-release.js"
   },
   "devDependencies": {
     "eslint": "^8.57.0",
