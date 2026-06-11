@@ -1,12 +1,14 @@
-name: Release Workspace Extension
+name: Auto Release Workspace Extension
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - master
+    paths:
+      - 'manifest.json'
 
 jobs:
-  release:
+  auto-release:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -14,31 +16,63 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # すべてのタグを取得するために必要
+
+      - name: Get version from manifest.json
+        id: get_version
+        run: |
+          VERSION=$(node -p "require('./manifest.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Current manifest version: $VERSION"
+
+      - name: Check if tag exists
+        id: check_tag
+        run: |
+          TAG_NAME="v${{ steps.get_version.outputs.version }}"
+          if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "Tag $TAG_NAME already exists. Skipping release."
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "Tag $TAG_NAME does not exist. Proceeding with release."
+          fi
 
       - name: Setup Node.js
+        if: steps.check_tag.outputs.exists == 'false'
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
 
       - name: Install dependencies
+        if: steps.check_tag.outputs.exists == 'false'
         run: npm ci
 
       - name: Run setup (Download Monaco Editor)
+        if: steps.check_tag.outputs.exists == 'false'
         run: npm run setup
 
       - name: Run build (Generate ZIP package)
+        if: steps.check_tag.outputs.exists == 'false'
         run: npm run build
 
-      - name: Get version from package.json
-        id: get_version
+      - name: Create Git Tag
+        if: steps.check_tag.outputs.exists == 'false'
         run: |
-          VERSION=$(node -p "require('./package.json').version")
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          TAG_NAME="v${{ steps.get_version.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "$TAG_NAME"
+          git push origin "$TAG_NAME"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create GitHub Release
+        if: steps.check_tag.outputs.exists == 'false'
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ steps.get_version.outputs.version }}
           files: dist/atcoder-workspace-v${{ steps.get_version.outputs.version }}.zip
           name: Release v${{ steps.get_version.outputs.version }}
           body: |

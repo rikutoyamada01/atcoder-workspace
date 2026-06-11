@@ -1,6 +1,8 @@
 # AtCoder Workspace リリース手順書
 
-本ドキュメントは、本拡張機能（AtCoder Workspace）の管理者（ユーザー様）専用のリリース作業手順書です。新しいバージョンをリリースする際は、以下のステップに沿って作業を行ってください。
+本ドキュメントは、本拡張機能（AtCoder Workspace）の管理者（ユーザー様）専用のリリース作業手順書です。
+
+本プロジェクトには**リリース自動化 CI/CD** が組み込まれているため、ユーザー様は `master` ブランチへバージョンを更新してプッシュ（マージ）するだけで、自動的に Git タグの作成と GitHub リリースが完了します。
 
 ---
 
@@ -10,9 +12,8 @@ graph TD
     A[1. 準備ブランチ prepare-release の作成] --> B[2. バージョン情報のバンプ]
     B --> C[3. ローカルビルド & 動作検証]
     C --> D[4. master へマージ & プッシュ]
-    D --> E[5. Gitタグ vX.Y.Z の付与 & プッシュ]
-    E --> F[6. GitHub Actions による自動ビルド]
-    F --> G[7. Chrome Web Store へZIPアップロード]
+    D --> E["5. 自動実行 (CI/CD)<br>Gitタグ自動生成 & GitHub Release作成"]
+    E --> F[6. Chrome Web Store へZIPアップロード]
 ```
 
 ---
@@ -63,22 +64,17 @@ git push origin master
 ```
 マージが終わったら、使い終わった `prepare-release` ブランチは削除して構いません。
 
-### Step 5. バージョンタグの作成とプッシュ（CI/CDトリガー）
-`master` にプッシュした後、Gitタグを付与してリモートにプッシュします。これにより、GitHub Actionsが自動的にトリガーされ、GitHub Release が生成されます。
-```bash
-# 例: v1.4.0 をリリースする場合
-git tag v1.4.0
-git push origin v1.4.0
-```
+### Step 5. 自動リリース（CI/CDの動作）
+`master` ブランチへ `manifest.json` の変更がプッシュされると、GitHub Actions が以下の処理を全自動で実行します。
+- `manifest.json` 内のバージョン情報を読み取る。
+- 該当バージョン（例: `v1.4.0`）の Git タグがまだリポジトリに存在しない場合、**自動的に Git タグを作成してプッシュ**する。
+- 自動で ZIP をビルドし、タグ名に基づいた **GitHub Release を生成して ZIP を添付**する。
 
-- **自動で実行されること (GitHub Actions)**:
-  - リモートへの `v*` タグプッシュを検知して、ワークフロー（`.github/workflows/release.yml`）が起動します。
-  - 自動で依存関係のインストール、Monaco Editorのセットアップ、ZIP化ビルドが実行されます。
-  - GitHub Releases に新しいリリースが下書きまたは公開状態で作成され、ビルドされたZIPファイルが自動でアタッチされます。
+> [!TIP]
+> ユーザー様が手動で `git tag` コマンドを実行してプッシュする必要はありません。
 
 ### Step 6. Chrome Web Store (CWS) への申請
 1. [Chrome Web Store Developer Console](https://chrome.google.com/webstore/devconsole) にログインします。
-2. 対象のアイテム（AtCoder Workspace）を選択するか、新規登録します。
-3. GitHub Release からダウンロードした、あるいはローカルの `dist/` 配下にある最新の `atcoder-workspace-vX.Y.Z.zip` ファイルをデベロッパーコンソールにアップロードします。
-4. ストアの掲載情報（説明文など）を更新する場合は、`docs/store-description.md` の記述をコピー＆ペーストして利用します。
-5. 「審査に送信」をクリックします（審査には通常数日から1週間程度かかります）。
+2. 自動生成された GitHub Release ページ、あるいはローカルの `dist/` 配下にある最新の `atcoder-workspace-vX.Y.Z.zip` ファイルをデベロッパーコンソールにアップロードします。
+3. ストアの掲載情報（説明文など）を更新する場合は、`docs/private/store-description.md` の記述をコピー＆ペーストして利用します。
+4. 「審査に送信」をクリックします（審査には通常数日から1週間程度かかります）。
