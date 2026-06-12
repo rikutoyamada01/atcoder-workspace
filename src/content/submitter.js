@@ -82,21 +82,33 @@
             input || (form ? form.querySelector('input[name="cf-turnstile-response"]') : null);
           if (currentInput && currentInput.value && currentInput.value.length > 20) {
             console.log('[AtCoder Workspace] Turnstile token received.');
-            // Remove highlight if applied
+            // Restore hidden styling
             if (form) {
               const container = form.querySelector(
                 '.cf-turnstile, #cf-turnstile, [class*="cf-turnstile"], [id*="cf-turnstile"]'
               );
               if (container) {
+                container.style.position = 'fixed';
+                container.style.bottom = '10px';
+                container.style.left = '10px';
+                container.style.width = '300px';
+                container.style.height = '65px';
+                container.style.zIndex = '999999';
+                container.style.opacity = '0.01';
+                container.style.pointerEvents = 'none';
+                container.style.transform = '';
                 container.style.outline = '';
                 container.style.boxShadow = '';
+                container.style.backgroundColor = '';
+                container.style.padding = '';
+                container.style.boxSizing = '';
               }
             }
             resolve();
           } else {
             const elapsed = Date.now() - start;
 
-            // 4 seconds passed and still no token – ask user to check and solve Turnstile
+            // 4 seconds passed and still no token – show Turnstile to user in the center of the screen
             if (elapsed > 4000 && !scrolled) {
               scrolled = true;
               if (callback) {
@@ -106,36 +118,58 @@
                 });
               }
 
-              // Scroll to the Turnstile container and highlight it
               if (form) {
                 const container = form.querySelector(
                   '.cf-turnstile, #cf-turnstile, [class*="cf-turnstile"], [id*="cf-turnstile"]'
                 );
                 if (container) {
-                  container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  container.style.position = 'fixed';
+                  container.style.top = '50%';
+                  container.style.left = '50%';
+                  container.style.transform = 'translate(-50%, -50%)';
+                  container.style.width = '300px';
+                  container.style.height = '65px';
+                  container.style.zIndex = '999999';
+                  container.style.opacity = '1';
+                  container.style.pointerEvents = 'auto';
                   container.style.outline = '3px solid #ff4d4f';
                   container.style.outlineOffset = '4px';
                   container.style.borderRadius = '4px';
-                  container.style.boxShadow = '0 0 12px rgba(255, 77, 79, 0.7)';
-                  container.style.transition = 'all 0.3s ease';
+                  container.style.boxShadow = '0 0 15px rgba(255, 77, 79, 0.8)';
+                  container.style.backgroundColor = '#ffffff';
+                  container.style.padding = '10px';
+                  container.style.boxSizing = 'content-box';
+                  container.style.transition = 'opacity 0.3s ease';
                 }
               }
             }
 
             if (elapsed > 45000) { // Timeout after 45s
-              // Remove highlight
+              // Restore hidden styling
               if (form) {
                 const container = form.querySelector(
                   '.cf-turnstile, #cf-turnstile, [class*="cf-turnstile"], [id*="cf-turnstile"]'
                 );
                 if (container) {
+                  container.style.position = 'fixed';
+                  container.style.bottom = '10px';
+                  container.style.left = '10px';
+                  container.style.width = '300px';
+                  container.style.height = '65px';
+                  container.style.zIndex = '999999';
+                  container.style.opacity = '0.01';
+                  container.style.pointerEvents = 'none';
+                  container.style.transform = '';
                   container.style.outline = '';
                   container.style.boxShadow = '';
+                  container.style.backgroundColor = '';
+                  container.style.padding = '';
+                  container.style.boxSizing = '';
                 }
               }
               reject(
                 new Error(
-                  'ボット判定(Cloudflare Turnstile)の自動認証がタイムアウトしました。左側の提出フォーム内のチェックボックスを手動でクリックして認証を完了させてから再度お試しください。'
+                  'ボット判定(Cloudflare Turnstile)の自動認証がタイムアウトしました。画面中央に表示されたチェックボックスを手動でクリックして認証を完了させてから再度お試しください。'
                 )
               );
             } else {
@@ -150,11 +184,11 @@
     /**
      * Submits code to AtCoder and polls the status.
      *
-     * Strategy: Load the official submit page (/contests/{contestId}/submit)
-     * inside a hidden iframe. This triggers Cloudflare Turnstile to execute
-     * and automatically solve itself in most cases. If Cloudflare demands a
-     * manual click, the iframe is popped up in the center of the screen
-     * temporarily so the user can click it.
+     * Strategy: Use the NATIVE submit form on the current task page.
+     * The task page has a submit form that includes CSRF token, Turnstile
+     * response, and all necessary hidden fields. By using FormData from
+     * this live DOM form, we include everything AtCoder expects — including
+     * the Cloudflare Turnstile token.
      *
      * @param {string} contestId
      * @param {string} problemId
@@ -163,140 +197,103 @@
      * @param {Function} callback - Called with progress updates or error
      */
     submit(contestId, problemId, languageId, code, callback) {
-      this._submitViaHiddenIframe(contestId, problemId, languageId, code, callback);
+      const nativeForm = document.querySelector('form[action*="/submit"]');
+
+      if (nativeForm) {
+        this._submitViaNativeForm(nativeForm, contestId, problemId, languageId, code, callback);
+      } else {
+        console.warn(
+          '[AtCoder Workspace] Native submit form not found, falling back to manual POST.'
+        );
+        this._submitManual(contestId, problemId, languageId, code, callback);
+      }
     }
 
     /**
-     * Submission path: loads /submit page in an iframe to handle Turnstile.
+     * Primary submission path: uses the native form DOM to build the request.
      * @private
      */
-    _submitViaHiddenIframe(contestId, problemId, languageId, code, callback) {
-      console.log('[AtCoder Workspace] Preparing hidden iframe for submission...');
-
-      // 1. Remove any stale iframe
-      const existingIframe = document.getElementById('atcoder-workspace-submit-iframe');
-      if (existingIframe) {
-        existingIframe.remove();
+    _submitViaNativeForm(form, contestId, problemId, languageId, code, callback) {
+      // Set the code into the textarea
+      const textarea = form.querySelector('textarea[name="sourceCode"]');
+      if (textarea) {
+        textarea.value = code;
       }
 
-      // 2. Create hidden iframe (must be sized and positioned offscreen, not display:none,
-      // so Turnstile's iframe inside can render and execute script properly)
-      const iframe = document.createElement('iframe');
-      iframe.id = 'atcoder-workspace-submit-iframe';
-      iframe.style.position = 'fixed';
-      iframe.style.width = '320px';
-      iframe.style.height = '180px';
-      iframe.style.top = '-9999px';
-      iframe.style.left = '-9999px';
-      iframe.style.opacity = '0';
-      iframe.style.pointerEvents = 'none';
-      iframe.style.backgroundColor = '#ffffff';
-      iframe.style.border = 'none';
-      iframe.src = `/contests/${contestId}/submit?task_screen_name=${problemId}`;
-      document.body.appendChild(iframe);
+      // Ensure task and language are set correctly
+      const taskInput = form.querySelector('[name="data.TaskScreenName"]');
+      if (taskInput) taskInput.value = problemId;
 
-      if (callback) {
-        callback({
-          status: 'WAITING_CAPTCHA',
-          message: '提出ページをロード中（ボット判定を解決しています）...',
-        });
-      }
+      const langSelect = form.querySelector('select[name="data.LanguageId"]');
+      if (langSelect) langSelect.value = languageId;
 
-      let submissionAttempted = false;
+      const langInput = form.querySelector('input[name="data.LanguageId"]');
+      if (langInput) langInput.value = languageId;
 
-      // 3. Handle load and Turnstile polling
-      iframe.onload = () => {
-        try {
-          const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-          const form = iframeDoc.querySelector('form[action*="/submit"]');
-          if (!form) {
-            // Check if login is required
-            if (
-              iframeDoc.body.innerHTML.includes('/login') ||
-              iframeDoc.body.innerHTML.includes('ログイン') ||
-              iframeDoc.body.innerHTML.includes('Sign In')
-            ) {
-              throw new Error(
-                'AtCoderにログインしていません。提出するには AtCoder のサイトでログインしてください。'
-              );
-            }
-            throw new Error(
-              '提出フォームが見つかりません。コンテストへの登録状態を確認してください。'
-            );
+      // Wait for the Turnstile widget to generate a valid token
+      const turnstileInput = form.querySelector('input[name="cf-turnstile-response"]');
+      this.waitForTurnstile(turnstileInput, form, callback)
+        .then(() => {
+          if (callback) {
+            callback({
+              status: 'SUBMITTING',
+              message: 'コードを送信しています...',
+            });
           }
 
-          const turnstileInput = form.querySelector('input[name="cf-turnstile-response"]');
+          // Build FormData from the live native form
+          const formData = new FormData(form);
 
-          this.waitForTurnstile(turnstileInput, form, callback)
-            .then(() => {
-              if (submissionAttempted) return;
-              submissionAttempted = true;
+          if (!formData.get('sourceCode') || formData.get('sourceCode').trim() === '') {
+            formData.set('sourceCode', code);
+          }
 
-              if (callback) {
-                callback({
-                  status: 'SUBMITTING',
-                  message: 'コードを送信しています...',
-                });
-              }
-
-              // Set values on the iframe form
-              const textarea = form.querySelector('textarea[name="sourceCode"]');
-              if (textarea) textarea.value = code;
-
-              const taskInput = form.querySelector('[name="data.TaskScreenName"]');
-              if (taskInput) taskInput.value = problemId;
-
-              const langSelect = form.querySelector('select[name="data.LanguageId"]');
-              if (langSelect) langSelect.value = languageId;
-
-              const langInput = form.querySelector('input[name="data.LanguageId"]');
-              if (langInput) langInput.value = languageId;
-
-              const formData = new FormData(form);
-              if (!formData.get('sourceCode') || formData.get('sourceCode').trim() === '') {
-                formData.set('sourceCode', code);
-              }
-
-              const actionUrl = form.getAttribute('action') || `/contests/${contestId}/submit`;
-              return fetch(actionUrl, {
-                method: 'POST',
-                body: formData,
-                credentials: 'include',
-              });
-            })
-            .then((res) => {
-              if (res) return this._handleSubmitResponse(res, contestId, callback);
-            })
-            .catch((err) => {
-              console.error('[AtCoder Workspace] Iframe submission error:', err);
-              callback({ error: err.message || '送信中にエラーが発生しました。' });
-            })
-            .finally(() => {
-              // Remove the iframe safely after submission
-              setTimeout(() => {
-                const f = document.getElementById('atcoder-workspace-submit-iframe');
-                if (f) f.remove();
-              }, 2000);
-            });
-        } catch (err) {
-          console.error('[AtCoder Workspace] Hidden iframe setup failed:', err);
-          callback({ error: err.message || '提出ページの初期化に失敗しました。' });
-          if (iframe) iframe.remove();
-        }
-      };
-
-      // Iframe loading timeout (15s)
-      setTimeout(() => {
-        const f = document.getElementById('atcoder-workspace-submit-iframe');
-        if (f && f.onload && !submissionAttempted) {
-          f.onload = null;
-          f.remove();
-          callback({
-            error:
-              '提出ページのロードがタイムアウトしました。通信環境を確認し、ページをリロードして再度お試しください。',
+          const actionUrl = form.getAttribute('action') || `/contests/${contestId}/submit`;
+          return fetch(actionUrl, {
+            method: 'POST',
+            body: formData,
+            credentials: 'include',
           });
-        }
-      }, 15000);
+        })
+        .then((res) => {
+          if (res) return this._handleSubmitResponse(res, contestId, callback);
+        })
+        .catch((err) => {
+          console.error('[AtCoder Workspace] Submission error:', err);
+          callback({ error: err.message || '送信中にエラーが発生しました。' });
+        });
+    }
+
+    /**
+     * Fallback submission path: builds FormData manually without DOM form.
+     * @private
+     */
+    _submitManual(contestId, problemId, languageId, code, callback) {
+      this.fetchFreshCsrfToken(contestId)
+        .then((csrfToken) => {
+          const params = new URLSearchParams();
+          params.append('csrf_token', csrfToken);
+          params.append('data.TaskScreenName', problemId);
+          params.append('data.LanguageId', languageId);
+          params.append('sourceCode', code);
+
+          console.log('[AtCoder Workspace] Submitting manually (no Turnstile):', {
+            problemId,
+            languageId,
+            codeLength: code.length,
+          });
+
+          return fetch(`/contests/${contestId}/submit`, {
+            method: 'POST',
+            body: params,
+            credentials: 'include',
+          });
+        })
+        .then((res) => this._handleSubmitResponse(res, contestId, callback))
+        .catch((err) => {
+          console.error('[AtCoder Workspace] Submission error:', err);
+          callback({ error: err.message || '送信中にエラーが発生しました。' });
+        });
     }
 
     /**
