@@ -59,125 +59,129 @@
     waitForTurnstile(input, form, callback) {
       // Check if there is a Turnstile container on the page
       let hasTurnstile = false;
-      if (form) {
-        const container = form.querySelector(
-          '.cf-turnstile, #cf-turnstile, [class*="cf-turnstile"], [id*="cf-turnstile"]'
-        );
-        if (container) hasTurnstile = true;
-      } else if (input) {
-        hasTurnstile = true;
+      let container = null;
+      try {
+        if (form) {
+          container = form.querySelector(
+            '.cf-turnstile, #cf-turnstile, [class*="cf-turnstile"], [id*="cf-turnstile"]'
+          );
+          if (container) hasTurnstile = true;
+        } else if (input) {
+          hasTurnstile = true;
+        }
+      } catch (e) {
+        console.warn('[AtCoder Workspace] Error checking Turnstile container existence:', e);
       }
 
       // No Turnstile on this page – proceed immediately
       if (!hasTurnstile && !input) return Promise.resolve();
+
+      // Get the input element
+      const currentInput =
+        input || (form ? form.querySelector('input[name="cf-turnstile-response"]') : null);
+
       // Already has a valid-looking token (long string, not 'hidden' or empty)
-      if (input && input.value && input.value.length > 20) return Promise.resolve();
+      if (currentInput && currentInput.value && currentInput.value.length > 20) {
+        return Promise.resolve();
+      }
 
       return new Promise((resolve, reject) => {
         const start = Date.now();
         let scrolled = false;
+        let resolved = false;
+        let observer = null;
+        let timer = null;
 
-        const check = () => {
-          const currentInput =
-            input || (form ? form.querySelector('input[name="cf-turnstile-response"]') : null);
-          if (currentInput && currentInput.value && currentInput.value.length > 20) {
-            console.log('[AtCoder Workspace] Turnstile token received.');
-            // Restore hidden styling
-            if (form) {
-              const container = form.querySelector(
-                '.cf-turnstile, #cf-turnstile, [class*="cf-turnstile"], [id*="cf-turnstile"]'
-              );
-              if (container) {
-                container.style.position = 'fixed';
-                container.style.bottom = '10px';
-                container.style.left = '10px';
-                container.style.width = '300px';
-                container.style.height = '65px';
-                container.style.zIndex = '999999';
-                container.style.opacity = '0.01';
-                container.style.pointerEvents = 'none';
-                container.style.transform = '';
-                container.style.outline = '';
-                container.style.boxShadow = '';
-                container.style.backgroundColor = '';
-                container.style.padding = '';
-                container.style.boxSizing = '';
-              }
-            }
-            resolve();
-          } else {
-            const elapsed = Date.now() - start;
-
-            // 4 seconds passed and still no token – show Turnstile to user in the center of the screen
-            if (elapsed > 4000 && !scrolled) {
-              scrolled = true;
-              if (callback) {
-                callback({
-                  status: 'WAITING_CAPTCHA',
-                  message: 'ボット認証（Cloudflare Turnstile）を待機しています。手動でのクリック（私は人間です）が必要な場合があります。',
-                });
-              }
-
-              if (form) {
-                const container = form.querySelector(
-                  '.cf-turnstile, #cf-turnstile, [class*="cf-turnstile"], [id*="cf-turnstile"]'
-                );
-                if (container) {
-                  container.style.position = 'fixed';
-                  container.style.top = '50%';
-                  container.style.left = '50%';
-                  container.style.transform = 'translate(-50%, -50%)';
-                  container.style.width = '300px';
-                  container.style.height = '65px';
-                  container.style.zIndex = '999999';
-                  container.style.opacity = '1';
-                  container.style.pointerEvents = 'auto';
-                  container.style.outline = '3px solid #ff4d4f';
-                  container.style.outlineOffset = '4px';
-                  container.style.borderRadius = '4px';
-                  container.style.boxShadow = '0 0 15px rgba(255, 77, 79, 0.8)';
-                  container.style.backgroundColor = '#ffffff';
-                  container.style.padding = '10px';
-                  container.style.boxSizing = 'content-box';
-                  container.style.transition = 'opacity 0.3s ease';
-                }
-              }
-            }
-
-            if (elapsed > 45000) { // Timeout after 45s
-              // Restore hidden styling
-              if (form) {
-                const container = form.querySelector(
-                  '.cf-turnstile, #cf-turnstile, [class*="cf-turnstile"], [id*="cf-turnstile"]'
-                );
-                if (container) {
-                  container.style.position = 'fixed';
-                  container.style.bottom = '10px';
-                  container.style.left = '10px';
-                  container.style.width = '300px';
-                  container.style.height = '65px';
-                  container.style.zIndex = '999999';
-                  container.style.opacity = '0.01';
-                  container.style.pointerEvents = 'none';
-                  container.style.transform = '';
-                  container.style.outline = '';
-                  container.style.boxShadow = '';
-                  container.style.backgroundColor = '';
-                  container.style.padding = '';
-                  container.style.boxSizing = '';
-                }
-              }
-              reject(
-                new Error(
-                  'ボット判定(Cloudflare Turnstile)の自動認証がタイムアウトしました。画面中央に表示されたチェックボックスを手動でクリックして認証を完了させてから再度お試しください。'
-                )
-              );
-            } else {
-              setTimeout(check, 300);
-            }
+        const cleanup = () => {
+          if (observer) {
+            observer.disconnect();
+            observer = null;
+          }
+          if (timer) {
+            clearTimeout(timer);
+            timer = null;
+          }
+          // Restore container styling (set back to pre-warmed state: opacity 0.01, remove highlight)
+          if (form && container) {
+            container.style.opacity = '0.01';
+            container.style.outline = '';
+            container.style.boxShadow = '';
           }
         };
-        check();
+
+        const checkToken = () => {
+          if (resolved) return true;
+          if (currentInput && currentInput.value && currentInput.value.length > 20) {
+            console.log('[AtCoder Workspace] Turnstile token received.');
+            resolved = true;
+            cleanup();
+            resolve();
+            return true;
+          }
+          return false;
+        };
+
+        // 1. Setup MutationObserver to watch for any changes in the Turnstile container or form
+        const observerTarget = container || form || document.body;
+        if (observerTarget) {
+          observer = new MutationObserver(() => {
+            checkToken();
+          });
+          observer.observe(observerTarget, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['value', 'class', 'style', 'src'],
+          });
+        }
+
+        // 2. Setup periodic check (polling) as fallback and for status updates/timeouts
+        const poll = () => {
+          if (resolved) return;
+
+          // Check token first
+          if (checkToken()) return;
+
+          const elapsed = Date.now() - start;
+
+          // 2.5 seconds passed and still no token – show Turnstile to user in the bottom left
+          if (elapsed > 2500 && !scrolled) {
+            scrolled = true;
+            if (callback) {
+              callback({
+                status: 'WAITING_CAPTCHA',
+                message:
+                  'ボット認証（Cloudflare Turnstile）を待機しています。手動でのクリック（私は人間です）が必要な場合があります。',
+              });
+            }
+
+            if (container) {
+              container.style.opacity = '1';
+              container.style.outline = '3px solid #ff4d4f';
+              container.style.outlineOffset = '4px';
+              container.style.borderRadius = '4px';
+              container.style.boxShadow = '0 0 12px rgba(255, 77, 79, 0.7)';
+              container.style.transition = 'all 0.3s ease';
+            }
+          }
+
+          if (elapsed > 45000) {
+            // Timeout after 45s
+            cleanup();
+            reject(
+              new Error(
+                'ボット判定(Cloudflare Turnstile)の自動認証がタイムアウトしました。左側の提出フォーム内のチェックボックスを手動でクリックして認証を完了させてから再度お試しください。'
+              )
+            );
+            return;
+          }
+
+          // Continue polling fallback
+          timer = setTimeout(poll, 300);
+        };
+
+        // Start polling
+        poll();
       });
     }
 
@@ -230,8 +234,10 @@
       const langInput = form.querySelector('input[name="data.LanguageId"]');
       if (langInput) langInput.value = languageId;
 
-      // Wait for the Turnstile widget to generate a valid token
+      // Keep the existing token if present, do not clear it, and do not reset Turnstile.
       const turnstileInput = form.querySelector('input[name="cf-turnstile-response"]');
+
+      // Wait for the Turnstile widget to generate a valid token
       this.waitForTurnstile(turnstileInput, form, callback)
         .then(() => {
           if (callback) {

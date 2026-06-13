@@ -11,10 +11,29 @@
   let langSelect = null;
 
   /**
+   * Safely retrieves the language select element, binding change listener if newly found.
+   * @returns {HTMLSelectElement|null}
+   */
+  function getLangSelect() {
+    if (!langSelect) {
+      langSelect = document.querySelector('select[name="data.LanguageId"]');
+      if (langSelect) {
+        langSelect.addEventListener('change', () => {
+          notifyEditor({
+            type: 'language-change',
+            languageId: langSelect.value,
+          });
+        });
+      }
+    }
+    return langSelect;
+  }
+
+  /**
    * Initializes the workspace and coordinates modules.
    */
   function init() {
-    langSelect = document.querySelector('select[name="data.LanguageId"]');
+    getLangSelect();
 
     // Turnstile activation hack: Force it to stay inside viewport (fixed position)
     // with standard size but 0.01 opacity, bypassing Lazy Load and triggering auto-solve.
@@ -22,7 +41,9 @@
       '.cf-turnstile, #cf-turnstile, [class*="cf-turnstile"], [id*="cf-turnstile"]'
     );
     if (turnstileContainer) {
-      console.log('[AtCoder Workspace] Turnstile container detected. Applying keep-active styling...');
+      console.log(
+        '[AtCoder Workspace] Turnstile container detected. Applying keep-active styling...'
+      );
       turnstileContainer.style.position = 'fixed';
       turnstileContainer.style.bottom = '10px';
       turnstileContainer.style.left = '10px';
@@ -30,7 +51,6 @@
       turnstileContainer.style.height = '65px';
       turnstileContainer.style.zIndex = '999999';
       turnstileContainer.style.opacity = '0.01';
-      turnstileContainer.style.pointerEvents = 'none';
     }
 
     const layout = window.AtCoderWorkspace.Layout;
@@ -70,16 +90,6 @@
         case 'editor-ready':
           if (!scraper) return;
           scraper.loadNavigationUrls(contestId, (prevUrl, nextUrl) => {
-            const options = [];
-            if (langSelect) {
-              langSelect.querySelectorAll('option').forEach((opt) => {
-                options.push({
-                  value: opt.value,
-                  text: opt.textContent,
-                });
-              });
-            }
-
             // Detect page dark mode based on background brightness
             const bodyBg = window.getComputedStyle(document.body).backgroundColor;
             const rgb = bodyBg.match(/\d+/g);
@@ -92,10 +102,26 @@
 
             // AtCoder language selection element helper logic (with retries)
             const sendConfigWithRetry = (retriesLeft) => {
-              const selectedLanguageId = langSelect ? langSelect.value : null;
+              const currentLangSelect = getLangSelect();
+              const selectedLanguageId = currentLangSelect ? currentLangSelect.value : null;
 
-              if (!selectedLanguageId && retriesLeft > 0) {
-                console.log('[AtCoder Workspace] Language selection empty, retrying in 100ms...');
+              const options = [];
+              if (currentLangSelect) {
+                currentLangSelect.querySelectorAll('option').forEach((opt) => {
+                  options.push({
+                    value: opt.value,
+                    text: opt.textContent,
+                  });
+                });
+              }
+
+              if (
+                (!currentLangSelect || !selectedLanguageId || options.length === 0) &&
+                retriesLeft > 0
+              ) {
+                console.log(
+                  '[AtCoder Workspace] Language selection or options empty, retrying in 100ms...'
+                );
                 setTimeout(() => sendConfigWithRetry(retriesLeft - 1), 100);
                 return;
               }
@@ -113,16 +139,18 @@
               });
             };
 
-            sendConfigWithRetry(5);
+            sendConfigWithRetry(10);
           });
           break;
 
-        case 'update-language':
-          if (langSelect && e.data.languageId) {
-            langSelect.value = e.data.languageId;
-            langSelect.dispatchEvent(new Event('change'));
+        case 'update-language': {
+          const currentLangSelect = getLangSelect();
+          if (currentLangSelect && e.data.languageId) {
+            currentLangSelect.value = e.data.languageId;
+            currentLangSelect.dispatchEvent(new Event('change'));
           }
           break;
+        }
 
         case 'navigate':
           if (e.data.url) {
@@ -274,16 +302,6 @@
           break;
       }
     });
-
-    // Listen to lang dropdown changes directly on AtCoder main page
-    if (langSelect) {
-      langSelect.addEventListener('change', () => {
-        notifyEditor({
-          type: 'language-change',
-          languageId: langSelect.value,
-        });
-      });
-    }
   }
 
   /**
