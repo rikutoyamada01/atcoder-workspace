@@ -45,24 +45,6 @@
   function init() {
     getLangSelect();
 
-    // Turnstile activation hack: Force it to stay inside viewport (fixed position)
-    // with standard size but 0.01 opacity, bypassing Lazy Load and triggering auto-solve.
-    const turnstileContainer = document.querySelector(
-      '.cf-turnstile, #cf-turnstile, [class*="cf-turnstile"], [id*="cf-turnstile"]'
-    );
-    if (turnstileContainer) {
-      console.log(
-        '[AtCoder Workspace] Turnstile container detected. Applying keep-active styling...'
-      );
-      turnstileContainer.style.position = 'fixed';
-      turnstileContainer.style.bottom = '10px';
-      turnstileContainer.style.left = '10px';
-      turnstileContainer.style.width = '300px';
-      turnstileContainer.style.height = '65px';
-      turnstileContainer.style.zIndex = '999999';
-      turnstileContainer.style.opacity = '0.01';
-    }
-
     const layout = window.AtCoderWorkspace.Layout;
     if (!layout) {
       console.error('[AtCoder Workspace] Layout module not found!');
@@ -252,6 +234,7 @@
                   status: res.status,
                   time: res.time,
                   memory: res.memory,
+                  turnstileDebug: res.turnstileDebug,
                 });
               } else {
                 notifyEditor({
@@ -260,6 +243,7 @@
                   status: res.status,
                   time: res.time,
                   memory: res.memory,
+                  turnstileDebug: res.turnstileDebug,
                 });
               }
             });

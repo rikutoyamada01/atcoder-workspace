@@ -354,16 +354,26 @@
         `;
         break;
 
-      case 'submit-status':
+      case 'submit-status': {
         isSubmitPhase1 = false;
         setButtonsDisabled(true); // Re-enable navigation if available because Phase 1 is done
+
+        const turnstileMap = {
+          'force-rendered': '強制レンダリング起動',
+          'auto-rendered': '自動レンダリング検出',
+          'token_already_present': '既存トークン再利用',
+          'no_container': '認証不要',
+          'implicit': '暗黙的ロード',
+        };
+        const turnstileText = turnstileMap[e.data.turnstileDebug] || e.data.turnstileDebug || '不明';
 
         // Update Console Results
         consoleResults.innerHTML = `
           <div style="font-size: 12px; color: #333;">
             <div style="margin-bottom: 8px;">ステータス: <span class="case-status status-running">${escapeHtml(e.data.status)}</span></div>
             <div style="margin-bottom: 4px;">実行時間: ${escapeHtml(e.data.time)}</div>
-            <div style="margin-bottom: 8px;">メモリ: ${escapeHtml(e.data.memory)}</div>
+            <div style="margin-bottom: 4px;">メモリ: ${escapeHtml(e.data.memory)}</div>
+            <div style="margin-bottom: 8px; color: #888; font-size: 11px;">[Debug] Turnstile: ${escapeHtml(turnstileText)}</div>
             <div>
               <a href="https://atcoder.jp/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">提出詳細ページを開く (ID: ${e.data.submissionId})</a>
             </div>
@@ -374,6 +384,7 @@
         testSummary.textContent = `ジャッジ中... (${e.data.status})`;
         testSummary.className = 'summary-running';
         break;
+      }
 
       case 'submit-complete': {
         isSubmitting = false;
@@ -391,12 +402,22 @@
           playBeepWA();
         }
 
+        const turnstileMap = {
+          'force-rendered': '強制レンダリング起動',
+          'auto-rendered': '自動レンダリング検出',
+          'token_already_present': '既存トークン再利用',
+          'no_container': '認証不要',
+          'implicit': '暗黙的ロード',
+        };
+        const turnstileText = turnstileMap[e.data.turnstileDebug] || e.data.turnstileDebug || '不明';
+
         // Update Console Results
         consoleResults.innerHTML = `
           <div style="font-size: 12px; color: #333;">
             <div style="margin-bottom: 8px;">ステータス: <span class="case-status status-${e.data.status.toLowerCase()}">${escapeHtml(e.data.status)}</span></div>
             <div style="margin-bottom: 4px;">実行時間: ${escapeHtml(e.data.time)}</div>
-            <div style="margin-bottom: 8px;">メモリ: ${escapeHtml(e.data.memory)}</div>
+            <div style="margin-bottom: 4px;">メモリ: ${escapeHtml(e.data.memory)}</div>
+            <div style="margin-bottom: 8px; color: #888; font-size: 11px;">[Debug] Turnstile: ${escapeHtml(turnstileText)}</div>
             <div>
               <a href="https://atcoder.jp/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">提出詳細ページを開く (ID: ${e.data.submissionId})</a>
             </div>

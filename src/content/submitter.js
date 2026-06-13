@@ -8,6 +8,10 @@
    * polling the status of the submission until judging completes.
    */
   class Submitter {
+    constructor() {
+      this.lastTurnstileStatus = 'unknown';
+    }
+
     /**
      * Extracts the CSRF token from the current page DOM.
      * @returns {string}
@@ -57,20 +61,38 @@
      * @returns {Promise<void>}
      */
     waitForTurnstile(input, form, callback) {
+      // If token already present, skip Turnstile handling
+      if (input && input.value && input.value.length > 20) {
+        this.lastTurnstileStatus = 'token_already_present';
+        return Promise.resolve();
+      }
+
       // Check if there is a Turnstile container on the page
+      // Note: AtCoder uses "cf-challenge" class, not "cf-turnstile"
       let hasTurnstile = false;
       let container = null;
       try {
         if (form) {
           container = form.querySelector(
-            '.cf-turnstile, #cf-turnstile, [class*="cf-turnstile"], [id*="cf-turnstile"]'
+            '.cf-turnstile, .cf-challenge, #cf-turnstile, [class*="cf-turnstile"], [data-sitekey]'
           );
           if (container) hasTurnstile = true;
         } else if (input) {
-          hasTurnstile = true;
+          container = input.closest('form')
+            ? input.closest('form').querySelector(
+                '.cf-turnstile, .cf-challenge, #cf-turnstile, [class*="cf-turnstile"], [data-sitekey]'
+              )
+            : null;
+          if (container) hasTurnstile = true;
         }
       } catch (e) {
         console.warn('[AtCoder Workspace] Error checking Turnstile container existence:', e);
+      }
+
+      if (container) {
+        this.lastTurnstileStatus = container.dataset.turnstileStatus || 'implicit';
+      } else {
+        this.lastTurnstileStatus = hasTurnstile ? 'implicit' : 'no_container';
       }
 
       // No Turnstile on this page – proceed immediately
@@ -82,12 +104,12 @@
 
       // Already has a valid-looking token (long string, not 'hidden' or empty)
       if (currentInput && currentInput.value && currentInput.value.length > 20) {
+        this.lastTurnstileStatus = 'token_already_present';
         return Promise.resolve();
       }
 
       return new Promise((resolve, reject) => {
         const start = Date.now();
-        let scrolled = false;
         let resolved = false;
         let observer = null;
         let timer = null;
@@ -111,6 +133,9 @@
 
         const checkToken = () => {
           if (resolved) return true;
+          if (container && container.dataset.turnstileStatus) {
+            this.lastTurnstileStatus = container.dataset.turnstileStatus;
+          }
           if (currentInput && currentInput.value && currentInput.value.length > 20) {
             console.log('[AtCoder Workspace] Turnstile token received.');
             resolved = true;
@@ -144,33 +169,12 @@
 
           const elapsed = Date.now() - start;
 
-          // 2.5 seconds passed and still no token – show Turnstile to user in the bottom left
-          if (elapsed > 2500 && !scrolled) {
-            scrolled = true;
-            if (callback) {
-              callback({
-                status: 'WAITING_CAPTCHA',
-                message:
-                  'ボット認証（Cloudflare Turnstile）を待機しています。手動でのクリック（私は人間です）が必要な場合があります。',
-              });
-            }
-
-            if (container) {
-              container.style.opacity = '1';
-              container.style.outline = '3px solid #ff4d4f';
-              container.style.outlineOffset = '4px';
-              container.style.borderRadius = '4px';
-              container.style.boxShadow = '0 0 12px rgba(255, 77, 79, 0.7)';
-              container.style.transition = 'all 0.3s ease';
-            }
-          }
-
           if (elapsed > 45000) {
             // Timeout after 45s
             cleanup();
             reject(
               new Error(
-                'ボット判定(Cloudflare Turnstile)の自動認証がタイムアウトしました。左側の提出フォーム内のチェックボックスを手動でクリックして認証を完了させてから再度お試しください。'
+                'ボット判定(Cloudflare Turnstile)の自動認証がタイムアウトしました。しばらく待ってから再度提出をお試しください。'
               )
             );
             return;
@@ -244,6 +248,7 @@
             callback({
               status: 'SUBMITTING',
               message: 'コードを送信しています...',
+              turnstileDebug: this.lastTurnstileStatus,
             });
           }
 
@@ -373,6 +378,7 @@
             time: '',
             memory: '',
             isComplete: false,
+            turnstileDebug: this.lastTurnstileStatus,
           });
 
           // Start polling
@@ -492,6 +498,7 @@
               time: info.time,
               memory: info.memory,
               isComplete,
+              turnstileDebug: this.lastTurnstileStatus,
             });
 
             if (isComplete) {

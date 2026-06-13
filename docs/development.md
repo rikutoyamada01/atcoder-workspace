@@ -279,7 +279,7 @@ waitForTurnstile(input) {
 │  │  ├─ submitter.js ─────┤     メッセージ受信           │
 │  │  │  1. フォーム発見    │                              │
 │  │  │  2. コード注入      │                              │
-│  │  │  3. Turnstile待機   │  ← 最大15秒                 │
+│  │  │  3. Turnstile待機   │  ← 最大45秒                 │
 │  │  │  4. FormData構築    │  ← ネイティブフォームから    │
 │  │  │  5. fetch POST      │                             │
 │  │  │  6. 結果ポーリング  │                              │
@@ -290,6 +290,19 @@ waitForTurnstile(input) {
 
 > [!WARNING]
 > **`fetch` で取得した HTML からは Turnstile トークンを得ることは原理的に不可能です。** Turnstile は JavaScript ウィジェットであり、ブラウザが実際にレンダリングしたページ上でのみ動作します。必ずライブ DOM（レンダリング済みのページ上の要素）からトークンを取得してください。
+
+### ⚠️ レイアウト再構成による Lazy Load ＆ DOM移動（Reparenting）による iframe 破損の問題
+
+**現象**:
+1. **Lazy Load による未起動**: 拡張機能がページのレイアウトを固定（`position: fixed` やスプリットパネル）に再構成すると、実際の提出フォーム（Turnstileコンテナである `.cf-challenge` を含む）がスクロール可能な `#main-container` の下部（初期表示のビューポート外）に配置されることになります。Cloudflare Turnstile は内部で `IntersectionObserver` を利用してレイアウト上の可視性を判定し、ビューポート内に要素が入るまでレンダリングを遅延させる（Lazy Load）仕様になっているため、フォームがビューポートから遠く離れた位置にあると、いつまで待っても Turnstile が起動せず、トークンが生成されずタイムアウトします。
+2. **DOM移動（Reparenting）による iframe 破損（真っ白化）**: ブラウザのセキュリティおよび仕様上、**すでにレンダリングされた `iframe` を含む親要素をDOMツリー内で別の位置に移動（再親化 / Reparenting）させると、中の `iframe` は切断され、中身が真っ白に初期化された「破損状態」**になります。AtCoder標準の自動ロード、あるいは拡張機能のレイアウト完成前に描画された Turnstile ウィジェットは、拡張機能がレイアウトを構成する際に `#main-container` を `#atcoder-workspace-wrapper` の下に移動させるため、この瞬間にすべて真っ白な破損状態になり、クリックしても無反応になります。
+
+**解決策**:
+`manifest.json` において、`"world": "MAIN"` (MAIN world) で動作する独立したスクリプト `src/content/turnstile-kick.js` を `document_start` のタイミングで注入し、以下の2つの制御を行います：
+1. **レイアウト構築完了まで待機**: 拡張機能がレイアウト構築を終え、`#atcoder-workspace-wrapper` が作成されるまでは、Turnstile のレンダリングを保留（待機）します。これにより、レンダリング直後に DOM が移動されて破損するのを防ぎます。
+2. **自動描画された破損 iframe のリセットと再生成**: 万が一、レイアウト構築前にすでに implicit（暗黙的）に Turnstile が描画され、DOMの移動によって iframe が真っ白に破損した場合は、`window.turnstile.reset(container)` を呼び出して破損した iframe をクリアし、新しいDOM構造の元で明示的に再描画を実行します。
+
+これにより、Turnstile の Lazy Load と DOM 移動による破損の双方を完全に解決しています。
 
 ### ⚠️ 開発・デバッグ時の注意点
 

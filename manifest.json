@@ -23,6 +23,12 @@
       ],
       "css": ["src/content/content.css"],
       "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://atcoder.jp/contests/*/tasks/*"],
+      "js": ["src/content/turnstile-kick.js"],
+      "world": "MAIN",
+      "run_at": "document_start"
     }
   ],
   "web_accessible_resources": [
