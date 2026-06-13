@@ -302,6 +302,8 @@ waitForTurnstile(input) {
 1. **レイアウト構築完了まで待機**: 拡張機能がレイアウト構築を終え、`#atcoder-workspace-wrapper` が作成されるまでは、Turnstile のレンダリングを保留（待機）します。これにより、レンダリング直後に DOM が移動されて破損するのを防ぎます。
 2. **自動描画された破損 iframe のリセットと再生成**: 万が一、レイアウト構築前にすでに implicit（暗黙的）に Turnstile が描画され、DOMの移動によって iframe が真っ白に破損した場合は、`window.turnstile.reset(container)` を呼び出して破損した iframe をクリアし、新しいDOM構造の元で明示的に再描画を実行します。
 
+また、Cloudflare Turnstile の `api.js` スクリプトが `async` や `defer` 属性付きで読み込まれている場合、`window.turnstile.ready()` を呼び出すと `TurnstileError`（`Remove async/defer ...`）が投げられます。このエラーを回避するため、`ready()` は使用せず、`typeof window.turnstile.render === 'function'` が真になったことをポーリングで確認した上で、直接 `render()` を実行するように設計されています。
+
 これにより、Turnstile の Lazy Load と DOM 移動による破損の双方を完全に解決しています。
 
 ### ⚠️ 開発・デバッグ時の注意点

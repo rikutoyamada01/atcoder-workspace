@@ -42,25 +42,15 @@
 
     try {
       const sitekey = container.getAttribute('data-sitekey');
-      if (window.turnstile.ready) {
-        window.turnstile.ready(function () {
-          try {
-            if (!container.querySelector('iframe')) {
-              window.turnstile.render(container, { sitekey: sitekey });
-              container.dataset.turnstileStatus = 'force-rendered';
-              console.log('[AtCoder Workspace] Turnstile render triggered via MAIN world injection');
-            }
-          } catch (err) {
-            console.warn('[AtCoder Workspace] Turnstile render error inside ready:', err);
-          }
-        });
-        return true;
-      } else {
+      // If turnstile.render function is fully loaded, call it directly.
+      // Do NOT use turnstile.ready() as it throws TurnstileError when api.js is loaded with async/defer.
+      if (typeof window.turnstile.render === 'function') {
         window.turnstile.render(container, { sitekey: sitekey });
         container.dataset.turnstileStatus = 'force-rendered';
         console.log('[AtCoder Workspace] Turnstile render triggered via MAIN world injection');
         return true;
       }
+      return false; // Not fully initialized yet, poll again
     } catch (e) {
       console.warn('[AtCoder Workspace] Turnstile render error:', e);
       return false;
