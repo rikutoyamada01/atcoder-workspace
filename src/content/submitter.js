@@ -262,7 +262,7 @@
           });
         })
         .then((res) => {
-          if (res) return this._handleSubmitResponse(res, contestId, callback);
+          if (res) return this._handleSubmitResponse(res, contestId, problemId, languageId, code, callback);
         })
         .catch((err) => {
           console.error('[AtCoder Workspace] Submission error:', err);
@@ -295,7 +295,7 @@
             credentials: 'include',
           });
         })
-        .then((res) => this._handleSubmitResponse(res, contestId, callback))
+        .then((res) => this._handleSubmitResponse(res, contestId, problemId, languageId, code, callback))
         .catch((err) => {
           console.error('[AtCoder Workspace] Submission error:', err);
           callback({ error: err.message || '送信中にエラーが発生しました。' });
@@ -306,7 +306,7 @@
      * Handles the POST response from the submit endpoint.
      * @private
      */
-    _handleSubmitResponse(res, contestId, callback) {
+    _handleSubmitResponse(res, contestId, problemId, languageId, code, callback) {
       return res
         .text()
         .then((html) => {
@@ -352,6 +352,20 @@
           return submissionId;
         })
         .then((submissionId) => {
+          // Save pending submission info to storage
+          if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+            chrome.storage.local.set({
+              pending_submission: {
+                submissionId,
+                contestId,
+                problemId,
+                languageId,
+                code,
+                timestamp: Date.now(),
+              },
+            });
+          }
+
           // Send initial status update
           callback({
             submissionId,
@@ -480,7 +494,11 @@
               isComplete,
             });
 
-            if (!isComplete) {
+            if (isComplete) {
+              if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                chrome.storage.local.remove('pending_submission');
+              }
+            } else {
               setTimeout(checkStatus, pollInterval);
             }
           })

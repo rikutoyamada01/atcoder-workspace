@@ -24,6 +24,7 @@
 
   let isTesting = false;
   let isSubmitting = false;
+  let isSubmitPhase1 = false;
   let resultsCount = 0;
   let acCount = 0;
   let totalCount = 0;
@@ -39,8 +40,9 @@
   }
 
   function setButtonsDisabled(disabled) {
-    prevBtn.disabled = disabled || !prevUrl;
-    nextBtn.disabled = disabled || !nextUrl;
+    // Block navigation during Phase 1 submission or sample testing
+    prevBtn.disabled = isSubmitPhase1 || isTesting ? true : !prevUrl;
+    nextBtn.disabled = isSubmitPhase1 || isTesting ? true : !nextUrl;
     testBtn.disabled = disabled;
     submitBtn.disabled = disabled;
     langSelect.disabled = disabled;
@@ -325,6 +327,7 @@
 
       case 'submit-start':
         isSubmitting = true;
+        isSubmitPhase1 = true;
         setButtonsDisabled(true);
         toggleConsole(true);
 
@@ -352,6 +355,9 @@
         break;
 
       case 'submit-status':
+        isSubmitPhase1 = false;
+        setButtonsDisabled(true); // Re-enable navigation if available because Phase 1 is done
+
         // Update Console Results
         consoleResults.innerHTML = `
           <div style="font-size: 12px; color: #333;">
@@ -371,6 +377,7 @@
 
       case 'submit-complete': {
         isSubmitting = false;
+        isSubmitPhase1 = false;
         setButtonsDisabled(false);
 
         const isAC = e.data.status === 'AC';
@@ -428,6 +435,7 @@
 
       case 'submit-error':
         isSubmitting = false;
+        isSubmitPhase1 = false;
         setButtonsDisabled(false);
 
         testSummary.textContent = `エラー: ${e.data.message}`;
@@ -441,6 +449,86 @@
         `;
         consoleResults.scrollTop = consoleResults.scrollHeight;
         break;
+
+      case 'pending-submit-status':
+        if (e.data.problemId === problemId) {
+          isSubmitting = true;
+          isSubmitPhase1 = false;
+          setButtonsDisabled(true);
+          toggleConsole(true);
+
+          testSummary.textContent = `ジャッジ中... (${e.data.status})`;
+          testSummary.className = 'summary-running';
+
+          consoleResults.innerHTML = `
+            <div style="font-size: 12px; color: #333;">
+              <div style="margin-bottom: 8px;">ステータス: <span class="case-status status-running">${escapeHtml(e.data.status)}</span></div>
+              <div style="margin-bottom: 4px;">実行時間: ${escapeHtml(e.data.time)}</div>
+              <div style="margin-bottom: 8px;">メモリ: ${escapeHtml(e.data.memory)}</div>
+              <div>
+                <a href="https://atcoder.jp/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">提出詳細ページを開く (ID: ${e.data.submissionId})</a>
+              </div>
+            </div>
+          `;
+          consoleResults.scrollTop = consoleResults.scrollHeight;
+        }
+        break;
+
+      case 'pending-submit-complete': {
+        const isAC = e.data.status === 'AC';
+        if (isAC) {
+          playChimeAC();
+        } else {
+          playBeepWA();
+        }
+
+        // Trigger Notification
+        if (typeof chrome !== 'undefined' && chrome.notifications && chrome.notifications.create) {
+          chrome.notifications.create({
+            type: 'basic',
+            iconUrl:
+              'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+            title: `ジャッジ完了 (${e.data.problemId})`,
+            message: `結果: ${e.data.status} | 実行時間: ${e.data.time} | メモリ: ${e.data.memory}`,
+            priority: 1,
+          });
+        }
+
+        // Save to IndexedDB
+        saveSubmissionToDB({
+          id: e.data.submissionId,
+          contestId: e.data.contestId,
+          problemId: e.data.problemId,
+          languageId: e.data.languageId,
+          code: e.data.code,
+          status: e.data.status,
+          time: e.data.time,
+          memory: e.data.memory,
+          timestamp: Date.now(),
+        });
+
+        if (e.data.problemId === problemId) {
+          isSubmitting = false;
+          isSubmitPhase1 = false;
+          setButtonsDisabled(false);
+
+          testSummary.textContent = `ジャッジ完了: ${e.data.status}`;
+          testSummary.className = isAC ? 'summary-ac' : 'summary-wa';
+
+          consoleResults.innerHTML = `
+            <div style="font-size: 12px; color: #333;">
+              <div style="margin-bottom: 8px;">ステータス: <span class="case-status status-${e.data.status.toLowerCase()}">${escapeHtml(e.data.status)}</span></div>
+              <div style="margin-bottom: 4px;">実行時間: ${escapeHtml(e.data.time)}</div>
+              <div style="margin-bottom: 8px;">メモリ: ${escapeHtml(e.data.memory)}</div>
+              <div>
+                <a href="https://atcoder.jp/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">提出詳細ページを開く (ID: ${e.data.submissionId})</a>
+              </div>
+            </div>
+          `;
+          consoleResults.scrollTop = consoleResults.scrollHeight;
+        }
+        break;
+      }
 
       case 'test-start':
         isTesting = true;
@@ -580,8 +668,13 @@
 
   function updateNavigationButtons() {
     if (prevUrl) {
-      prevBtn.disabled = false;
+      prevBtn.disabled = isSubmitPhase1 || isTesting ? true : false;
       prevBtn.onclick = () => {
+        if (isTesting) {
+          if (!confirm('テスト実行中にページ遷移すると、テスト結果が失われます。本当に遷移しますか？')) {
+            return;
+          }
+        }
         saveCodeSync();
         window.parent.postMessage({ type: 'navigate', url: prevUrl }, '*');
       };
@@ -590,8 +683,13 @@
     }
 
     if (nextUrl) {
-      nextBtn.disabled = false;
+      nextBtn.disabled = isSubmitPhase1 || isTesting ? true : false;
       nextBtn.onclick = () => {
+        if (isTesting) {
+          if (!confirm('テスト実行中にページ遷移すると、テスト結果が失われます。本当に遷移しますか？')) {
+            return;
+          }
+        }
         saveCodeSync();
         window.parent.postMessage({ type: 'navigate', url: nextUrl }, '*');
       };

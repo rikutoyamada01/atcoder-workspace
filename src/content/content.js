@@ -9,6 +9,8 @@
   const problemId = pathMatch[2];
 
   let langSelect = null;
+  let isEditorReady = false;
+  const messageQueue = [];
 
   /**
    * Safely retrieves the language select element, binding change listener if newly found.
@@ -73,6 +75,7 @@
     });
 
     setupMessageEvents();
+    checkPendingSubmission();
   }
 
   /**
@@ -96,6 +99,11 @@
 
       switch (e.data.type) {
         case 'editor-ready':
+          isEditorReady = true;
+          while (messageQueue.length > 0) {
+            const queuedMsg = messageQueue.shift();
+            notifyEditor(queuedMsg);
+          }
           if (!scraper) return;
           scraper.loadNavigationUrls(contestId, (prevUrl, nextUrl) => {
             // Detect page dark mode based on background brightness
@@ -348,6 +356,16 @@
    * @param {Object} message
    */
   function notifyEditor(message) {
+    if (!isEditorReady) {
+      console.log(
+        '[AtCoder Workspace] Content Script: Queueing message to iframe (editor not ready yet)',
+        message.type,
+        message
+      );
+      messageQueue.push(message);
+      return;
+    }
+
     const layout = window.AtCoderWorkspace.Layout;
     const iframe = layout ? layout.getIframe() : null;
     if (iframe && iframe.contentWindow) {
@@ -357,6 +375,13 @@
         message
       );
       iframe.contentWindow.postMessage(message, '*');
+    } else {
+      console.log(
+        '[AtCoder Workspace] Content Script: Queueing message (iframe not available)',
+        message.type,
+        message
+      );
+      messageQueue.push(message);
     }
   }
 
@@ -373,6 +398,66 @@
       }
     }
   });
+
+  /**
+   * Checks if there is a pending submission in storage and resumes polling if found.
+   */
+  function checkPendingSubmission() {
+    if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.local) return;
+
+    chrome.storage.local.get(['pending_submission'], (res) => {
+      const pending = res.pending_submission;
+      if (!pending) return;
+
+      console.log('[AtCoder Workspace] Found pending submission in storage. Resuming polling...', pending);
+
+      const submitter = window.AtCoderWorkspace.Submitter;
+      if (!submitter) {
+        console.error('[AtCoder Workspace] Submitter module not found during resume!');
+        return;
+      }
+
+      // Notify editor that we are resuming a background submission polling
+      notifyEditor({
+        type: 'pending-submit-status',
+        problemId: pending.problemId,
+        submissionId: pending.submissionId,
+        status: 'WJ',
+        time: '',
+        memory: '',
+      });
+
+      submitter.poll(pending.contestId, pending.submissionId, (pollRes) => {
+        if (pollRes.error) {
+          notifyEditor({
+            type: 'submit-error',
+            message: pollRes.error,
+          });
+        } else if (pollRes.isComplete) {
+          notifyEditor({
+            type: 'pending-submit-complete',
+            submissionId: pollRes.submissionId,
+            contestId: pending.contestId,
+            problemId: pending.problemId,
+            languageId: pending.languageId,
+            code: pending.code,
+            status: pollRes.status,
+            time: pollRes.time,
+            memory: pollRes.memory,
+          });
+        } else {
+          notifyEditor({
+            type: 'pending-submit-status',
+            problemId: pending.problemId,
+            submissionId: pollRes.submissionId,
+            status: pollRes.status,
+            time: pollRes.time,
+            memory: pollRes.memory,
+          });
+        }
+      });
+    });
+  }
 
   // Run initializer on document ready
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
