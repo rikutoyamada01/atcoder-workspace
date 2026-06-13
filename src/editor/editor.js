@@ -289,6 +289,11 @@
         // Populate Languages
         populateLanguageSelect(e.data.languages, e.data.selectedLanguageId);
 
+        // Save the last selected language
+        if (currentLanguageId && isContextValid()) {
+          chrome.storage.local.set({ 'settings:last_selected_language': currentLanguageId });
+        }
+
         // Load Monaco Editor
         initMonaco(e.data.isDark);
         break;
@@ -300,6 +305,11 @@
           currentLanguageId = e.data.languageId;
           langSelect.value = currentLanguageId;
           onLanguageChanged();
+
+          // Save the last selected language
+          if (currentLanguageId && isContextValid()) {
+            chrome.storage.local.set({ 'settings:last_selected_language': currentLanguageId });
+          }
         }
         break;
 
@@ -613,6 +623,12 @@
       // Save code under the OLD language ID before switching
       saveCodeSync();
       currentLanguageId = langSelect.value;
+
+      // Save the last selected language
+      if (currentLanguageId && isContextValid()) {
+        chrome.storage.local.set({ 'settings:last_selected_language': currentLanguageId });
+      }
+
       // Notify parent AtCoder page
       window.parent.postMessage({ type: 'update-language', languageId: currentLanguageId }, '*');
       onLanguageChanged();

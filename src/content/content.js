@@ -23,6 +23,14 @@
             type: 'language-change',
             languageId: langSelect.value,
           });
+          if (
+            langSelect.value &&
+            typeof chrome !== 'undefined' &&
+            chrome.storage &&
+            chrome.storage.local
+          ) {
+            chrome.storage.local.set({ 'settings:last_selected_language': langSelect.value });
+          }
         });
       }
     }
@@ -126,17 +134,48 @@
                 return;
               }
 
-              notifyEditor({
-                type: 'init-config',
-                contestId,
-                problemId,
-                selectedLanguageId:
-                  selectedLanguageId || (options.length > 0 ? options[0].value : null),
-                languages: options,
-                prevUrl,
-                nextUrl,
-                isDark,
-              });
+              const sendConfig = (finalLangId) => {
+                notifyEditor({
+                  type: 'init-config',
+                  contestId,
+                  problemId,
+                  selectedLanguageId: finalLangId,
+                  languages: options,
+                  prevUrl,
+                  nextUrl,
+                  isDark,
+                });
+              };
+
+              if (
+                !selectedLanguageId &&
+                typeof chrome !== 'undefined' &&
+                chrome.storage &&
+                chrome.storage.local
+              ) {
+                chrome.storage.local.get(['settings:last_selected_language'], (res) => {
+                  const lastLang = res['settings:last_selected_language'];
+                  const existsInOptions = options.some((opt) => opt.value === lastLang);
+                  const finalLangId =
+                    lastLang && existsInOptions
+                      ? lastLang
+                      : options.length > 0
+                        ? options[0].value
+                        : null;
+
+                  // Update the native select element as well
+                  if (finalLangId && currentLangSelect && currentLangSelect.value !== finalLangId) {
+                    currentLangSelect.value = finalLangId;
+                    currentLangSelect.dispatchEvent(new Event('change'));
+                  }
+
+                  sendConfig(finalLangId);
+                });
+              } else {
+                const finalLangId =
+                  selectedLanguageId || (options.length > 0 ? options[0].value : null);
+                sendConfig(finalLangId);
+              }
             };
 
             sendConfigWithRetry(10);
