@@ -279,7 +279,7 @@ waitForTurnstile(input) {
 │  │  ├─ submitter.js ─────┤     メッセージ受信           │
 │  │  │  1. フォーム発見    │                              │
 │  │  │  2. コード注入      │                              │
-│  │  │  3. Turnstile待機   │  ← 最大15秒                 │
+│  │  │  3. Turnstile待機   │  ← 最大45秒                 │
 │  │  │  4. FormData構築    │  ← ネイティブフォームから    │
 │  │  │  5. fetch POST      │                             │
 │  │  │  6. 結果ポーリング  │                              │
@@ -290,4 +290,35 @@ waitForTurnstile(input) {
 
 > [!WARNING]
 > **`fetch` で取得した HTML からは Turnstile トークンを得ることは原理的に不可能です。** Turnstile は JavaScript ウィジェットであり、ブラウザが実際にレンダリングしたページ上でのみ動作します。必ずライブ DOM（レンダリング済みのページ上の要素）からトークンを取得してください。
+
+### ⚠️ レイアウト再構成による Lazy Load ＆ DOM移動（Reparenting）による iframe 破損の問題
+
+**現象**:
+1. **Lazy Load による未起動**: 拡張機能がページのレイアウトを固定（`position: fixed` やスプリットパネル）に再構成すると、実際の提出フォーム（Turnstileコンテナである `.cf-challenge` を含む）がスクロール可能な `#main-container` の下部（初期表示のビューポート外）に配置されることになります。Cloudflare Turnstile は内部で `IntersectionObserver` を利用してレイアウト上の可視性を判定し、ビューポート内に要素が入るまでレンダリングを遅延させる（Lazy Load）仕様になっているため、フォームがビューポートから遠く離れた位置にあると、いつまで待っても Turnstile が起動せず、トークンが生成されずタイムアウトします。
+2. **DOM移動（Reparenting）による iframe 破損（真っ白化）**: ブラウザのセキュリティおよび仕様上、**すでにレンダリングされた `iframe` を含む親要素をDOMツリー内で別の位置に移動（再親化 / Reparenting）させると、中の `iframe` は切断され、中身が真っ白に初期化された「破損状態」**になります。AtCoder標準の自動ロード、あるいは拡張機能のレイアウト完成前に描画された Turnstile ウィジェットは、拡張機能がレイアウトを構成する際に `#main-container` を `#atcoder-workspace-wrapper` の下に移動させるため、この瞬間にすべて真っ白な破損状態になり、クリックしても無反応になります。
+
+**解決策**:
+`manifest.json` において、`"world": "MAIN"` (MAIN world) で動作する独立したスクリプト `src/content/turnstile-kick.js` を `document_start` のタイミングで注入し、以下の2つの制御を行います：
+1. **レイアウト構築完了まで待機**: 拡張機能がレイアウト構築を終え、`#atcoder-workspace-wrapper` が作成されるまでは、Turnstile のレンダリングを保留（待機）します。これにより、レンダリング直後に DOM が移動されて破損するのを防ぎます。
+2. **自動描画された破損 iframe のリセットと再生成**: 万が一、レイアウト構築前にすでに implicit（暗黙的）に Turnstile が描画され、DOMの移動によって iframe が真っ白に破損した場合は、`window.turnstile.reset(container)` を呼び出して破損した iframe をクリアし、新しいDOM構造の元で明示的に再描画を実行します。
+
+また、Cloudflare Turnstile の `api.js` スクリプトが `async` や `defer` 属性付きで読み込まれている場合、`window.turnstile.ready()` を呼び出すと `TurnstileError`（`Remove async/defer ...`）が投げられます。このエラーを回避するため、`ready()` は使用せず、`typeof window.turnstile.render === 'function'` が真になったことをポーリングで確認した上で、直接 `render()` を実行するように設計されています。
+
+これにより、Turnstile の Lazy Load と DOM 移動による破損の双方を完全に解決しています。
+
+### ⚠️ 開発・デバッグ時の注意点
+
+#### 1. 拡張機能リロード時の「コンテキスト無効化（Invalidated context）」
+拡張機能をリロード（またはソースコード変更による自動更新）した直後は、すでに開いていたブラウザのタブ上で動作するスクリプト（Content Script）が Chrome の仕様により無効化されます。
+* **現象**: `chrome.storage` へのアクセスや iframe エディタとのメッセージ通信がすべてエラーになり、保存されたコードが消えたり言語が「未選択（言語情報なし）」になります。
+* **対策**: 拡張機能を更新した後は、**必ず AtCoder の対象タブを F5 等でリロード**してください。
+
+#### 2. 非同期 DOM 生成による言語選択肢のレースコンディション
+AtCoder のページ読み込みタイミングによっては、言語セレクトボックス自体は存在しても、中の `<option>` 選択肢がまだ非同期的にレンダリングされていない場合があります。
+* **現象**: 言語リストが空（`[]`）の状態でエディタが初期化されてしまい、正しいコードが読み込めなくなります。
+* **対策**: `content.js` の初期化メッセージ送信（`editor-ready` 時）では、単に言語要素があるかだけではなく、**「セレクトボックスの値が存在し、かつ `<option>` の選択肢が 1 件以上読み込まれていること」**をチェックし、ロードが完了するまで最大1秒間リトライするロジック（`sendConfigWithRetry`）を組むことで安全に動作させています。
+
+#### 3. iframe内でのIndexedDBアクセスブロック問題と解決策
+Chrome などのブラウザ設定において「サードパーティのクッキーやデータをブロックする」設定が有効になっている場合、AtCoder（ファーストパーティ）の中に拡張機能の `editor.html`（サードパーティ iframe）を埋め込む構成では、IndexedDB への接続が `UnknownError: Internal error` で強制遮断されます。
+* **解決策**: 提出履歴（Phase 2 機能）の保存および読み込みには、サードパーティ iframe 内でも完全にデータ永続化が保証される **`chrome.storage.local`** をプライマリの保存先として利用するように実装されています。もし `chrome.storage` API が使用できない限定的な環境に備えて、旧来の `IndexedDB` への読み書きコードもフォールバックとして維持しています。
 

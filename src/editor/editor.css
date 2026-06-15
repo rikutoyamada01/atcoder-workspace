@@ -134,6 +134,25 @@ body {
   user-select: none;
 }
 
+.btn-icon {
+  padding: 4px;
+  font-size: 14px;
+  line-height: 1;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  width: 30px;
+  border-color: #cccccc;
+  background-color: #ffffff;
+}
+
+.btn-icon:hover {
+  background-color: #e6e6e6;
+  border-color: #adadad;
+}
+
 /* Editor Container taking all remaining height */
 #editor-container {
   flex: 1;
@@ -486,4 +505,83 @@ body.vs-theme .monaco-editor .margin {
 body.vs-dark-theme .monaco-editor,
 body.vs-dark-theme .monaco-editor .margin {
   background-color: #1e1e1e !important;
+}
+
+/* Login Warning Overlay */
+.login-warning {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+body.vs-dark-theme .login-warning {
+  background-color: rgba(30, 30, 30, 0.95);
+  color: #ffffff;
+}
+
+.warning-content {
+  max-width: 400px;
+  padding: 30px;
+  background: #ffffff;
+  border: 1px solid #dddddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+body.vs-dark-theme .warning-content {
+  background: #252526;
+  border-color: #444444;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.warning-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 15px;
+}
+
+.warning-content h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.warning-content p {
+  font-size: 13px;
+  color: #666666;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+body.vs-dark-theme .warning-content p {
+  color: #cccccc;
+}
+
+.warning-content .btn {
+  font-size: 14px;
+  padding: 8px 16px;
+  text-decoration: none;
+  display: inline-block;
+  margin-bottom: 15px;
+}
+
+.warning-sub {
+  font-size: 11px !important;
+  color: #999999 !important;
+  margin-top: 10px;
+  margin-bottom: 0 !important;
+}
+
+body.vs-dark-theme .warning-sub {
+  color: #777777 !important;
 }

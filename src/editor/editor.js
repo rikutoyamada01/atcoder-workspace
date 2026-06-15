@@ -21,9 +21,11 @@
   const testSummary = document.getElementById('test-summary');
   const consolePanel = document.getElementById('console-panel');
   const consoleResults = document.getElementById('console-results');
+  const settingsBtn = document.getElementById('settings-btn');
 
   let isTesting = false;
   let isSubmitting = false;
+  let isSubmitPhase1 = false;
   let resultsCount = 0;
   let acCount = 0;
   let totalCount = 0;
@@ -39,8 +41,9 @@
   }
 
   function setButtonsDisabled(disabled) {
-    prevBtn.disabled = disabled || !prevUrl;
-    nextBtn.disabled = disabled || !nextUrl;
+    // Block navigation during Phase 1 submission or sample testing
+    prevBtn.disabled = isSubmitPhase1 || isTesting ? true : !prevUrl;
+    nextBtn.disabled = isSubmitPhase1 || isTesting ? true : !nextUrl;
     testBtn.disabled = disabled;
     submitBtn.disabled = disabled;
     langSelect.disabled = disabled;
@@ -74,7 +77,7 @@
 
   function openDB() {
     return new Promise((resolve, reject) => {
-      if (typeof indexedDB === 'undefined') {
+      if (!window.indexedDB) {
         reject(new Error('IndexedDB is not supported'));
         return;
       }
@@ -91,6 +94,26 @@
   }
 
   function saveSubmissionToDB(submission) {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      return new Promise((resolve) => {
+        chrome.storage.local.get(['submission_history'], (res) => {
+          let history = res.submission_history || [];
+          // IDの重複があれば削除して最新のものに更新
+          history = history.filter((item) => item.id !== submission.id);
+          history.push(submission);
+          // 履歴数が多すぎるとストレージ容量を圧迫するため最大100件に制限
+          if (history.length > 100) {
+            history.shift();
+          }
+          chrome.storage.local.set({ submission_history: history }, () => {
+            resolve();
+          });
+        });
+      }).catch((err) => {
+        console.error('[AtCoder Workspace] Storage error:', err);
+      });
+    }
+
     return openDB()
       .then((db) => {
         return new Promise((resolve, reject) => {
@@ -103,6 +126,35 @@
       })
       .catch((err) => {
         console.error('[AtCoder Workspace] IndexedDB error:', err);
+      });
+  }
+
+  /**
+   * 過去の提出履歴を読み込む関数 (Phase 2 用)
+   * @param {Function} callback - 取得した提出履歴配列を受け取るコールバック
+   */
+  function loadSubmissionsFromDB(callback) {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get(['submission_history'], (res) => {
+        callback(res.submission_history || []);
+      });
+      return;
+    }
+
+    openDB()
+      .then((db) => {
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction('submissions', 'readonly');
+          const store = tx.objectStore('submissions');
+          const request = store.getAll();
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = (e) => reject(e.target.error);
+        });
+      })
+      .then((list) => callback(list))
+      .catch((err) => {
+        console.error('[AtCoder Workspace] IndexedDB load error:', err);
+        callback([]);
       });
   }
 
@@ -231,6 +283,16 @@
     );
   };
 
+  if (settingsBtn) {
+    settingsBtn.onclick = () => {
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.openOptionsPage) {
+        chrome.runtime.openOptionsPage();
+      } else {
+        alert('設定画面は拡張機能として実行されている場合のみ利用可能です。');
+      }
+    };
+  }
+
   consoleToggleBtn.onclick = () => {
     toggleConsole();
   };
@@ -276,7 +338,7 @@
     console.log('[AtCoder Workspace] Editor: Received message from parent', e.data.type, e.data);
 
     switch (e.data.type) {
-      case 'init-config':
+      case 'init-config': {
         contestId = e.data.contestId;
         problemId = e.data.problemId;
         currentLanguageId = e.data.selectedLanguageId;
@@ -289,9 +351,36 @@
         // Populate Languages
         populateLanguageSelect(e.data.languages, e.data.selectedLanguageId);
 
-        // Load Monaco Editor
-        initMonaco(e.data.isDark);
+        // Save the last selected language
+        if (currentLanguageId && isContextValid()) {
+          chrome.storage.local.set({ 'settings:last_selected_language': currentLanguageId });
+        }
+
+        // Check if user is logged in (languages list would be empty if not logged in)
+        const loginWarning = document.getElementById('login-warning');
+        const editorContainer = document.getElementById('editor-container');
+        if (!e.data.languages || e.data.languages.length === 0) {
+          if (loginWarning) {
+            loginWarning.style.display = 'flex';
+          }
+          if (editorContainer) {
+            editorContainer.style.display = 'none';
+          }
+          setButtonsDisabled(true);
+          saveStatus.textContent = '未ログイン';
+        } else {
+          if (loginWarning) {
+            loginWarning.style.display = 'none';
+          }
+          if (editorContainer) {
+            editorContainer.style.display = 'block';
+          }
+          setButtonsDisabled(false);
+          // Load Monaco Editor
+          initMonaco(e.data.isDark);
+        }
         break;
+      }
 
       case 'language-change':
         if (e.data.languageId && e.data.languageId !== currentLanguageId) {
@@ -300,6 +389,11 @@
           currentLanguageId = e.data.languageId;
           langSelect.value = currentLanguageId;
           onLanguageChanged();
+
+          // Save the last selected language
+          if (currentLanguageId && isContextValid()) {
+            chrome.storage.local.set({ 'settings:last_selected_language': currentLanguageId });
+          }
         }
         break;
 
@@ -315,6 +409,7 @@
 
       case 'submit-start':
         isSubmitting = true;
+        isSubmitPhase1 = true;
         setButtonsDisabled(true);
         toggleConsole(true);
 
@@ -325,13 +420,43 @@
           '<div style="font-size: 12px; color: #777;">提出処理を開始しました...</div>';
         break;
 
-      case 'submit-status':
+      case 'submit-captcha-waiting':
+        testSummary.textContent = 'ボット認証の待機中...';
+        testSummary.className = 'summary-running';
+
+        consoleResults.innerHTML = `
+          <div style="font-size: 12px; color: #333;">
+            <div style="margin-bottom: 8px; color: #ff8c00; font-weight: bold;">⚠️ ${escapeHtml(e.data.message)}</div>
+            <div style="line-height: 1.6;">
+              ボット判定（Cloudflare Turnstile）の認証完了を待機しています。<br>
+              左側の提出フォーム内のチェックボックス（私は人間です）を必要に応じて手動でクリックして認証を完了させてください。<br>
+              （対象エリアまで画面を自動スクロールし、赤枠でハイライトしています）
+            </div>
+          </div>
+        `;
+        break;
+
+      case 'submit-status': {
+        isSubmitPhase1 = false;
+        setButtonsDisabled(true); // Re-enable navigation if available because Phase 1 is done
+
+        const turnstileMap = {
+          'force-rendered': '強制レンダリング起動',
+          'auto-rendered': '自動レンダリング検出',
+          token_already_present: '既存トークン再利用',
+          no_container: '認証不要',
+          implicit: '暗黙的ロード',
+        };
+        const turnstileText =
+          turnstileMap[e.data.turnstileDebug] || e.data.turnstileDebug || '不明';
+
         // Update Console Results
         consoleResults.innerHTML = `
           <div style="font-size: 12px; color: #333;">
             <div style="margin-bottom: 8px;">ステータス: <span class="case-status status-running">${escapeHtml(e.data.status)}</span></div>
             <div style="margin-bottom: 4px;">実行時間: ${escapeHtml(e.data.time)}</div>
-            <div style="margin-bottom: 8px;">メモリ: ${escapeHtml(e.data.memory)}</div>
+            <div style="margin-bottom: 4px;">メモリ: ${escapeHtml(e.data.memory)}</div>
+            <div style="margin-bottom: 8px; color: #888; font-size: 11px;">[Debug] Turnstile: ${escapeHtml(turnstileText)}</div>
             <div>
               <a href="https://atcoder.jp/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">提出詳細ページを開く (ID: ${e.data.submissionId})</a>
             </div>
@@ -342,9 +467,11 @@
         testSummary.textContent = `ジャッジ中... (${e.data.status})`;
         testSummary.className = 'summary-running';
         break;
+      }
 
       case 'submit-complete': {
         isSubmitting = false;
+        isSubmitPhase1 = false;
         setButtonsDisabled(false);
 
         const isAC = e.data.status === 'AC';
@@ -358,12 +485,23 @@
           playBeepWA();
         }
 
+        const turnstileMap = {
+          'force-rendered': '強制レンダリング起動',
+          'auto-rendered': '自動レンダリング検出',
+          token_already_present: '既存トークン再利用',
+          no_container: '認証不要',
+          implicit: '暗黙的ロード',
+        };
+        const turnstileText =
+          turnstileMap[e.data.turnstileDebug] || e.data.turnstileDebug || '不明';
+
         // Update Console Results
         consoleResults.innerHTML = `
           <div style="font-size: 12px; color: #333;">
             <div style="margin-bottom: 8px;">ステータス: <span class="case-status status-${e.data.status.toLowerCase()}">${escapeHtml(e.data.status)}</span></div>
             <div style="margin-bottom: 4px;">実行時間: ${escapeHtml(e.data.time)}</div>
-            <div style="margin-bottom: 8px;">メモリ: ${escapeHtml(e.data.memory)}</div>
+            <div style="margin-bottom: 4px;">メモリ: ${escapeHtml(e.data.memory)}</div>
+            <div style="margin-bottom: 8px; color: #888; font-size: 11px;">[Debug] Turnstile: ${escapeHtml(turnstileText)}</div>
             <div>
               <a href="https://atcoder.jp/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">提出詳細ページを開く (ID: ${e.data.submissionId})</a>
             </div>
@@ -402,6 +540,7 @@
 
       case 'submit-error':
         isSubmitting = false;
+        isSubmitPhase1 = false;
         setButtonsDisabled(false);
 
         testSummary.textContent = `エラー: ${e.data.message}`;
@@ -415,6 +554,86 @@
         `;
         consoleResults.scrollTop = consoleResults.scrollHeight;
         break;
+
+      case 'pending-submit-status':
+        if (e.data.problemId === problemId) {
+          isSubmitting = true;
+          isSubmitPhase1 = false;
+          setButtonsDisabled(true);
+          toggleConsole(true);
+
+          testSummary.textContent = `ジャッジ中... (${e.data.status})`;
+          testSummary.className = 'summary-running';
+
+          consoleResults.innerHTML = `
+            <div style="font-size: 12px; color: #333;">
+              <div style="margin-bottom: 8px;">ステータス: <span class="case-status status-running">${escapeHtml(e.data.status)}</span></div>
+              <div style="margin-bottom: 4px;">実行時間: ${escapeHtml(e.data.time)}</div>
+              <div style="margin-bottom: 8px;">メモリ: ${escapeHtml(e.data.memory)}</div>
+              <div>
+                <a href="https://atcoder.jp/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">提出詳細ページを開く (ID: ${e.data.submissionId})</a>
+              </div>
+            </div>
+          `;
+          consoleResults.scrollTop = consoleResults.scrollHeight;
+        }
+        break;
+
+      case 'pending-submit-complete': {
+        const isAC = e.data.status === 'AC';
+        if (isAC) {
+          playChimeAC();
+        } else {
+          playBeepWA();
+        }
+
+        // Trigger Notification
+        if (typeof chrome !== 'undefined' && chrome.notifications && chrome.notifications.create) {
+          chrome.notifications.create({
+            type: 'basic',
+            iconUrl:
+              'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+            title: `ジャッジ完了 (${e.data.problemId})`,
+            message: `結果: ${e.data.status} | 実行時間: ${e.data.time} | メモリ: ${e.data.memory}`,
+            priority: 1,
+          });
+        }
+
+        // Save to IndexedDB
+        saveSubmissionToDB({
+          id: e.data.submissionId,
+          contestId: e.data.contestId,
+          problemId: e.data.problemId,
+          languageId: e.data.languageId,
+          code: e.data.code,
+          status: e.data.status,
+          time: e.data.time,
+          memory: e.data.memory,
+          timestamp: Date.now(),
+        });
+
+        if (e.data.problemId === problemId) {
+          isSubmitting = false;
+          isSubmitPhase1 = false;
+          setButtonsDisabled(false);
+
+          testSummary.textContent = `ジャッジ完了: ${e.data.status}`;
+          testSummary.className = isAC ? 'summary-ac' : 'summary-wa';
+
+          consoleResults.innerHTML = `
+            <div style="font-size: 12px; color: #333;">
+              <div style="margin-bottom: 8px;">ステータス: <span class="case-status status-${e.data.status.toLowerCase()}">${escapeHtml(e.data.status)}</span></div>
+              <div style="margin-bottom: 4px;">実行時間: ${escapeHtml(e.data.time)}</div>
+              <div style="margin-bottom: 8px;">メモリ: ${escapeHtml(e.data.memory)}</div>
+              <div>
+                <a href="https://atcoder.jp/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">提出詳細ページを開く (ID: ${e.data.submissionId})</a>
+              </div>
+            </div>
+          `;
+          consoleResults.scrollTop = consoleResults.scrollHeight;
+        }
+        break;
+      }
 
       case 'test-start':
         isTesting = true;
@@ -554,8 +773,15 @@
 
   function updateNavigationButtons() {
     if (prevUrl) {
-      prevBtn.disabled = false;
+      prevBtn.disabled = isSubmitPhase1 || isTesting ? true : false;
       prevBtn.onclick = () => {
+        if (isTesting) {
+          if (
+            !confirm('テスト実行中にページ遷移すると、テスト結果が失われます。本当に遷移しますか？')
+          ) {
+            return;
+          }
+        }
         saveCodeSync();
         window.parent.postMessage({ type: 'navigate', url: prevUrl }, '*');
       };
@@ -564,8 +790,15 @@
     }
 
     if (nextUrl) {
-      nextBtn.disabled = false;
+      nextBtn.disabled = isSubmitPhase1 || isTesting ? true : false;
       nextBtn.onclick = () => {
+        if (isTesting) {
+          if (
+            !confirm('テスト実行中にページ遷移すると、テスト結果が失われます。本当に遷移しますか？')
+          ) {
+            return;
+          }
+        }
         saveCodeSync();
         window.parent.postMessage({ type: 'navigate', url: nextUrl }, '*');
       };
@@ -597,6 +830,12 @@
       // Save code under the OLD language ID before switching
       saveCodeSync();
       currentLanguageId = langSelect.value;
+
+      // Save the last selected language
+      if (currentLanguageId && isContextValid()) {
+        chrome.storage.local.set({ 'settings:last_selected_language': currentLanguageId });
+      }
+
       // Notify parent AtCoder page
       window.parent.postMessage({ type: 'update-language', languageId: currentLanguageId }, '*');
       onLanguageChanged();

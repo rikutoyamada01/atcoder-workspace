@@ -11,6 +11,9 @@ out/
 # User Rule: charts folder is git-ignored
 charts/
 
+# Private documents
+docs/private/
+
 # Local configuration files
 .env
 .env.local
@@ -36,3 +39,6 @@ logs/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Test coverage
+coverage/

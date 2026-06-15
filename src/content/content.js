@@ -9,12 +9,41 @@
   const problemId = pathMatch[2];
 
   let langSelect = null;
+  let isEditorReady = false;
+  const messageQueue = [];
+
+  /**
+   * Safely retrieves the language select element, binding change listener if newly found.
+   * @returns {HTMLSelectElement|null}
+   */
+  function getLangSelect() {
+    if (!langSelect) {
+      langSelect = document.querySelector('select[name="data.LanguageId"]');
+      if (langSelect) {
+        langSelect.addEventListener('change', () => {
+          notifyEditor({
+            type: 'language-change',
+            languageId: langSelect.value,
+          });
+          if (
+            langSelect.value &&
+            typeof chrome !== 'undefined' &&
+            chrome.storage &&
+            chrome.storage.local
+          ) {
+            chrome.storage.local.set({ 'settings:last_selected_language': langSelect.value });
+          }
+        });
+      }
+    }
+    return langSelect;
+  }
 
   /**
    * Initializes the workspace and coordinates modules.
    */
   function init() {
-    langSelect = document.querySelector('select[name="data.LanguageId"]');
+    getLangSelect();
 
     const layout = window.AtCoderWorkspace.Layout;
     if (!layout) {
@@ -28,6 +57,7 @@
     });
 
     setupMessageEvents();
+    checkPendingSubmission();
   }
 
   /**
@@ -51,18 +81,13 @@
 
       switch (e.data.type) {
         case 'editor-ready':
+          isEditorReady = true;
+          while (messageQueue.length > 0) {
+            const queuedMsg = messageQueue.shift();
+            notifyEditor(queuedMsg);
+          }
           if (!scraper) return;
           scraper.loadNavigationUrls(contestId, (prevUrl, nextUrl) => {
-            const options = [];
-            if (langSelect) {
-              langSelect.querySelectorAll('option').forEach((opt) => {
-                options.push({
-                  value: opt.value,
-                  text: opt.textContent,
-                });
-              });
-            }
-
             // Detect page dark mode based on background brightness
             const bodyBg = window.getComputedStyle(document.body).backgroundColor;
             const rgb = bodyBg.match(/\d+/g);
@@ -75,37 +100,86 @@
 
             // AtCoder language selection element helper logic (with retries)
             const sendConfigWithRetry = (retriesLeft) => {
-              const selectedLanguageId = langSelect ? langSelect.value : null;
+              const currentLangSelect = getLangSelect();
+              const selectedLanguageId = currentLangSelect ? currentLangSelect.value : null;
 
-              if (!selectedLanguageId && retriesLeft > 0) {
-                console.log('[AtCoder Workspace] Language selection empty, retrying in 100ms...');
+              const options = [];
+              if (currentLangSelect) {
+                currentLangSelect.querySelectorAll('option').forEach((opt) => {
+                  options.push({
+                    value: opt.value,
+                    text: opt.textContent,
+                  });
+                });
+              }
+
+              if (
+                (!currentLangSelect || !selectedLanguageId || options.length === 0) &&
+                retriesLeft > 0
+              ) {
+                console.log(
+                  '[AtCoder Workspace] Language selection or options empty, retrying in 100ms...'
+                );
                 setTimeout(() => sendConfigWithRetry(retriesLeft - 1), 100);
                 return;
               }
 
-              notifyEditor({
-                type: 'init-config',
-                contestId,
-                problemId,
-                selectedLanguageId:
-                  selectedLanguageId || (options.length > 0 ? options[0].value : null),
-                languages: options,
-                prevUrl,
-                nextUrl,
-                isDark,
-              });
+              const sendConfig = (finalLangId) => {
+                notifyEditor({
+                  type: 'init-config',
+                  contestId,
+                  problemId,
+                  selectedLanguageId: finalLangId,
+                  languages: options,
+                  prevUrl,
+                  nextUrl,
+                  isDark,
+                });
+              };
+
+              if (
+                !selectedLanguageId &&
+                typeof chrome !== 'undefined' &&
+                chrome.storage &&
+                chrome.storage.local
+              ) {
+                chrome.storage.local.get(['settings:last_selected_language'], (res) => {
+                  const lastLang = res['settings:last_selected_language'];
+                  const existsInOptions = options.some((opt) => opt.value === lastLang);
+                  const finalLangId =
+                    lastLang && existsInOptions
+                      ? lastLang
+                      : options.length > 0
+                        ? options[0].value
+                        : null;
+
+                  // Update the native select element as well
+                  if (finalLangId && currentLangSelect && currentLangSelect.value !== finalLangId) {
+                    currentLangSelect.value = finalLangId;
+                    currentLangSelect.dispatchEvent(new Event('change'));
+                  }
+
+                  sendConfig(finalLangId);
+                });
+              } else {
+                const finalLangId =
+                  selectedLanguageId || (options.length > 0 ? options[0].value : null);
+                sendConfig(finalLangId);
+              }
             };
 
-            sendConfigWithRetry(5);
+            sendConfigWithRetry(10);
           });
           break;
 
-        case 'update-language':
-          if (langSelect && e.data.languageId) {
-            langSelect.value = e.data.languageId;
-            langSelect.dispatchEvent(new Event('change'));
+        case 'update-language': {
+          const currentLangSelect = getLangSelect();
+          if (currentLangSelect && e.data.languageId) {
+            currentLangSelect.value = e.data.languageId;
+            currentLangSelect.dispatchEvent(new Event('change'));
           }
           break;
+        }
 
         case 'navigate':
           if (e.data.url) {
@@ -148,6 +222,11 @@
                   type: 'submit-error',
                   message: res.error,
                 });
+              } else if (res.status === 'WAITING_CAPTCHA') {
+                notifyEditor({
+                  type: 'submit-captcha-waiting',
+                  message: res.message,
+                });
               } else if (res.isComplete) {
                 notifyEditor({
                   type: 'submit-complete',
@@ -155,6 +234,7 @@
                   status: res.status,
                   time: res.time,
                   memory: res.memory,
+                  turnstileDebug: res.turnstileDebug,
                 });
               } else {
                 notifyEditor({
@@ -163,6 +243,7 @@
                   status: res.status,
                   time: res.time,
                   memory: res.memory,
+                  turnstileDebug: res.turnstileDebug,
                 });
               }
             });
@@ -252,16 +333,6 @@
           break;
       }
     });
-
-    // Listen to lang dropdown changes directly on AtCoder main page
-    if (langSelect) {
-      langSelect.addEventListener('change', () => {
-        notifyEditor({
-          type: 'language-change',
-          languageId: langSelect.value,
-        });
-      });
-    }
   }
 
   /**
@@ -269,6 +340,16 @@
    * @param {Object} message
    */
   function notifyEditor(message) {
+    if (!isEditorReady) {
+      console.log(
+        '[AtCoder Workspace] Content Script: Queueing message to iframe (editor not ready yet)',
+        message.type,
+        message
+      );
+      messageQueue.push(message);
+      return;
+    }
+
     const layout = window.AtCoderWorkspace.Layout;
     const iframe = layout ? layout.getIframe() : null;
     if (iframe && iframe.contentWindow) {
@@ -278,6 +359,13 @@
         message
       );
       iframe.contentWindow.postMessage(message, '*');
+    } else {
+      console.log(
+        '[AtCoder Workspace] Content Script: Queueing message (iframe not available)',
+        message.type,
+        message
+      );
+      messageQueue.push(message);
     }
   }
 
@@ -294,6 +382,69 @@
       }
     }
   });
+
+  /**
+   * Checks if there is a pending submission in storage and resumes polling if found.
+   */
+  function checkPendingSubmission() {
+    if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.local) return;
+
+    chrome.storage.local.get(['pending_submission'], (res) => {
+      const pending = res.pending_submission;
+      if (!pending) return;
+
+      console.log(
+        '[AtCoder Workspace] Found pending submission in storage. Resuming polling...',
+        pending
+      );
+
+      const submitter = window.AtCoderWorkspace.Submitter;
+      if (!submitter) {
+        console.error('[AtCoder Workspace] Submitter module not found during resume!');
+        return;
+      }
+
+      // Notify editor that we are resuming a background submission polling
+      notifyEditor({
+        type: 'pending-submit-status',
+        problemId: pending.problemId,
+        submissionId: pending.submissionId,
+        status: 'WJ',
+        time: '',
+        memory: '',
+      });
+
+      submitter.poll(pending.contestId, pending.submissionId, (pollRes) => {
+        if (pollRes.error) {
+          notifyEditor({
+            type: 'submit-error',
+            message: pollRes.error,
+          });
+        } else if (pollRes.isComplete) {
+          notifyEditor({
+            type: 'pending-submit-complete',
+            submissionId: pollRes.submissionId,
+            contestId: pending.contestId,
+            problemId: pending.problemId,
+            languageId: pending.languageId,
+            code: pending.code,
+            status: pollRes.status,
+            time: pollRes.time,
+            memory: pollRes.memory,
+          });
+        } else {
+          notifyEditor({
+            type: 'pending-submit-status',
+            problemId: pending.problemId,
+            submissionId: pollRes.submissionId,
+            status: pollRes.status,
+            time: pollRes.time,
+            memory: pollRes.memory,
+          });
+        }
+      });
+    });
+  }
 
   // Run initializer on document ready
   if (document.readyState === 'complete' || document.readyState === 'interactive') {

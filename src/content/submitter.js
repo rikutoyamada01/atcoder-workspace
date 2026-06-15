@@ -8,6 +8,10 @@
    * polling the status of the submission until judging completes.
    */
   class Submitter {
+    constructor() {
+      this.lastTurnstileStatus = 'unknown';
+    }
+
     /**
      * Extracts the CSRF token from the current page DOM.
      * @returns {string}
@@ -56,43 +60,134 @@
      * @param {HTMLInputElement|null} input
      * @returns {Promise<void>}
      */
-    waitForTurnstile(input, form) {
+    waitForTurnstile(input, form, callback) {
+      // If token already present, skip Turnstile handling
+      if (input && input.value && input.value.length > 20) {
+        this.lastTurnstileStatus = 'token_already_present';
+        return Promise.resolve();
+      }
+
       // Check if there is a Turnstile container on the page
+      // Note: AtCoder uses "cf-challenge" class, not "cf-turnstile"
       let hasTurnstile = false;
-      if (form) {
-        const container = form.querySelector(
-          '.cf-turnstile, #cf-turnstile, [class*="cf-turnstile"], [id*="cf-turnstile"]'
-        );
-        if (container) hasTurnstile = true;
-      } else if (input) {
-        hasTurnstile = true;
+      let container = null;
+      try {
+        if (form) {
+          container = form.querySelector(
+            '.cf-turnstile, .cf-challenge, #cf-turnstile, [class*="cf-turnstile"], [data-sitekey]'
+          );
+          if (container) hasTurnstile = true;
+        } else if (input) {
+          container = input.closest('form')
+            ? input
+                .closest('form')
+                .querySelector(
+                  '.cf-turnstile, .cf-challenge, #cf-turnstile, [class*="cf-turnstile"], [data-sitekey]'
+                )
+            : null;
+          if (container) hasTurnstile = true;
+        }
+      } catch (e) {
+        console.warn('[AtCoder Workspace] Error checking Turnstile container existence:', e);
+      }
+
+      if (container) {
+        this.lastTurnstileStatus = container.dataset.turnstileStatus || 'implicit';
+      } else {
+        this.lastTurnstileStatus = hasTurnstile ? 'implicit' : 'no_container';
       }
 
       // No Turnstile on this page – proceed immediately
       if (!hasTurnstile && !input) return Promise.resolve();
+
+      // Get the input element
+      const currentInput =
+        input || (form ? form.querySelector('input[name="cf-turnstile-response"]') : null);
+
       // Already has a valid-looking token (long string, not 'hidden' or empty)
-      if (input && input.value && input.value.length > 20) return Promise.resolve();
+      if (currentInput && currentInput.value && currentInput.value.length > 20) {
+        this.lastTurnstileStatus = 'token_already_present';
+        return Promise.resolve();
+      }
 
       return new Promise((resolve, reject) => {
         const start = Date.now();
-        const check = () => {
-          const currentInput =
-            input || (form ? form.querySelector('input[name="cf-turnstile-response"]') : null);
-          if (currentInput && currentInput.value && currentInput.value.length > 20) {
-            console.log('[AtCoder Workspace] Turnstile token received.');
-            resolve();
-          } else if (Date.now() - start > 15000) {
-            // Timeout after 15s – reject with a helpful instruction
-            reject(
-              new Error(
-                'ボット判定(Cloudflare Turnstile)の自動認証がタイムアウトしました。提出ページをリロードするか、元の提出フォームのチェックボックスを手動でクリックして認証を完了させてから再度お試しください。'
-              )
-            );
-          } else {
-            setTimeout(check, 300);
+        let resolved = false;
+        let observer = null;
+        let timer = null;
+
+        const cleanup = () => {
+          if (observer) {
+            observer.disconnect();
+            observer = null;
+          }
+          if (timer) {
+            clearTimeout(timer);
+            timer = null;
+          }
+          // Restore container styling (set back to pre-warmed state: opacity 0.01, remove highlight)
+          if (form && container) {
+            container.style.opacity = '0.01';
+            container.style.outline = '';
+            container.style.boxShadow = '';
           }
         };
-        check();
+
+        const checkToken = () => {
+          if (resolved) return true;
+          if (container && container.dataset.turnstileStatus) {
+            this.lastTurnstileStatus = container.dataset.turnstileStatus;
+          }
+          if (currentInput && currentInput.value && currentInput.value.length > 20) {
+            console.log('[AtCoder Workspace] Turnstile token received.');
+            resolved = true;
+            cleanup();
+            resolve();
+            return true;
+          }
+          return false;
+        };
+
+        // 1. Setup MutationObserver to watch for any changes in the Turnstile container or form
+        const observerTarget = container || form || document.body;
+        if (observerTarget) {
+          observer = new MutationObserver(() => {
+            checkToken();
+          });
+          observer.observe(observerTarget, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['value', 'class', 'style', 'src'],
+          });
+        }
+
+        // 2. Setup periodic check (polling) as fallback and for status updates/timeouts
+        const poll = () => {
+          if (resolved) return;
+
+          // Check token first
+          if (checkToken()) return;
+
+          const elapsed = Date.now() - start;
+
+          if (elapsed > 45000) {
+            // Timeout after 45s
+            cleanup();
+            reject(
+              new Error(
+                'ボット判定(Cloudflare Turnstile)の自動認証がタイムアウトしました。しばらく待ってから再度提出をお試しください。'
+              )
+            );
+            return;
+          }
+
+          // Continue polling fallback
+          timer = setTimeout(poll, 300);
+        };
+
+        // Start polling
+        poll();
       });
     }
 
@@ -103,8 +198,7 @@
      * The task page has a submit form that includes CSRF token, Turnstile
      * response, and all necessary hidden fields. By using FormData from
      * this live DOM form, we include everything AtCoder expects — including
-     * the Cloudflare Turnstile token that can only be obtained from a
-     * rendered page (not via fetch).
+     * the Cloudflare Turnstile token.
      *
      * @param {string} contestId
      * @param {string} problemId
@@ -113,13 +207,11 @@
      * @param {Function} callback - Called with progress updates or error
      */
     submit(contestId, problemId, languageId, code, callback) {
-      // Find the native submit form on the current task page
       const nativeForm = document.querySelector('form[action*="/submit"]');
 
       if (nativeForm) {
         this._submitViaNativeForm(nativeForm, contestId, problemId, languageId, code, callback);
       } else {
-        // Fallback: POST manually (will likely fail if Turnstile is required)
         console.warn(
           '[AtCoder Workspace] Native submit form not found, falling back to manual POST.'
         );
@@ -145,39 +237,29 @@
       const langSelect = form.querySelector('select[name="data.LanguageId"]');
       if (langSelect) langSelect.value = languageId;
 
-      // Also check for hidden input version
       const langInput = form.querySelector('input[name="data.LanguageId"]');
       if (langInput) langInput.value = languageId;
 
-      // Wait for the Turnstile widget to generate a valid token (checks both input and form container)
+      // Keep the existing token if present, do not clear it, and do not reset Turnstile.
       const turnstileInput = form.querySelector('input[name="cf-turnstile-response"]');
-      this.waitForTurnstile(turnstileInput, form)
+
+      // Wait for the Turnstile widget to generate a valid token
+      this.waitForTurnstile(turnstileInput, form, callback)
         .then(() => {
-          // Build FormData from the live native form – captures ALL fields
-          // including csrf_token, cf-turnstile-response, and any other hidden inputs
+          if (callback) {
+            callback({
+              status: 'SUBMITTING',
+              message: 'コードを送信しています...',
+              turnstileDebug: this.lastTurnstileStatus,
+            });
+          }
+
+          // Build FormData from the live native form
           const formData = new FormData(form);
 
-          // Ensure sourceCode is set (FormData reads from textarea.value)
           if (!formData.get('sourceCode') || formData.get('sourceCode').trim() === '') {
             formData.set('sourceCode', code);
           }
-
-          // Debug: log what we're sending (redact sensitive values)
-          const debugEntries = [];
-          for (const [key, val] of formData.entries()) {
-            if (key === 'sourceCode') {
-              debugEntries.push(`${key}=[${typeof val === 'string' ? val.length : 0} chars]`);
-            } else if (key === 'csrf_token') {
-              debugEntries.push(`${key}=${String(val).substring(0, 8)}...`);
-            } else if (key === 'cf-turnstile-response') {
-              debugEntries.push(`${key}=[${String(val).length} chars]`);
-            } else if (val instanceof File) {
-              debugEntries.push(`${key}=[File: ${val.name || 'empty'}]`);
-            } else {
-              debugEntries.push(`${key}=${val}`);
-            }
-          }
-          console.log('[AtCoder Workspace] Submitting via native form:', debugEntries);
 
           const actionUrl = form.getAttribute('action') || `/contests/${contestId}/submit`;
           return fetch(actionUrl, {
@@ -186,7 +268,17 @@
             credentials: 'include',
           });
         })
-        .then((res) => this._handleSubmitResponse(res, contestId, callback))
+        .then((res) => {
+          if (res)
+            return this._handleSubmitResponse(
+              res,
+              contestId,
+              problemId,
+              languageId,
+              code,
+              callback
+            );
+        })
         .catch((err) => {
           console.error('[AtCoder Workspace] Submission error:', err);
           callback({ error: err.message || '送信中にエラーが発生しました。' });
@@ -195,8 +287,6 @@
 
     /**
      * Fallback submission path: builds FormData manually without DOM form.
-     * This path does NOT include a Turnstile token and may fail on
-     * pages protected by Cloudflare Turnstile.
      * @private
      */
     _submitManual(contestId, problemId, languageId, code, callback) {
@@ -220,7 +310,9 @@
             credentials: 'include',
           });
         })
-        .then((res) => this._handleSubmitResponse(res, contestId, callback))
+        .then((res) =>
+          this._handleSubmitResponse(res, contestId, problemId, languageId, code, callback)
+        )
         .catch((err) => {
           console.error('[AtCoder Workspace] Submission error:', err);
           callback({ error: err.message || '送信中にエラーが発生しました。' });
@@ -231,7 +323,7 @@
      * Handles the POST response from the submit endpoint.
      * @private
      */
-    _handleSubmitResponse(res, contestId, callback) {
+    _handleSubmitResponse(res, contestId, problemId, languageId, code, callback) {
       return res
         .text()
         .then((html) => {
@@ -277,6 +369,20 @@
           return submissionId;
         })
         .then((submissionId) => {
+          // Save pending submission info to storage
+          if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+            chrome.storage.local.set({
+              pending_submission: {
+                submissionId,
+                contestId,
+                problemId,
+                languageId,
+                code,
+                timestamp: Date.now(),
+              },
+            });
+          }
+
           // Send initial status update
           callback({
             submissionId,
@@ -284,6 +390,7 @@
             time: '',
             memory: '',
             isComplete: false,
+            turnstileDebug: this.lastTurnstileStatus,
           });
 
           // Start polling
@@ -403,9 +510,14 @@
               time: info.time,
               memory: info.memory,
               isComplete,
+              turnstileDebug: this.lastTurnstileStatus,
             });
 
-            if (!isComplete) {
+            if (isComplete) {
+              if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                chrome.storage.local.remove('pending_submission');
+              }
+            } else {
               setTimeout(checkStatus, pollInterval);
             }
           })

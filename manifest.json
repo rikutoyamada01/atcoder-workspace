@@ -1,10 +1,23 @@
 {
   "manifest_version": 3,
-  "name": "Competitive Programming Workspace",
-  "version": "1.3.0",
+  "name": "AtCoder Workspace",
+  "version": "1.4.0",
   "description": "AtCoderの問題ページ上にエディタを埋め込み、単一タブでコーディング・テスト・提出を完結させるワークスペース拡張",
+  "icons": {
+    "16": "src/icons/icon16.png",
+    "48": "src/icons/icon48.png",
+    "128": "src/icons/icon128.png"
+  },
   "permissions": ["storage", "notifications"],
   "host_permissions": ["https://atcoder.jp/*"],
+  "background": {
+    "service_worker": "src/background/background.js"
+  },
+  "action": {},
+  "options_ui": {
+    "page": "src/options/options.html",
+    "open_in_tab": true
+  },
 
   "content_scripts": [
     {
@@ -18,6 +31,12 @@
       ],
       "css": ["src/content/content.css"],
       "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://atcoder.jp/contests/*/tasks/*"],
+      "js": ["src/content/turnstile-kick.js"],
+      "world": "MAIN",
+      "run_at": "document_start"
     }
   ],
   "web_accessible_resources": [
