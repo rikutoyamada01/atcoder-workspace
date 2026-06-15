@@ -7,6 +7,17 @@
 </head>
 <body>
   <div id="editor-wrapper">
+    <!-- Login Warning Overlay -->
+    <div id="login-warning" class="login-warning" style="display: none;">
+      <div class="warning-content">
+        <span class="warning-icon">🔒</span>
+        <h3>AtCoderへのログインが必要です</h3>
+        <p>エディタでの実装、ローカルテスト、および提出機能を利用するには、AtCoderへのログインが必要です。</p>
+        <a href="https://atcoder.jp/login" target="_blank" class="btn btn-primary">ログイン画面を開く / Open Login</a>
+        <p class="warning-sub">※ログイン完了後、このページをリロード（再読み込み）してください。</p>
+      </div>
+    </div>
+
     <div id="toolbar">
       <div class="toolbar-left">
         <button id="prev-btn" class="btn btn-default" title="前の問題へ">« 前</button>
@@ -20,6 +31,7 @@
           <!-- Dynamically populated from AtCoder options -->
         </select>
         <span id="save-status">読み込み中...</span>
+        <button id="settings-btn" class="btn btn-default btn-icon" title="設定を開く / Open Settings">⚙️</button>
       </div>
     </div>
     <div id="editor-container"></div>

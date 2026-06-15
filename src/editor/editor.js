@@ -21,6 +21,7 @@
   const testSummary = document.getElementById('test-summary');
   const consolePanel = document.getElementById('console-panel');
   const consoleResults = document.getElementById('console-results');
+  const settingsBtn = document.getElementById('settings-btn');
 
   let isTesting = false;
   let isSubmitting = false;
@@ -76,7 +77,7 @@
 
   function openDB() {
     return new Promise((resolve, reject) => {
-      if (typeof indexedDB === 'undefined') {
+      if (!window.indexedDB) {
         reject(new Error('IndexedDB is not supported'));
         return;
       }
@@ -93,6 +94,26 @@
   }
 
   function saveSubmissionToDB(submission) {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      return new Promise((resolve) => {
+        chrome.storage.local.get(['submission_history'], (res) => {
+          let history = res.submission_history || [];
+          // IDの重複があれば削除して最新のものに更新
+          history = history.filter((item) => item.id !== submission.id);
+          history.push(submission);
+          // 履歴数が多すぎるとストレージ容量を圧迫するため最大100件に制限
+          if (history.length > 100) {
+            history.shift();
+          }
+          chrome.storage.local.set({ submission_history: history }, () => {
+            resolve();
+          });
+        });
+      }).catch((err) => {
+        console.error('[AtCoder Workspace] Storage error:', err);
+      });
+    }
+
     return openDB()
       .then((db) => {
         return new Promise((resolve, reject) => {
@@ -105,6 +126,35 @@
       })
       .catch((err) => {
         console.error('[AtCoder Workspace] IndexedDB error:', err);
+      });
+  }
+
+  /**
+   * 過去の提出履歴を読み込む関数 (Phase 2 用)
+   * @param {Function} callback - 取得した提出履歴配列を受け取るコールバック
+   */
+  function loadSubmissionsFromDB(callback) {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get(['submission_history'], (res) => {
+        callback(res.submission_history || []);
+      });
+      return;
+    }
+
+    openDB()
+      .then((db) => {
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction('submissions', 'readonly');
+          const store = tx.objectStore('submissions');
+          const request = store.getAll();
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = (e) => reject(e.target.error);
+        });
+      })
+      .then((list) => callback(list))
+      .catch((err) => {
+        console.error('[AtCoder Workspace] IndexedDB load error:', err);
+        callback([]);
       });
   }
 
@@ -233,6 +283,16 @@
     );
   };
 
+  if (settingsBtn) {
+    settingsBtn.onclick = () => {
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.openOptionsPage) {
+        chrome.runtime.openOptionsPage();
+      } else {
+        alert('設定画面は拡張機能として実行されている場合のみ利用可能です。');
+      }
+    };
+  }
+
   consoleToggleBtn.onclick = () => {
     toggleConsole();
   };
@@ -278,7 +338,7 @@
     console.log('[AtCoder Workspace] Editor: Received message from parent', e.data.type, e.data);
 
     switch (e.data.type) {
-      case 'init-config':
+      case 'init-config': {
         contestId = e.data.contestId;
         problemId = e.data.problemId;
         currentLanguageId = e.data.selectedLanguageId;
@@ -296,9 +356,31 @@
           chrome.storage.local.set({ 'settings:last_selected_language': currentLanguageId });
         }
 
-        // Load Monaco Editor
-        initMonaco(e.data.isDark);
+        // Check if user is logged in (languages list would be empty if not logged in)
+        const loginWarning = document.getElementById('login-warning');
+        const editorContainer = document.getElementById('editor-container');
+        if (!e.data.languages || e.data.languages.length === 0) {
+          if (loginWarning) {
+            loginWarning.style.display = 'flex';
+          }
+          if (editorContainer) {
+            editorContainer.style.display = 'none';
+          }
+          setButtonsDisabled(true);
+          saveStatus.textContent = '未ログイン';
+        } else {
+          if (loginWarning) {
+            loginWarning.style.display = 'none';
+          }
+          if (editorContainer) {
+            editorContainer.style.display = 'block';
+          }
+          setButtonsDisabled(false);
+          // Load Monaco Editor
+          initMonaco(e.data.isDark);
+        }
         break;
+      }
 
       case 'language-change':
         if (e.data.languageId && e.data.languageId !== currentLanguageId) {
@@ -361,11 +443,12 @@
         const turnstileMap = {
           'force-rendered': '強制レンダリング起動',
           'auto-rendered': '自動レンダリング検出',
-          'token_already_present': '既存トークン再利用',
-          'no_container': '認証不要',
-          'implicit': '暗黙的ロード',
+          token_already_present: '既存トークン再利用',
+          no_container: '認証不要',
+          implicit: '暗黙的ロード',
         };
-        const turnstileText = turnstileMap[e.data.turnstileDebug] || e.data.turnstileDebug || '不明';
+        const turnstileText =
+          turnstileMap[e.data.turnstileDebug] || e.data.turnstileDebug || '不明';
 
         // Update Console Results
         consoleResults.innerHTML = `
@@ -405,11 +488,12 @@
         const turnstileMap = {
           'force-rendered': '強制レンダリング起動',
           'auto-rendered': '自動レンダリング検出',
-          'token_already_present': '既存トークン再利用',
-          'no_container': '認証不要',
-          'implicit': '暗黙的ロード',
+          token_already_present: '既存トークン再利用',
+          no_container: '認証不要',
+          implicit: '暗黙的ロード',
         };
-        const turnstileText = turnstileMap[e.data.turnstileDebug] || e.data.turnstileDebug || '不明';
+        const turnstileText =
+          turnstileMap[e.data.turnstileDebug] || e.data.turnstileDebug || '不明';
 
         // Update Console Results
         consoleResults.innerHTML = `
@@ -692,7 +776,9 @@
       prevBtn.disabled = isSubmitPhase1 || isTesting ? true : false;
       prevBtn.onclick = () => {
         if (isTesting) {
-          if (!confirm('テスト実行中にページ遷移すると、テスト結果が失われます。本当に遷移しますか？')) {
+          if (
+            !confirm('テスト実行中にページ遷移すると、テスト結果が失われます。本当に遷移しますか？')
+          ) {
             return;
           }
         }
@@ -707,7 +793,9 @@
       nextBtn.disabled = isSubmitPhase1 || isTesting ? true : false;
       nextBtn.onclick = () => {
         if (isTesting) {
-          if (!confirm('テスト実行中にページ遷移すると、テスト結果が失われます。本当に遷移しますか？')) {
+          if (
+            !confirm('テスト実行中にページ遷移すると、テスト結果が失われます。本当に遷移しますか？')
+          ) {
             return;
           }
         }

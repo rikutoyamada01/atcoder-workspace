@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AtCoder Workspace - 設定</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="settings-container">
+    <!-- Header -->
+    <header class="settings-header">
+      <div class="header-top">
+        <button id="back-btn" class="btn btn-secondary btn-sm back-btn">← 戻る / Back</button>
+      </div>
+      <div class="brand-title">
+        <span class="dot"></span>
+        <h1>AtCoder Workspace</h1>
+        <span class="badge">設定</span>
+      </div>
+      <p class="brand-subtitle">Competitive Programming Workspace for AtCoder</p>
+    </header>
+
+    <div class="settings-grid">
+      <!-- Left Column: Settings Cards -->
+      <main class="settings-main">
+        <!-- Card 1: Workspace Settings -->
+        <section class="settings-card">
+          <div class="card-header">
+            <h2>一般設定 / General Settings</h2>
+          </div>
+          <div class="card-body">
+            <!-- Split Ratio Setting -->
+            <div class="setting-item">
+              <div class="setting-info">
+                <label for="split-ratio">分割比率のデフォルト値</label>
+                <p class="setting-description">問題ページを開いた際のエディタと問題文の初期幅比率です。</p>
+              </div>
+              <div class="setting-control-vertical">
+                <div class="slider-container">
+                  <input type="range" id="split-ratio" min="0.2" max="0.8" step="0.05" value="0.5">
+                  <span id="split-ratio-value">50%</span>
+                </div>
+                <button id="reset-ratio-btn" class="btn btn-secondary btn-sm">デフォルトに戻す</button>
+              </div>
+            </div>
+
+            <!-- Panel Default State -->
+            <div class="setting-item">
+              <div class="setting-info">
+                <label for="panel-open">エディタをデフォルトで開く</label>
+                <p class="setting-description">問題ページに遷移した際、自動的にエディタを開いた状態にします。</p>
+              </div>
+              <div class="setting-control">
+                <label class="switch">
+                  <input type="checkbox" id="panel-open" checked>
+                  <span class="slider round"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Card 2: Storage Management -->
+        <section class="settings-card">
+          <div class="card-header">
+            <h2>データとストレージ / Data & Storage</h2>
+          </div>
+          <div class="card-body">
+            <div class="setting-item">
+              <div class="setting-info">
+                <label>自動保存されたコードの履歴</label>
+                <p class="setting-description">ブラウザのローカル領域に保存されている提出コードや一時保存データの情報です。</p>
+              </div>
+              <div class="setting-control-vertical">
+                <div class="storage-stats">
+                  <span class="stat-label">キャッシュ件数:</span>
+                  <span id="cache-count" class="stat-value">0 件</span>
+                </div>
+                <button id="clear-cache-btn" class="btn btn-danger btn-sm">すべてのキャッシュデータを消去</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- Right Column: Info & Links -->
+      <aside class="settings-sidebar">
+        <!-- Version Card -->
+        <section class="info-card">
+          <h3>この拡張機能について</h3>
+          <div class="info-item">
+            <span class="info-label">バージョン:</span>
+            <span id="extension-version" class="info-value">1.4.0</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">ライセンス:</span>
+            <span class="info-value">MIT License</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">データ送信:</span>
+            <span class="info-value text-success">送信なし (完全ローカル動作)</span>
+          </div>
+        </section>
+
+        <!-- Document Links -->
+        <section class="links-card">
+          <h3>関連リンク / Resources</h3>
+          <ul class="resource-links">
+            <li>
+              <a href="https://rikutoyamada01.github.io/atcoder-workspace/presentation.html" target="_blank" class="resource-link">
+                <span class="icon">💡</span>
+                <span class="link-text">コンセプトプレゼンテーション</span>
+              </a>
+            </li>
+            <li>
+              <a href="https://rikutoyamada01.github.io/atcoder-workspace/roadmap.html" target="_blank" class="resource-link">
+                <span class="icon">🗺️</span>
+                <span class="link-text">開発ロードマップ</span>
+              </a>
+            </li>
+            <li>
+              <a href="https://rikutoyamada01.github.io/atcoder-workspace/privacy.html" target="_blank" class="resource-link">
+                <span class="icon">🛡️</span>
+                <span class="link-text">プライバシーポリシー</span>
+              </a>
+            </li>
+            <li>
+              <a href="https://github.com/rikutoyamada01/atcoder-workspace" target="_blank" class="resource-link">
+                <span class="icon">🐱</span>
+                <span class="link-text">GitHub リポジトリ</span>
+              </a>
+            </li>
+          </ul>
+        </section>
+      </aside>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast">設定を保存しました</div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

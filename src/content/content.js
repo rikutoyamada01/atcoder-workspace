@@ -393,7 +393,10 @@
       const pending = res.pending_submission;
       if (!pending) return;
 
-      console.log('[AtCoder Workspace] Found pending submission in storage. Resuming polling...', pending);
+      console.log(
+        '[AtCoder Workspace] Found pending submission in storage. Resuming polling...',
+        pending
+      );
 
       const submitter = window.AtCoderWorkspace.Submitter;
       if (!submitter) {

@@ -144,13 +144,15 @@ describe('Submitter Module Tests', () => {
       'valid-turnstile-token-from-widget-longer-than-20'
     );
 
-    expect(callback).toHaveBeenCalledWith(expect.objectContaining({
-      submissionId: '99999',
-      status: 'WJ',
-      time: '',
-      memory: '',
-      isComplete: false,
-    }));
+    expect(callback).toHaveBeenCalledWith(
+      expect.objectContaining({
+        submissionId: '99999',
+        status: 'WJ',
+        time: '',
+        memory: '',
+        isComplete: false,
+      })
+    );
   });
 
   test('Submits using native form without Turnstile field', async () => {
@@ -175,13 +177,15 @@ describe('Submitter Module Tests', () => {
     expect(body.get('sourceCode')).toBe('print(1)');
     expect(body.has('cf-turnstile-response')).toBe(false);
 
-    expect(callback).toHaveBeenCalledWith(expect.objectContaining({
-      submissionId: '88888',
-      status: 'WJ',
-      time: '',
-      memory: '',
-      isComplete: false,
-    }));
+    expect(callback).toHaveBeenCalledWith(
+      expect.objectContaining({
+        submissionId: '88888',
+        status: 'WJ',
+        time: '',
+        memory: '',
+        isComplete: false,
+      })
+    );
   });
 
   test('Falls back to manual POST when no native form exists', async () => {
@@ -221,13 +225,15 @@ describe('Submitter Module Tests', () => {
     expect(postArgs[1].body.get('csrf_token')).toBe('fresh-csrf');
     expect(postArgs[1].body.get('sourceCode')).toBe('print(1)');
 
-    expect(callback).toHaveBeenCalledWith(expect.objectContaining({
-      submissionId: '77777',
-      status: 'WJ',
-      time: '',
-      memory: '',
-      isComplete: false,
-    }));
+    expect(callback).toHaveBeenCalledWith(
+      expect.objectContaining({
+        submissionId: '77777',
+        status: 'WJ',
+        time: '',
+        memory: '',
+        isComplete: false,
+      })
+    );
   });
 
   // ─── Polling tests ───
@@ -293,46 +299,54 @@ describe('Submitter Module Tests', () => {
     await flushPromises(); // Turnstile (immediate) + POST
     await flushPromises();
 
-    expect(callback).toHaveBeenCalledWith(expect.objectContaining({
-      submissionId: '777',
-      status: 'WJ',
-      time: '',
-      memory: '',
-      isComplete: false,
-    }));
+    expect(callback).toHaveBeenCalledWith(
+      expect.objectContaining({
+        submissionId: '777',
+        status: 'WJ',
+        time: '',
+        memory: '',
+        isComplete: false,
+      })
+    );
 
     // Poll 1: WJ
     jest.advanceTimersByTime(2000);
     await flushPromises();
-    expect(callback).toHaveBeenLastCalledWith(expect.objectContaining({
-      submissionId: '777',
-      status: 'WJ',
-      time: '',
-      memory: '',
-      isComplete: false,
-    }));
+    expect(callback).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        submissionId: '777',
+        status: 'WJ',
+        time: '',
+        memory: '',
+        isComplete: false,
+      })
+    );
 
     // Poll 2: 1/15
     jest.advanceTimersByTime(2000);
     await flushPromises();
-    expect(callback).toHaveBeenLastCalledWith(expect.objectContaining({
-      submissionId: '777',
-      status: '1/15',
-      time: '',
-      memory: '',
-      isComplete: false,
-    }));
+    expect(callback).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        submissionId: '777',
+        status: '1/15',
+        time: '',
+        memory: '',
+        isComplete: false,
+      })
+    );
 
     // Poll 3: AC
     jest.advanceTimersByTime(2000);
     await flushPromises();
-    expect(callback).toHaveBeenLastCalledWith(expect.objectContaining({
-      submissionId: '777',
-      status: 'AC',
-      time: '10 ms',
-      memory: '1024 KB',
-      isComplete: true,
-    }));
+    expect(callback).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        submissionId: '777',
+        status: 'AC',
+        time: '10 ms',
+        memory: '1024 KB',
+        isComplete: true,
+      })
+    );
   });
 
   // ─── Error handling tests ───

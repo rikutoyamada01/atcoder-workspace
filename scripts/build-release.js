@@ -26,13 +26,13 @@ const filesToCopy = [
   { src: 'LICENSE', dest: 'LICENSE' },
   { src: 'README.md', dest: 'README.md' },
   { src: 'src', dest: 'src', isDir: true },
-  { src: 'lib', dest: 'lib', isDir: true }
+  { src: 'lib', dest: 'lib', isDir: true },
 ];
 
-filesToCopy.forEach(item => {
+filesToCopy.forEach((item) => {
   const srcPath = path.join(rootDir, item.src);
   const destPath = path.join(tempDir, item.dest);
-  
+
   if (fs.existsSync(srcPath)) {
     if (item.isDir) {
       fs.cpSync(srcPath, destPath, { recursive: true });
@@ -45,23 +45,27 @@ filesToCopy.forEach(item => {
   }
 });
 
-// 4. ZIP圧縮の実行 (Windows/Mac/Linuxで動作するtarを使用)
+// 4. ZIP圧縮の実行 (WindowsはPowerShell、他はtarを使用)
 console.log(`Creating ZIP archive: ${zipFileName}...`);
-try {
-  // tar -a -c -f <zipFile> -C <dir> .
-  // Windowsのtar.exeでも -a (auto-compress) オプションが動作します
-  execSync(`tar -a -c -f "${zipFilePath}" -C "${tempDir}" .`, { stdio: 'inherit' });
-  console.log(`ZIP archive created successfully at: ${zipFilePath}`);
-} catch (error) {
-  console.log('Failed to create ZIP archive using tar. Attempting PowerShell fallback...');
+const isWindows = process.platform === 'win32';
+
+if (isWindows) {
   try {
-    // Windows PowerShell fallback
-    // Compress-Archive コマンドを使用
+    // Windows PowerShell - Compress-Archive コマンドを使用
     const psCommand = `powershell -Command "Compress-Archive -Path '${tempDir}\\*' -DestinationPath '${zipFilePath}' -Force"`;
     execSync(psCommand, { stdio: 'inherit' });
     console.log(`ZIP archive created successfully using PowerShell at: ${zipFilePath}`);
-  } catch (psError) {
-    console.error('PowerShell build also failed:', psError.message);
+  } catch (error) {
+    console.error('PowerShell build failed:', error.message);
+    process.exit(1);
+  }
+} else {
+  try {
+    // macOS/Linux - tar を使用
+    execSync(`tar -a -c -f "${zipFilePath}" -C "${tempDir}" .`, { stdio: 'inherit' });
+    console.log(`ZIP archive created successfully using tar at: ${zipFilePath}`);
+  } catch (error) {
+    console.error('Tar build failed:', error.message);
     process.exit(1);
   }
 }

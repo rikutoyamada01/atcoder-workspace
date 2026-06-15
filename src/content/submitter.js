@@ -79,9 +79,11 @@
           if (container) hasTurnstile = true;
         } else if (input) {
           container = input.closest('form')
-            ? input.closest('form').querySelector(
-                '.cf-turnstile, .cf-challenge, #cf-turnstile, [class*="cf-turnstile"], [data-sitekey]'
-              )
+            ? input
+                .closest('form')
+                .querySelector(
+                  '.cf-turnstile, .cf-challenge, #cf-turnstile, [class*="cf-turnstile"], [data-sitekey]'
+                )
             : null;
           if (container) hasTurnstile = true;
         }
@@ -267,7 +269,15 @@
           });
         })
         .then((res) => {
-          if (res) return this._handleSubmitResponse(res, contestId, problemId, languageId, code, callback);
+          if (res)
+            return this._handleSubmitResponse(
+              res,
+              contestId,
+              problemId,
+              languageId,
+              code,
+              callback
+            );
         })
         .catch((err) => {
           console.error('[AtCoder Workspace] Submission error:', err);
@@ -300,7 +310,9 @@
             credentials: 'include',
           });
         })
-        .then((res) => this._handleSubmitResponse(res, contestId, problemId, languageId, code, callback))
+        .then((res) =>
+          this._handleSubmitResponse(res, contestId, problemId, languageId, code, callback)
+        )
         .catch((err) => {
           console.error('[AtCoder Workspace] Submission error:', err);
           callback({ error: err.message || '送信中にエラーが発生しました。' });
