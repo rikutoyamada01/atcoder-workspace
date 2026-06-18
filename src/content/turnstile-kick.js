@@ -1,6 +1,22 @@
 (function () {
   'use strict';
 
+  // Listen for reset events from content script (isolated world)
+  document.addEventListener('atcoder-workspace-reset-turnstile', () => {
+    const container = document.querySelector(
+      '.cf-challenge[data-sitekey], .cf-turnstile[data-sitekey]'
+    );
+    if (container && window.turnstile && typeof window.turnstile.reset === 'function') {
+      try {
+        window.turnstile.reset(container);
+        delete container.dataset.turnstileStatus;
+        console.log('[AtCoder Workspace] Turnstile reset via custom event');
+      } catch (e) {
+        console.warn('[AtCoder Workspace] Turnstile reset via event failed:', e);
+      }
+    }
+  });
+
   function tryRender() {
     if (!window.turnstile) return false;
 

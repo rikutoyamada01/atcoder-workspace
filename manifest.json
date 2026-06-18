@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AtCoder Workspace",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "AtCoderの問題ページ上にエディタを埋め込み、単一タブでコーディング・テスト・提出を完結させるワークスペース拡張",
   "icons": {
     "16": "src/icons/icon16.png",
