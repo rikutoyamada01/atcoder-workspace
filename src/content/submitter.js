@@ -113,8 +113,26 @@
       return new Promise((resolve, reject) => {
         const start = Date.now();
         let resolved = false;
+        let poppedUp = false;
         let observer = null;
         let timer = null;
+        let labelElement = null;
+
+        // Keep track of original styles to restore them later
+        const originalStyles = {};
+        const stylesToModify = [
+          'position',
+          'bottom',
+          'left',
+          'zIndex',
+          'opacity',
+          'backgroundColor',
+          'padding',
+          'borderRadius',
+          'boxShadow',
+          'border',
+          'transition',
+        ];
 
         const cleanup = () => {
           if (observer) {
@@ -125,11 +143,18 @@
             clearTimeout(timer);
             timer = null;
           }
-          // Restore container styling (set back to pre-warmed state: opacity 0.01, remove highlight)
-          if (form && container) {
+          // Restore container styling
+          if (container) {
+            stylesToModify.forEach((prop) => {
+              container.style[prop] = originalStyles[prop] || '';
+            });
+            // Ensure container becomes hidden/less visible after use to keep UI clean
             container.style.opacity = '0.01';
-            container.style.outline = '';
-            container.style.boxShadow = '';
+          }
+          // Remove dynamically created label
+          if (labelElement && labelElement.parentNode) {
+            labelElement.parentNode.removeChild(labelElement);
+            labelElement = null;
           }
         };
 
@@ -170,6 +195,53 @@
           if (checkToken()) return;
 
           const elapsed = Date.now() - start;
+
+          // 600ms passed and still no token – float Turnstile widget in viewport
+          if (elapsed > 600 && !poppedUp) {
+            poppedUp = true;
+            if (callback) {
+              callback({
+                status: 'WAITING_CAPTCHA',
+                message:
+                  'ボット認証（Cloudflare Turnstile）を待機しています。手動でのクリック（私は人間です）が必要な場合があります。',
+              });
+            }
+
+            if (container) {
+              // Save original styles
+              stylesToModify.forEach((prop) => {
+                originalStyles[prop] = container.style[prop];
+              });
+
+              // Apply floating styling to make the Turnstile widget visible at the bottom-left of the viewport
+              container.style.position = 'fixed';
+              container.style.bottom = '20px';
+              container.style.left = '20px';
+              container.style.zIndex = '999999';
+              container.style.opacity = '1';
+              container.style.backgroundColor = '#ffffff';
+              container.style.padding = '32px 12px 12px 12px'; // Extra top padding for label
+              container.style.borderRadius = '8px';
+              container.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.2)';
+              container.style.border = '2px solid #ff4d4f';
+              container.style.transition = 'all 0.3s ease';
+
+              // Create and append custom instruction label inside container
+              labelElement = document.createElement('div');
+              labelElement.id = 'atcoder-workspace-turnstile-label';
+              labelElement.textContent = 'ボット認証が必要です。チェックを入れてください';
+              labelElement.style.position = 'absolute';
+              labelElement.style.top = '8px';
+              labelElement.style.left = '0';
+              labelElement.style.right = '0';
+              labelElement.style.fontSize = '11.5px';
+              labelElement.style.fontWeight = 'bold';
+              labelElement.style.color = '#ff4d4f';
+              labelElement.style.textAlign = 'center';
+              labelElement.style.pointerEvents = 'none'; // Prevent blocking clicks on iframe
+              container.appendChild(labelElement);
+            }
+          }
 
           if (elapsed > 45000) {
             // Timeout after 45s
@@ -220,6 +292,117 @@
     }
 
     /**
+     * Pre-warms the Turnstile widget by floating it invisibly in the viewport,
+     * resetting it, and waiting for a new token to be generated in the background.
+     * @param {HTMLFormElement} form
+     */
+    preWarmTurnstile(form) {
+      const container = form.querySelector(
+        '.cf-turnstile, .cf-challenge, #cf-turnstile, [class*="cf-turnstile"], [data-sitekey]'
+      );
+      const turnstileInput = form.querySelector('input[name="cf-turnstile-response"]');
+      if (!container || !turnstileInput) return;
+
+      // 1. Clear previous value
+      turnstileInput.value = '';
+      delete container.dataset.turnstileStatus;
+
+      // Keep track of styles to modify
+      const stylesToModify = [
+        'position',
+        'bottom',
+        'left',
+        'zIndex',
+        'opacity',
+        'backgroundColor',
+        'padding',
+        'borderRadius',
+        'boxShadow',
+        'border',
+        'transition',
+        'pointerEvents',
+      ];
+      const originalStyles = {};
+      stylesToModify.forEach((prop) => {
+        originalStyles[prop] = container.style[prop];
+      });
+
+      // 2. Float container invisibly in the viewport to bypass lazy loading
+      container.style.position = 'fixed';
+      container.style.bottom = '20px';
+      container.style.left = '20px';
+      container.style.zIndex = '999999';
+      container.style.opacity = '0.01'; // Rendered but invisible to the user
+      container.style.pointerEvents = 'none'; // Ensure user clicks pass through
+      container.style.transition = 'none'; // No sliding transitions for warming
+
+      // 3. Trigger reset in MAIN world to initiate fresh challenge
+      document.dispatchEvent(new CustomEvent('atcoder-workspace-reset-turnstile'));
+
+      // 4. Watch for background token generation
+      const start = Date.now();
+      let resolved = false;
+      let observer = null;
+      let timer = null;
+
+      const cleanupWarming = () => {
+        if (observer) {
+          observer.disconnect();
+          observer = null;
+        }
+        if (timer) {
+          clearTimeout(timer);
+          timer = null;
+        }
+        // Restore container to its original layout position (hidden state)
+        stylesToModify.forEach((prop) => {
+          container.style[prop] = originalStyles[prop] || '';
+        });
+        container.style.opacity = '0.01';
+      };
+
+      const checkWarmingToken = () => {
+        if (resolved) return true;
+        if (turnstileInput.value && turnstileInput.value.length > 20) {
+          console.log('[AtCoder Workspace] Background Turnstile pre-warming completed.');
+          resolved = true;
+          cleanupWarming();
+          return true;
+        }
+        return false;
+      };
+
+      // Watch DOM mutations
+      observer = new MutationObserver(() => {
+        checkWarmingToken();
+      });
+      observer.observe(container, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['value', 'class', 'style', 'src'],
+      });
+
+      // Poll as fallback / timeout (5 seconds maximum for warming)
+      const pollWarming = () => {
+        if (resolved) return;
+        if (checkWarmingToken()) return;
+
+        const elapsed = Date.now() - start;
+        if (elapsed > 5000) {
+          console.log('[AtCoder Workspace] Background Turnstile pre-warming timeout.');
+          resolved = true;
+          cleanupWarming();
+          return;
+        }
+
+        timer = setTimeout(pollWarming, 300);
+      };
+
+      pollWarming();
+    }
+
+    /**
      * Primary submission path: uses the native form DOM to build the request.
      * @private
      */
@@ -266,6 +449,8 @@
             method: 'POST',
             body: formData,
             credentials: 'include',
+          }).finally(() => {
+            this.preWarmTurnstile(form);
           });
         })
         .then((res) => {

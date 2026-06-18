@@ -429,8 +429,8 @@
             <div style="margin-bottom: 8px; color: #ff8c00; font-weight: bold;">⚠️ ${escapeHtml(e.data.message)}</div>
             <div style="line-height: 1.6;">
               ボット判定（Cloudflare Turnstile）の認証完了を待機しています。<br>
-              左側の提出フォーム内のチェックボックス（私は人間です）を必要に応じて手動でクリックして認証を完了させてください。<br>
-              （対象エリアまで画面を自動スクロールし、赤枠でハイライトしています）
+              画面の左下に表示されたチェックボックス（私は人間です）を手動でクリックして認証を完了させてください。<br>
+              （認証完了後、自動的に提出処理が再開されます）
             </div>
           </div>
         `;
