@@ -651,7 +651,7 @@
 
         resultsCount = 0;
         acCount = 0;
-        totalCount = e.data.count;
+        totalCount = e.data.total;
         caseStatuses = [];
 
         testSummary.textContent = `実行中... (0/${totalCount})`;
