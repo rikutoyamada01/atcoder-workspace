@@ -397,4 +397,41 @@ describe('Submitter Module Tests', () => {
         '前回の提出から30秒間は提出できません。前回の提出完了から30秒以上経過するまでお待ちください。',
     });
   });
+
+  test('Poll times out after 10 minutes', async () => {
+    // Mock chrome storage
+    global.chrome = {
+      storage: {
+        local: {
+          remove: jest.fn(),
+        },
+      },
+    };
+
+    const originalDateNow = Date.now;
+    let mockNow = 1000000;
+    Date.now = () => mockNow;
+
+    const callback = jest.fn();
+    submitter.poll('abc100', '777', callback);
+
+    // Advance time by 10 minutes + 1 ms
+    mockNow += 10 * 60 * 1000 + 1;
+
+    // Advance Jest timers to run the pending checkStatus call
+    jest.advanceTimersByTime(2000);
+    await flushPromises();
+
+    expect(callback).toHaveBeenCalledWith({
+      submissionId: '777',
+      status: 'ERR',
+      isComplete: true,
+      turnstileDebug: expect.any(String),
+    });
+    expect(global.chrome.storage.local.remove).toHaveBeenCalledWith('pending_submission');
+
+    // Restore
+    Date.now = originalDateNow;
+    delete global.chrome;
+  });
 });

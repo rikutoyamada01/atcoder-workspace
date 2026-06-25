@@ -669,8 +669,24 @@
      */
     poll(contestId, submissionId, callback) {
       const pollInterval = 2000; // 2 seconds
+      const startTime = Date.now();
+      const maxDuration = 10 * 60 * 1000; // 10 minutes timeout limit
 
       const checkStatus = () => {
+        if (Date.now() - startTime > maxDuration) {
+          console.error('[AtCoder Workspace] Polling timed out after 10 minutes');
+          callback({
+            submissionId,
+            status: 'ERR',
+            isComplete: true,
+            turnstileDebug: this.lastTurnstileStatus,
+          });
+          if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+            chrome.storage.local.remove('pending_submission');
+          }
+          return;
+        }
+
         fetch(`/contests/${contestId}/submissions/me?_=${Date.now()}`, { credentials: 'include' })
           .then((res) => {
             if (!res.ok) {

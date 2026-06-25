@@ -170,10 +170,18 @@
             })
             .filter(Boolean);
 
-          const currentPath = window.location.pathname;
+          const cleanPath = (p) => {
+            if (typeof p !== 'string') return '';
+            let clean = p.split('?')[0].split('#')[0];
+            if (clean.endsWith('/')) {
+              clean = clean.slice(0, -1);
+            }
+            return clean;
+          };
+
+          const currentPathClean = cleanPath(window.location.pathname);
           const index = uniqueUrls.findIndex((url) => {
-            if (typeof url !== 'string') return false;
-            return currentPath.includes(url) || url.includes(currentPath);
+            return cleanPath(url) === currentPathClean;
           });
 
           let prevUrl = null;
