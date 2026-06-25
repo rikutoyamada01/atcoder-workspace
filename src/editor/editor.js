@@ -716,14 +716,26 @@
                 </div>
               </div>
             `;
-          } else if (status === 'RE' || status === 'ERR') {
+          } else if (status === 'RE' || status === 'ERR' || status === 'TLE' || status === 'MLE') {
             body.style.display = 'block';
             icon.textContent = '▼';
+            const labelText =
+              status === 'TLE'
+                ? 'タイムアウト検出 (TLE):'
+                : status === 'MLE'
+                  ? 'メモリ制限超過 (MLE):'
+                  : 'エラー詳細 (stderr):';
             const errMsg =
-              e.data.stderr || e.data.message || '実行時エラーまたはその他のエラーが発生しました。';
+              e.data.stderr ||
+              e.data.message ||
+              (status === 'TLE'
+                ? '実行制限時間（TLE）を超過しました。'
+                : status === 'MLE'
+                  ? 'メモリ制限（MLE）を超過しました。'
+                  : 'エラーが発生しました。');
             bodyHtml = `
               <div class="case-error-block">
-                <div class="case-io-label">エラー詳細 (stderr):</div>
+                <div class="case-io-label">${escapeHtml(labelText)}</div>
                 <pre class="case-error-content">${escapeHtml(errMsg)}</pre>
               </div>
             `;
