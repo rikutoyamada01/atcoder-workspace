@@ -326,13 +326,16 @@ body {
   background-color: #5cb85c;
 }
 
-.status-wa {
+.status-wa,
+.status-ce {
   background-color: #f0ad4e;
 }
 
 .status-re,
 .status-tle,
 .status-mle,
+.status-ole,
+.status-ie,
 .status-err {
   background-color: #d9534f;
 }
