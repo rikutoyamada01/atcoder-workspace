@@ -44,8 +44,13 @@
     // Block navigation during Phase 1 submission or sample testing
     prevBtn.disabled = isSubmitPhase1 || isTesting ? true : !prevUrl;
     nextBtn.disabled = isSubmitPhase1 || isTesting ? true : !nextUrl;
-    testBtn.disabled = disabled;
-    submitBtn.disabled = disabled;
+    if (!currentLanguageId) {
+      testBtn.disabled = true;
+      submitBtn.disabled = true;
+    } else {
+      testBtn.disabled = disabled;
+      submitBtn.disabled = disabled;
+    }
     langSelect.disabled = disabled;
   }
 
@@ -133,6 +138,7 @@
    * 過去の提出履歴を読み込む関数 (Phase 2 用)
    * @param {Function} callback - 取得した提出履歴配列を受け取るコールバック
    */
+  // eslint-disable-next-line no-unused-vars
   function loadSubmissionsFromDB(callback) {
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
       chrome.storage.local.get(['submission_history'], (res) => {
@@ -378,6 +384,8 @@
           setButtonsDisabled(false);
           // Load Monaco Editor
           initMonaco(e.data.isDark);
+          // Update language warning overlay state
+          updateEditorLanguageState();
         }
         break;
       }
@@ -842,6 +850,40 @@
     };
   }
 
+  function updateEditorLanguageState() {
+    const loginWarning = document.getElementById('login-warning');
+    const languageWarning = document.getElementById('language-warning');
+
+    // If not logged in, hide language warning
+    if (loginWarning && loginWarning.style.display === 'flex') {
+      if (languageWarning) languageWarning.style.display = 'none';
+      return;
+    }
+
+    if (!currentLanguageId) {
+      if (languageWarning) {
+        languageWarning.style.display = 'flex';
+      }
+      testBtn.disabled = true;
+      submitBtn.disabled = true;
+      if (editor) {
+        editor.updateOptions({ readOnly: true });
+      }
+      saveStatus.textContent = '言語未選択';
+    } else {
+      if (languageWarning) {
+        languageWarning.style.display = 'none';
+      }
+      if (!isTesting && !isSubmitting) {
+        testBtn.disabled = false;
+        submitBtn.disabled = false;
+      }
+      if (editor) {
+        editor.updateOptions({ readOnly: false });
+      }
+    }
+  }
+
   function initMonaco(isDark) {
     // Set theme class on body to prevent styling overrides
     document.body.className = isDark ? 'vs-dark-theme' : 'vs-theme';
@@ -854,16 +896,27 @@
       const langText = selectedOption ? selectedOption.textContent : '';
       const mode = getLanguageMode(langText);
 
-      // Load initial code from storage
-      const storageKey = `code:${contestId}:${problemId}:${currentLanguageId}`;
-      chrome.storage.local.get([storageKey], (res) => {
-        const initialCode = res[storageKey] || '';
+      // Load initial code from storage (only if currentLanguageId is valid)
+      const storageKey = currentLanguageId
+        ? `code:${contestId}:${problemId}:${currentLanguageId}`
+        : null;
+      const getInitialCode = (callback) => {
+        if (!storageKey) {
+          callback('');
+          return;
+        }
+        chrome.storage.local.get([storageKey], (res) => {
+          callback(res[storageKey] || '');
+        });
+      };
 
+      getInitialCode((initialCode) => {
         // Create Monaco instance
         editor = monaco.editor.create(document.getElementById('editor-container'), {
           value: initialCode,
           language: mode,
           theme: isDark ? 'vs-dark' : 'vs',
+          readOnly: !currentLanguageId, // Read-only if no language selected
           automaticLayout: false, // We control it via message events
 
           // F-2 requirements: Disable AI & Intellisense / Auto-suggestions
@@ -930,6 +983,14 @@
     const langText = selectedOption ? selectedOption.textContent : '';
     const mode = getLanguageMode(langText);
 
+    // If no language selected, empty the editor, make readOnly, and return
+    if (!currentLanguageId) {
+      editor.setValue('');
+      editor.updateOptions({ readOnly: true });
+      updateEditorLanguageState();
+      return;
+    }
+
     // Load new code
     const storageKey = `code:${contestId}:${problemId}:${currentLanguageId}`;
     chrome.storage.local.get([storageKey], (res) => {
@@ -956,6 +1017,8 @@
           saveCode();
         }, 1500);
       });
+
+      updateEditorLanguageState();
     });
   }
 

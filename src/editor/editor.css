@@ -13,6 +13,7 @@ body {
 }
 
 #editor-wrapper {
+  position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -521,6 +522,10 @@ body.vs-dark-theme .monaco-editor .margin {
   z-index: 10000;
   text-align: center;
   box-sizing: border-box;
+}
+
+#language-warning {
+  top: 46px;
 }
 
 body.vs-dark-theme .login-warning {
