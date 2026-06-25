@@ -309,7 +309,7 @@ describe('Submitter Module Tests', () => {
       })
     );
 
-    // Poll 1: WJ
+    // Poll 1: WJ (Interval becomes 3000ms after this)
     jest.advanceTimersByTime(2000);
     await flushPromises();
     expect(callback).toHaveBeenLastCalledWith(
@@ -322,8 +322,8 @@ describe('Submitter Module Tests', () => {
       })
     );
 
-    // Poll 2: 1/15
-    jest.advanceTimersByTime(2000);
+    // Poll 2: 1/15 (Interval becomes 4500ms after this)
+    jest.advanceTimersByTime(3000);
     await flushPromises();
     expect(callback).toHaveBeenLastCalledWith(
       expect.objectContaining({
@@ -336,7 +336,7 @@ describe('Submitter Module Tests', () => {
     );
 
     // Poll 3: AC
-    jest.advanceTimersByTime(2000);
+    jest.advanceTimersByTime(4500);
     await flushPromises();
     expect(callback).toHaveBeenLastCalledWith(
       expect.objectContaining({
@@ -398,7 +398,7 @@ describe('Submitter Module Tests', () => {
     });
   });
 
-  test('Poll times out after 10 minutes', async () => {
+  test('Poll times out after 5 minutes', async () => {
     // Mock chrome storage
     global.chrome = {
       storage: {
@@ -415,8 +415,8 @@ describe('Submitter Module Tests', () => {
     const callback = jest.fn();
     submitter.poll('abc100', '777', callback);
 
-    // Advance time by 10 minutes + 1 ms
-    mockNow += 10 * 60 * 1000 + 1;
+    // Advance time by 5 minutes + 1 ms
+    mockNow += 5 * 60 * 1000 + 1;
 
     // Advance Jest timers to run the pending checkStatus call
     jest.advanceTimersByTime(2000);
