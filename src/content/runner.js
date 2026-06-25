@@ -204,8 +204,27 @@
                 const expected = (sample.expected || '').trim().replace(/\r\n/g, '\n');
 
                 const exitCode = result.ExitCode !== undefined ? Number(result.ExitCode) : 0;
+                const timeConsumption =
+                  result.TimeConsumption !== undefined ? Number(result.TimeConsumption) : 0;
+                const memoryConsumption =
+                  result.MemoryConsumption !== undefined ? Number(result.MemoryConsumption) : 0;
+
+                const scraper = window.AtCoderWorkspace.Scraper;
+                const timeLimit =
+                  scraper && typeof scraper.extractTimeLimit === 'function'
+                    ? scraper.extractTimeLimit()
+                    : 2000;
+                const memoryLimit =
+                  scraper && typeof scraper.extractMemoryLimit === 'function'
+                    ? scraper.extractMemoryLimit()
+                    : 1024;
+
                 let status = 'WA';
-                if (actual === expected && exitCode === 0) {
+                if (timeConsumption >= timeLimit) {
+                  status = 'TLE';
+                } else if (memoryConsumption > memoryLimit * 1024) {
+                  status = 'MLE';
+                } else if (actual === expected && exitCode === 0) {
                   status = 'AC';
                 } else if (exitCode !== 0 || result.Stderr) {
                   status = 'RE';
@@ -235,9 +254,10 @@
                   console.log(`[AtCoder Workspace] Retrying case ${index + 1} due to lock...`);
                   setTimeout(runNext, 1500);
                 } else {
+                  const isTle = err.message && err.message.includes('TLE');
                   onCaseResult({
                     index,
-                    status: 'ERR',
+                    status: isTle ? 'TLE' : 'ERR',
                     message: err.message || '実行エラーが発生しました。',
                   });
                   index++;

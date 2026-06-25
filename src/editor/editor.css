@@ -332,6 +332,7 @@ body {
 
 .status-re,
 .status-tle,
+.status-mle,
 .status-err {
   background-color: #d9534f;
 }

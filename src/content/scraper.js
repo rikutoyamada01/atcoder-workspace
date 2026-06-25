@@ -121,6 +121,38 @@
     }
 
     /**
+     * Extracts the execution time limit in milliseconds from the page content.
+     * @returns {number} Time limit in milliseconds, defaults to 2000.
+     */
+    extractTimeLimit() {
+      const mainContainer = document.getElementById('main-container');
+      if (!mainContainer) return 2000;
+
+      const text = mainContainer.textContent;
+      const match = text.match(/(?:Time Limit|時間制限|実行時間制限)\s*:\s*([\d.]+)\s*sec/i);
+      if (match) {
+        return parseFloat(match[1]) * 1000;
+      }
+      return 2000;
+    }
+
+    /**
+     * Extracts the memory limit in MB from the page content.
+     * @returns {number} Memory limit in MB, defaults to 1024.
+     */
+    extractMemoryLimit() {
+      const mainContainer = document.getElementById('main-container');
+      if (!mainContainer) return 1024;
+
+      const text = mainContainer.textContent;
+      const match = text.match(/(?:Memory Limit|メモリ制限)\s*:\s*([\d.]+)\s*MB/i);
+      if (match) {
+        return parseFloat(match[1]);
+      }
+      return 1024;
+    }
+
+    /**
      * Fetches the task list for the current contest and parses navigation links.
      * @param {string} contestId - The current contest ID.
      * @param {Function} callback - Callback received with (prevUrl, nextUrl).
