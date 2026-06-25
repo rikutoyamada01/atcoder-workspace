@@ -13,6 +13,7 @@ body {
 }
 
 #editor-wrapper {
+  position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -325,12 +326,16 @@ body {
   background-color: #5cb85c;
 }
 
-.status-wa {
+.status-wa,
+.status-ce {
   background-color: #f0ad4e;
 }
 
 .status-re,
 .status-tle,
+.status-mle,
+.status-ole,
+.status-ie,
 .status-err {
   background-color: #d9534f;
 }
@@ -521,6 +526,10 @@ body.vs-dark-theme .monaco-editor .margin {
   z-index: 10000;
   text-align: center;
   box-sizing: border-box;
+}
+
+#language-warning {
+  top: 46px;
 }
 
 body.vs-dark-theme .login-warning {

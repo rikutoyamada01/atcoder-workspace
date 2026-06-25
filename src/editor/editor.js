@@ -29,6 +29,7 @@
   let resultsCount = 0;
   let acCount = 0;
   let totalCount = 0;
+  let caseStatuses = [];
 
   function escapeHtml(str) {
     if (!str) return '';
@@ -44,8 +45,13 @@
     // Block navigation during Phase 1 submission or sample testing
     prevBtn.disabled = isSubmitPhase1 || isTesting ? true : !prevUrl;
     nextBtn.disabled = isSubmitPhase1 || isTesting ? true : !nextUrl;
-    testBtn.disabled = disabled;
-    submitBtn.disabled = disabled;
+    if (!currentLanguageId) {
+      testBtn.disabled = true;
+      submitBtn.disabled = true;
+    } else {
+      testBtn.disabled = disabled;
+      submitBtn.disabled = disabled;
+    }
     langSelect.disabled = disabled;
   }
 
@@ -133,6 +139,7 @@
    * 過去の提出履歴を読み込む関数 (Phase 2 用)
    * @param {Function} callback - 取得した提出履歴配列を受け取るコールバック
    */
+  // eslint-disable-next-line no-unused-vars
   function loadSubmissionsFromDB(callback) {
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
       chrome.storage.local.get(['submission_history'], (res) => {
@@ -378,6 +385,8 @@
           setButtonsDisabled(false);
           // Load Monaco Editor
           initMonaco(e.data.isDark);
+          // Update language warning overlay state
+          updateEditorLanguageState();
         }
         break;
       }
@@ -637,10 +646,13 @@
 
       case 'test-start':
         isTesting = true;
-        totalCount = e.data.total;
+        setButtonsDisabled(true);
+        toggleConsole(true);
+
         resultsCount = 0;
         acCount = 0;
-        setButtonsDisabled(true);
+        totalCount = e.data.total;
+        caseStatuses = [];
 
         testSummary.textContent = `実行中... (0/${totalCount})`;
         testSummary.className = 'summary-running';
@@ -670,6 +682,7 @@
         const row = document.getElementById(`case-row-${e.data.index}`);
         if (row) {
           const status = e.data.status;
+          caseStatuses[e.data.index] = status;
           if (status === 'AC') {
             acCount++;
           }
@@ -708,14 +721,26 @@
                 </div>
               </div>
             `;
-          } else if (status === 'RE' || status === 'ERR') {
+          } else if (status === 'RE' || status === 'ERR' || status === 'TLE' || status === 'MLE') {
             body.style.display = 'block';
             icon.textContent = '▼';
+            const labelText =
+              status === 'TLE'
+                ? 'タイムアウト検出 (TLE):'
+                : status === 'MLE'
+                  ? 'メモリ制限超過 (MLE):'
+                  : 'エラー詳細 (stderr):';
             const errMsg =
-              e.data.stderr || e.data.message || '実行時エラーまたはその他のエラーが発生しました。';
+              e.data.stderr ||
+              e.data.message ||
+              (status === 'TLE'
+                ? '実行制限時間（TLE）を超過しました。'
+                : status === 'MLE'
+                  ? 'メモリ制限（MLE）を超過しました。'
+                  : 'エラーが発生しました。');
             bodyHtml = `
               <div class="case-error-block">
-                <div class="case-io-label">エラー詳細 (stderr):</div>
+                <div class="case-io-label">${escapeHtml(labelText)}</div>
                 <pre class="case-error-content">${escapeHtml(errMsg)}</pre>
               </div>
             `;
@@ -746,7 +771,24 @@
           testSummary.textContent = `すべてAC (${acCount}/${totalCount})`;
           testSummary.className = 'summary-ac';
         } else {
-          testSummary.textContent = `WAあり (${acCount}/${totalCount} AC)`;
+          // Priority of statuses to display in the overall summary
+          const uniqueNonAcStatuses = [...new Set(caseStatuses)].filter((s) => s !== 'AC');
+          let displayStatus = 'WA';
+          if (uniqueNonAcStatuses.includes('TLE')) {
+            displayStatus = 'TLE';
+          } else if (uniqueNonAcStatuses.includes('MLE')) {
+            displayStatus = 'MLE';
+          } else if (uniqueNonAcStatuses.includes('RE')) {
+            displayStatus = 'RE';
+          } else if (uniqueNonAcStatuses.includes('WA')) {
+            displayStatus = 'WA';
+          } else if (uniqueNonAcStatuses.includes('ERR')) {
+            displayStatus = 'ERR';
+          } else if (uniqueNonAcStatuses.length > 0) {
+            displayStatus = uniqueNonAcStatuses[0];
+          }
+
+          testSummary.textContent = `${displayStatus}あり (${acCount}/${totalCount} AC)`;
           testSummary.className = 'summary-wa';
         }
         break;
@@ -842,6 +884,40 @@
     };
   }
 
+  function updateEditorLanguageState() {
+    const loginWarning = document.getElementById('login-warning');
+    const languageWarning = document.getElementById('language-warning');
+
+    // If not logged in, hide language warning
+    if (loginWarning && loginWarning.style.display === 'flex') {
+      if (languageWarning) languageWarning.style.display = 'none';
+      return;
+    }
+
+    if (!currentLanguageId) {
+      if (languageWarning) {
+        languageWarning.style.display = 'flex';
+      }
+      testBtn.disabled = true;
+      submitBtn.disabled = true;
+      if (editor) {
+        editor.updateOptions({ readOnly: true });
+      }
+      saveStatus.textContent = '言語未選択';
+    } else {
+      if (languageWarning) {
+        languageWarning.style.display = 'none';
+      }
+      if (!isTesting && !isSubmitting) {
+        testBtn.disabled = false;
+        submitBtn.disabled = false;
+      }
+      if (editor) {
+        editor.updateOptions({ readOnly: false });
+      }
+    }
+  }
+
   function initMonaco(isDark) {
     // Set theme class on body to prevent styling overrides
     document.body.className = isDark ? 'vs-dark-theme' : 'vs-theme';
@@ -854,16 +930,27 @@
       const langText = selectedOption ? selectedOption.textContent : '';
       const mode = getLanguageMode(langText);
 
-      // Load initial code from storage
-      const storageKey = `code:${contestId}:${problemId}:${currentLanguageId}`;
-      chrome.storage.local.get([storageKey], (res) => {
-        const initialCode = res[storageKey] || '';
+      // Load initial code from storage (only if currentLanguageId is valid)
+      const storageKey = currentLanguageId
+        ? `code:${contestId}:${problemId}:${currentLanguageId}`
+        : null;
+      const getInitialCode = (callback) => {
+        if (!storageKey) {
+          callback('');
+          return;
+        }
+        chrome.storage.local.get([storageKey], (res) => {
+          callback(res[storageKey] || '');
+        });
+      };
 
+      getInitialCode((initialCode) => {
         // Create Monaco instance
         editor = monaco.editor.create(document.getElementById('editor-container'), {
           value: initialCode,
           language: mode,
           theme: isDark ? 'vs-dark' : 'vs',
+          readOnly: !currentLanguageId, // Read-only if no language selected
           automaticLayout: false, // We control it via message events
 
           // F-2 requirements: Disable AI & Intellisense / Auto-suggestions
@@ -930,6 +1017,14 @@
     const langText = selectedOption ? selectedOption.textContent : '';
     const mode = getLanguageMode(langText);
 
+    // If no language selected, empty the editor, make readOnly, and return
+    if (!currentLanguageId) {
+      editor.setValue('');
+      editor.updateOptions({ readOnly: true });
+      updateEditorLanguageState();
+      return;
+    }
+
     // Load new code
     const storageKey = `code:${contestId}:${problemId}:${currentLanguageId}`;
     chrome.storage.local.get([storageKey], (res) => {
@@ -956,6 +1051,8 @@
           saveCode();
         }, 1500);
       });
+
+      updateEditorLanguageState();
     });
   }
 

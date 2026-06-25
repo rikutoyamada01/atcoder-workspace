@@ -668,9 +668,26 @@
      * @param {Function} callback
      */
     poll(contestId, submissionId, callback) {
-      const pollInterval = 2000; // 2 seconds
+      let pollInterval = 2000; // Start at 2 seconds
+      const maxPollInterval = 10000; // Cap at 10 seconds to reduce server load
+      const startTime = Date.now();
+      const maxDuration = 5 * 60 * 1000; // 5 minutes timeout limit
 
       const checkStatus = () => {
+        if (Date.now() - startTime > maxDuration) {
+          console.error('[AtCoder Workspace] Polling timed out after 5 minutes');
+          callback({
+            submissionId,
+            status: 'ERR',
+            isComplete: true,
+            turnstileDebug: this.lastTurnstileStatus,
+          });
+          if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+            chrome.storage.local.remove('pending_submission');
+          }
+          return;
+        }
+
         fetch(`/contests/${contestId}/submissions/me?_=${Date.now()}`, { credentials: 'include' })
           .then((res) => {
             if (!res.ok) {
@@ -682,6 +699,7 @@
             const info = this.parseSubmissionRow(html, submissionId, contestId);
             if (!info) {
               // Submission might not be visible in the first page yet, wait and retry
+              pollInterval = Math.min(pollInterval * 1.5, maxPollInterval);
               setTimeout(checkStatus, pollInterval);
               return;
             }
@@ -703,12 +721,14 @@
                 chrome.storage.local.remove('pending_submission');
               }
             } else {
+              pollInterval = Math.min(pollInterval * 1.5, maxPollInterval);
               setTimeout(checkStatus, pollInterval);
             }
           })
           .catch((err) => {
             console.error('[AtCoder Workspace] Polling error:', err);
             // Don't abort immediately on a single polling network error, retry
+            pollInterval = Math.min(pollInterval * 1.5, maxPollInterval);
             setTimeout(checkStatus, pollInterval);
           });
       };

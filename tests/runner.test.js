@@ -211,4 +211,147 @@ describe('Runner Module Tests', () => {
 
     expect(onComplete).toHaveBeenCalled();
   });
+
+  test('runSampleTests returns TLE status if execution time exceeds time limit', async () => {
+    // Add CSRF input to mock DOM
+    document.body.innerHTML = '<input name="csrf_token" value="dummy-csrf-token" />';
+
+    // Mock Scraper limits
+    window.AtCoderWorkspace.Scraper = {
+      extractTimeLimit: () => 1500, // 1500 ms limit
+      extractMemoryLimit: () => 1024,
+    };
+
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ Result: { Status: 3 } }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        text: () => Promise.resolve(''),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            Result: {
+              Status: 3,
+              ExitCode: 0,
+              TimeConsumption: 1600, // exceeds 1500 ms
+              MemoryConsumption: 1024,
+              Output: btoa('out1\n'),
+              Error: btoa(''),
+            },
+          }),
+      });
+
+    const onCaseResult = jest.fn();
+    const onComplete = jest.fn();
+
+    const samples = [{ input: 'in1', expected: 'out1' }];
+    runner.runSampleTests('abc100', 'print("out1")', 'python', samples, onCaseResult, onComplete);
+
+    await flushPromises(); // ensureIdle
+    await flushPromises(); // submit
+    await flushPromises(); // pollResult
+
+    expect(onCaseResult).toHaveBeenCalledWith({
+      index: 0,
+      status: 'TLE',
+      time: 1600,
+      memory: 1024,
+      output: 'out1\n',
+      expected: 'out1',
+      stderr: '',
+    });
+  });
+
+  test('runSampleTests returns MLE status if memory usage exceeds memory limit', async () => {
+    document.body.innerHTML = '<input name="csrf_token" value="dummy-csrf-token" />';
+
+    window.AtCoderWorkspace.Scraper = {
+      extractTimeLimit: () => 2000,
+      extractMemoryLimit: () => 512, // 512 MB limit (524288 KB)
+    };
+
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ Result: { Status: 3 } }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        text: () => Promise.resolve(''),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            Result: {
+              Status: 3,
+              ExitCode: 0,
+              TimeConsumption: 100,
+              MemoryConsumption: 600000, // exceeds 524288 KB
+              Output: btoa('out1\n'),
+              Error: btoa(''),
+            },
+          }),
+      });
+
+    const onCaseResult = jest.fn();
+    const onComplete = jest.fn();
+
+    const samples = [{ input: 'in1', expected: 'out1' }];
+    runner.runSampleTests('abc100', 'print("out1")', 'python', samples, onCaseResult, onComplete);
+
+    await flushPromises(); // ensureIdle
+    await flushPromises(); // submit
+    await flushPromises(); // pollResult
+
+    expect(onCaseResult).toHaveBeenCalledWith({
+      index: 0,
+      status: 'MLE',
+      time: 100,
+      memory: 600000,
+      output: 'out1\n',
+      expected: 'out1',
+      stderr: '',
+    });
+  });
+
+  test('runSampleTests returns TLE status if pollResult times out locally', async () => {
+    document.body.innerHTML = '<input name="csrf_token" value="dummy-csrf-token" />';
+
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ Result: { Status: 3 } }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        text: () => Promise.resolve(''),
+      });
+
+    // Mock pollResult to throw/reject immediately to simulate TLE
+    runner.pollResult = jest.fn((contestId, resolve, reject) => {
+      reject(new Error('TLE: 実行制限時間を超過しました (15秒)'));
+    });
+
+    const onCaseResult = jest.fn();
+    const onComplete = jest.fn();
+
+    const samples = [{ input: 'in1', expected: 'out1' }];
+    runner.runSampleTests('abc100', 'print("out1")', 'python', samples, onCaseResult, onComplete);
+
+    await flushPromises(); // ensureIdle
+    await flushPromises(); // submit
+    await flushPromises(); // pollResult reject
+
+    expect(onCaseResult).toHaveBeenCalledWith({
+      index: 0,
+      status: 'TLE',
+      message: 'TLE: 実行制限時間を超過しました (15秒)',
+    });
+  });
 });

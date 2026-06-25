@@ -309,7 +309,7 @@ describe('Submitter Module Tests', () => {
       })
     );
 
-    // Poll 1: WJ
+    // Poll 1: WJ (Interval becomes 3000ms after this)
     jest.advanceTimersByTime(2000);
     await flushPromises();
     expect(callback).toHaveBeenLastCalledWith(
@@ -322,8 +322,8 @@ describe('Submitter Module Tests', () => {
       })
     );
 
-    // Poll 2: 1/15
-    jest.advanceTimersByTime(2000);
+    // Poll 2: 1/15 (Interval becomes 4500ms after this)
+    jest.advanceTimersByTime(3000);
     await flushPromises();
     expect(callback).toHaveBeenLastCalledWith(
       expect.objectContaining({
@@ -336,7 +336,7 @@ describe('Submitter Module Tests', () => {
     );
 
     // Poll 3: AC
-    jest.advanceTimersByTime(2000);
+    jest.advanceTimersByTime(4500);
     await flushPromises();
     expect(callback).toHaveBeenLastCalledWith(
       expect.objectContaining({
@@ -396,5 +396,42 @@ describe('Submitter Module Tests', () => {
       error:
         '前回の提出から30秒間は提出できません。前回の提出完了から30秒以上経過するまでお待ちください。',
     });
+  });
+
+  test('Poll times out after 5 minutes', async () => {
+    // Mock chrome storage
+    global.chrome = {
+      storage: {
+        local: {
+          remove: jest.fn(),
+        },
+      },
+    };
+
+    const originalDateNow = Date.now;
+    let mockNow = 1000000;
+    Date.now = () => mockNow;
+
+    const callback = jest.fn();
+    submitter.poll('abc100', '777', callback);
+
+    // Advance time by 5 minutes + 1 ms
+    mockNow += 5 * 60 * 1000 + 1;
+
+    // Advance Jest timers to run the pending checkStatus call
+    jest.advanceTimersByTime(2000);
+    await flushPromises();
+
+    expect(callback).toHaveBeenCalledWith({
+      submissionId: '777',
+      status: 'ERR',
+      isComplete: true,
+      turnstileDebug: expect.any(String),
+    });
+    expect(global.chrome.storage.local.remove).toHaveBeenCalledWith('pending_submission');
+
+    // Restore
+    Date.now = originalDateNow;
+    delete global.chrome;
   });
 });

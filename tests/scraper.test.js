@@ -118,4 +118,42 @@ describe('Scraper Module Tests', () => {
     const result = scraper.extractSampleCases();
     expect(result.error).toBe('問題文 (task-statement) がページ内に見つかりません。');
   });
+
+  test('loadNavigationUrls correctly identifies prev/next tasks even with substring task IDs', async () => {
+    const mockTasksHTML = `
+      <table>
+        <tbody>
+          <tr><td><a href="/contests/abc100/tasks/abc100_a">Task A</a></td></tr>
+          <tr><td><a href="/contests/abc100/tasks/abc100_ab">Task AB</a></td></tr>
+          <tr><td><a href="/contests/abc100/tasks/abc100_b">Task B</a></td></tr>
+        </tbody>
+      </table>
+    `;
+
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      text: () => Promise.resolve(mockTasksHTML),
+    });
+
+    const scraper = window.AtCoderWorkspace.Scraper;
+
+    // Mock window.location
+    delete window.location;
+    window.location = {
+      pathname: '/contests/abc100/tasks/abc100_ab',
+      href: 'https://atcoder.jp/contests/abc100/tasks/abc100_ab?lang=en',
+    };
+
+    const callback = jest.fn();
+    scraper.loadNavigationUrls('abc100', callback);
+
+    // Allow promise to resolve
+    await new Promise(process.nextTick);
+
+    expect(global.fetch).toHaveBeenCalledWith('/contests/abc100/tasks');
+    expect(callback).toHaveBeenCalledWith(
+      '/contests/abc100/tasks/abc100_a',
+      '/contests/abc100/tasks/abc100_b'
+    );
+  });
 });
