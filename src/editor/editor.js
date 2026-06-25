@@ -29,6 +29,7 @@
   let resultsCount = 0;
   let acCount = 0;
   let totalCount = 0;
+  let caseStatuses = [];
 
   function escapeHtml(str) {
     if (!str) return '';
@@ -645,10 +646,13 @@
 
       case 'test-start':
         isTesting = true;
-        totalCount = e.data.total;
+        setButtonsDisabled(true);
+        toggleConsole(true);
+
         resultsCount = 0;
         acCount = 0;
-        setButtonsDisabled(true);
+        totalCount = e.data.count;
+        caseStatuses = [];
 
         testSummary.textContent = `実行中... (0/${totalCount})`;
         testSummary.className = 'summary-running';
@@ -678,6 +682,7 @@
         const row = document.getElementById(`case-row-${e.data.index}`);
         if (row) {
           const status = e.data.status;
+          caseStatuses[e.data.index] = status;
           if (status === 'AC') {
             acCount++;
           }
@@ -766,7 +771,24 @@
           testSummary.textContent = `すべてAC (${acCount}/${totalCount})`;
           testSummary.className = 'summary-ac';
         } else {
-          testSummary.textContent = `WAあり (${acCount}/${totalCount} AC)`;
+          // Priority of statuses to display in the overall summary
+          const uniqueNonAcStatuses = [...new Set(caseStatuses)].filter((s) => s !== 'AC');
+          let displayStatus = 'WA';
+          if (uniqueNonAcStatuses.includes('TLE')) {
+            displayStatus = 'TLE';
+          } else if (uniqueNonAcStatuses.includes('MLE')) {
+            displayStatus = 'MLE';
+          } else if (uniqueNonAcStatuses.includes('RE')) {
+            displayStatus = 'RE';
+          } else if (uniqueNonAcStatuses.includes('WA')) {
+            displayStatus = 'WA';
+          } else if (uniqueNonAcStatuses.includes('ERR')) {
+            displayStatus = 'ERR';
+          } else if (uniqueNonAcStatuses.length > 0) {
+            displayStatus = uniqueNonAcStatuses[0];
+          }
+
+          testSummary.textContent = `${displayStatus}あり (${acCount}/${totalCount} AC)`;
           testSummary.className = 'summary-wa';
         }
         break;
