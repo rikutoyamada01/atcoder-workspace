@@ -552,8 +552,10 @@ impl UnionFind {
 
   if (settingsBtn) {
     settingsBtn.onclick = () => {
-      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.openOptionsPage) {
-        chrome.runtime.openOptionsPage();
+      console.log('[AtCoder Workspace] Editor: Settings button clicked');
+      if (typeof chrome !== 'undefined' && chrome.runtime) {
+        const url = chrome.runtime.getURL('src/options/options.html');
+        window.open(url);
       } else {
         alert('設定画面は拡張機能として実行されている場合のみ利用可能です。');
       }
@@ -950,18 +952,25 @@ impl UnionFind {
         const selectedOption = langSelect.options[langSelect.selectedIndex];
         const langText = selectedOption ? selectedOption.textContent : '';
         const mode = getLanguageMode(langText);
+        console.log('[AtCoder Workspace] Editor: latest-submission-loaded event triggered', {
+          receivedMode: e.data.mode,
+          currentMode: mode,
+          hasCode: !!e.data.code,
+        });
 
         if (e.data.mode === mode && editor) {
           const code = e.data.code;
           if (code) {
-            // Apply the fetched submission code
+            console.log('[AtCoder Workspace] Editor: Applying loaded past submission code');
             const oldModel = editor.getModel();
             const newModel = monaco.editor.createModel(code, mode);
             editor.setModel(newModel);
             if (oldModel) oldModel.dispose();
             saveCodeSync();
           } else {
-            // No past submission found, save the template code (which is currently in the editor) to storage
+            console.log(
+              '[AtCoder Workspace] Editor: No past submission found, saving current code (template)'
+            );
             saveCodeSync();
           }
         }
@@ -1334,6 +1343,11 @@ impl UnionFind {
         };
 
         // Apply Template if empty
+        console.log('[AtCoder Workspace] Editor: initMonaco - checking initialCode', {
+          hasInitialCode: !!initialCode,
+          currentLanguageId,
+          mode,
+        });
         if (!initialCode && currentLanguageId) {
           const templateKey = `settings:template:${mode}`;
           chrome.storage.local.get([templateKey], (tplRes) => {
@@ -1341,6 +1355,10 @@ impl UnionFind {
               tplRes[templateKey] !== undefined
                 ? tplRes[templateKey]
                 : DEFAULT_TEMPLATES[mode] || '';
+            console.log('[AtCoder Workspace] Editor: initMonaco - applying template', {
+              templateKey,
+              hasTemplateCode: !!templateCode,
+            });
             createEditorWithCode(templateCode);
             // Request latest submission from AtCoder (instead of saving template immediately)
             window.parent.postMessage(
@@ -1353,6 +1371,7 @@ impl UnionFind {
             );
           });
         } else {
+          console.log('[AtCoder Workspace] Editor: initMonaco - applying initialCode');
           createEditorWithCode(initialCode);
         }
       });
