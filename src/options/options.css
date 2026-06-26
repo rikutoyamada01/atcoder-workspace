@@ -114,23 +114,13 @@ body {
   gap: 24px;
 }
 
-.settings-main {
-  grid-column: 1;
-}
-
-.settings-sidebar {
-  grid-column: 2;
-}
-
 @media (max-width: 768px) {
   .settings-grid {
-    grid-template-columns: 1fr;
-  }
-  .settings-main {
-    grid-column: auto;
+    display: flex;
+    flex-direction: column;
   }
   .settings-sidebar {
-    grid-column: auto;
+    order: -1;
   }
 }
 
