@@ -5,250 +5,250 @@
   "extDesc": {
     "message": "AtCoderの問題ページ上にエディタを埋め込み、単一タブでコーディング・テスト・提出を完結させるワークスペース拡張"
   },
-  "settings.title": {
+  "settings_title": {
     "message": "AtCoder Workspace"
   },
-  "settings.subtitle": {
+  "settings_subtitle": {
     "message": "Competitive Programming Workspace for AtCoder"
   },
-  "settings.back": {
+  "settings_back": {
     "message": "← 戻る / Back"
   },
-  "settings.badge": {
+  "settings_badge": {
     "message": "設定"
   },
-  "settings.general.title": {
+  "settings_general_title": {
     "message": "一般設定 / General Settings"
   },
-  "settings.general.lang.label": {
+  "settings_general_lang_label": {
     "message": "表示言語 / Display Language"
   },
-  "settings.general.lang.desc": {
+  "settings_general_lang_desc": {
     "message": "設定画面の表示言語を切り替えます。 / Change display language."
   },
-  "settings.general.lang.auto": {
+  "settings_general_lang_auto": {
     "message": "自動 (システム設定) / Auto"
   },
-  "settings.general.lang.ja": {
+  "settings_general_lang_ja": {
     "message": "日本語"
   },
-  "settings.general.lang.en": {
+  "settings_general_lang_en": {
     "message": "English"
   },
-  "settings.general.ratio.label": {
+  "settings_general_ratio_label": {
     "message": "分割比率のデフォルト値"
   },
-  "settings.general.ratio.desc": {
+  "settings_general_ratio_desc": {
     "message": "問題ページを開いた際のエディタと問題文の初期幅比率です。"
   },
-  "settings.general.ratio.reset": {
+  "settings_general_ratio_reset": {
     "message": "デフォルトに戻す"
   },
-  "settings.general.panelOpen.label": {
+  "settings_general_panelOpen_label": {
     "message": "エディタをデフォルトで開く"
   },
-  "settings.general.panelOpen.desc": {
+  "settings_general_panelOpen_desc": {
     "message": "問題ページに遷移した際、自動的にエディタを開いた状態にします。"
   },
-  "settings.storage.title": {
+  "settings_storage_title": {
     "message": "データとストレージ / Data & Storage"
   },
-  "settings.storage.cache.label": {
+  "settings_storage_cache_label": {
     "message": "自動保存されたコードの履歴"
   },
-  "settings.storage.cache.desc": {
+  "settings_storage_cache_desc": {
     "message": "ブラウザのローカル領域に保存されている提出コードや一時保存データの情報です。"
   },
-  "settings.storage.cache.count": {
+  "settings_storage_cache_count": {
     "message": "キャッシュ件数:"
   },
-  "settings.storage.cache.clear": {
+  "settings_storage_cache_clear": {
     "message": "すべてのキャッシュデータを消去"
   },
-  "settings.storage.cache.confirm": {
+  "settings_storage_cache_confirm": {
     "message": "保存されているすべてのソースコード履歴を消去します。よろしいですか？\n(この操作は取り消せません)"
   },
-  "settings.storage.cache.empty": {
+  "settings_storage_cache_empty": {
     "message": "削除するキャッシュデータはありません"
   },
-  "settings.storage.cache.success": {
+  "settings_storage_cache_success": {
     "message": "キャッシュデータをすべて削除しました"
   },
-  "settings.template.title": {
+  "settings_template_title": {
     "message": "テンプレート設定 / Template Settings"
   },
-  "settings.template.lang.label": {
+  "settings_template_lang_label": {
     "message": "対象言語を選択"
   },
-  "settings.template.lang.desc": {
+  "settings_template_lang_desc": {
     "message": "テンプレートを設定するプログラミング言語を切り替えます。"
   },
-  "settings.template.code.label": {
+  "settings_template_code_label": {
     "message": "初期コードテンプレート"
   },
-  "settings.template.code.desc": {
+  "settings_template_code_desc": {
     "message": "コードが未記述の問題ページを開いた際、自動的に挿入される初期コードです。"
   },
-  "settings.template.code.placeholder": {
+  "settings_template_code_placeholder": {
     "message": "// ここにテンプレートコードを入力してください..."
   },
-  "settings.template.reset": {
+  "settings_template_reset": {
     "message": "デフォルトに戻す"
   },
-  "settings.template.save": {
+  "settings_template_save": {
     "message": "テンプレートを保存"
   },
-  "settings.template.toast.saved": {
+  "settings_template_toast_saved": {
     "message": "テンプレートを保存しました"
   },
-  "settings.template.toast.reset": {
+  "settings_template_toast_reset": {
     "message": "デフォルトをロードしました（保存ボタンを押すと確定します）"
   },
-  "settings.snippets.title": {
+  "settings_snippets_title": {
     "message": "自作スニペット管理 / Custom Snippets"
   },
-  "settings.snippets.label": {
+  "settings_snippets_label": {
     "message": "登録済みのスニペット"
   },
-  "settings.snippets.desc": {
+  "settings_snippets_desc": {
     "message": "エディタから呼び出せるオリジナルのコードスニペットです。"
   },
-  "settings.snippets.add": {
+  "settings_snippets_add": {
     "message": "+ 新規追加"
   },
-  "settings.snippets.table.title": {
+  "settings_snippets_table_title": {
     "message": "タイトル"
   },
-  "settings.snippets.table.lang": {
+  "settings_snippets_table_lang": {
     "message": "言語"
   },
-  "settings.snippets.table.tags": {
+  "settings_snippets_table_tags": {
     "message": "タグ"
   },
-  "settings.snippets.table.actions": {
+  "settings_snippets_table_actions": {
     "message": "操作"
   },
-  "settings.snippets.table.edit": {
+  "settings_snippets_table_edit": {
     "message": "編集"
   },
-  "settings.snippets.table.delete": {
+  "settings_snippets_table_delete": {
     "message": "削除"
   },
-  "settings.snippets.table.empty": {
+  "settings_snippets_table_empty": {
     "message": "登録されている自作スニペットはありません。"
   },
-  "settings.snippets.form.addTitle": {
+  "settings_snippets_form_addTitle": {
     "message": "新規スニペット追加"
   },
-  "settings.snippets.form.editTitle": {
+  "settings_snippets_form_editTitle": {
     "message": "スニペットを編集"
   },
-  "settings.snippets.form.label.title": {
+  "settings_snippets_form_label_title": {
     "message": "タイトル"
   },
-  "settings.snippets.form.label.lang": {
+  "settings_snippets_form_label_lang": {
     "message": "対象言語"
   },
-  "settings.snippets.form.label.desc": {
+  "settings_snippets_form_label_desc": {
     "message": "説明"
   },
-  "settings.snippets.form.label.tags": {
+  "settings_snippets_form_label_tags": {
     "message": "タグ (カンマ区切り)"
   },
-  "settings.snippets.form.label.code": {
+  "settings_snippets_form_label_code": {
     "message": "ソースコード (プレースホルダー $1, $2 等を使用可能)"
   },
-  "settings.snippets.form.placeholder.title": {
+  "settings_snippets_form_placeholder_title": {
     "message": "例: Segment Tree"
   },
-  "settings.snippets.form.placeholder.desc": {
+  "settings_snippets_form_placeholder_desc": {
     "message": "例: 1点更新・区間クエリ"
   },
-  "settings.snippets.form.placeholder.tags": {
+  "settings_snippets_form_placeholder_tags": {
     "message": "例: segtree, data-structure"
   },
-  "settings.snippets.form.placeholder.code": {
+  "settings_snippets_form_placeholder_code": {
     "message": "// スニペットコードを入力してください..."
   },
-  "settings.snippets.form.cancel": {
+  "settings_snippets_form_cancel": {
     "message": "キャンセル"
   },
-  "settings.snippets.form.save": {
+  "settings_snippets_form_save": {
     "message": "保存"
   },
-  "settings.snippets.form.toast.required": {
+  "settings_snippets_form_toast_required": {
     "message": "タイトルとソースコードは必須項目です"
   },
-  "settings.snippets.form.toast.added": {
+  "settings_snippets_form_toast_added": {
     "message": "スニペットを追加しました"
   },
-  "settings.snippets.form.toast.updated": {
+  "settings_snippets_form_toast_updated": {
     "message": "スニペットを更新しました"
   },
-  "settings.snippets.form.toast.deleted": {
+  "settings_snippets_form_toast_deleted": {
     "message": "スニペットを削除しました"
   },
-  "settings.snippets.form.confirmDelete": {
+  "settings_snippets_form_confirmDelete": {
     "message": "スニペット「$1」を削除してもよろしいですか？"
   },
-  "settings.support.title": {
+  "settings_support_title": {
     "message": "❤️ 開発者を応援する / Support"
   },
-  "settings.support.intro": {
+  "settings_support_intro": {
     "message": "AtCoder Workspace は個人でオープンソース開発しています。もし気に入っていただけましたら、応援いただけますと幸いです！"
   },
-  "settings.support.acCount": {
+  "settings_support_acCount": {
     "message": "🏆 あなたの累計AC数:"
   },
-  "settings.support.acUnit": {
+  "settings_support_acUnit": {
     "message": "問"
   },
-  "settings.support.storeReview": {
+  "settings_support_storeReview": {
     "message": "🌟 ストアで星5評価を送る"
   },
-  "settings.support.feedback.bug": {
+  "settings_support_feedback_bug": {
     "message": "🐛 不具合を報告"
   },
-  "settings.support.feedback.feature": {
+  "settings_support_feedback_feature": {
     "message": "💡 機能の提案"
   },
-  "settings.info.title": {
+  "settings_info_title": {
     "message": "この拡張機能について"
   },
-  "settings.info.version": {
+  "settings_info_version": {
     "message": "バージョン:"
   },
-  "settings.info.license": {
+  "settings_info_license": {
     "message": "ライセンス:"
   },
-  "settings.info.dataTransmission": {
+  "settings_info_dataTransmission": {
     "message": "データ送信:"
   },
-  "settings.info.dataTransmissionValue": {
+  "settings_info_dataTransmissionValue": {
     "message": "送信なし (完全ローカル動作)"
   },
-  "settings.links.title": {
+  "settings_links_title": {
     "message": "関連リンク / Resources"
   },
-  "settings.links.presentation": {
+  "settings_links_presentation": {
     "message": "コンセプトプレゼンテーション"
   },
-  "settings.links.roadmap": {
+  "settings_links_roadmap": {
     "message": "開発ロードマップ"
   },
-  "settings.links.privacy": {
+  "settings_links_privacy": {
     "message": "プライバシーポリシー"
   },
-  "settings.links.github": {
+  "settings_links_github": {
     "message": "GitHub リポジトリ"
   },
-  "settings.toast.ratioSaved": {
+  "settings_toast_ratioSaved": {
     "message": "分割比率を保存しました"
   },
-  "settings.toast.ratioReset": {
+  "settings_toast_ratioReset": {
     "message": "分割比率をリセットしました"
   },
-  "settings.toast.panelState": {
+  "settings_toast_panelState": {
     "message": "サイドパネルの初期状態を更新しました"
   }
 }

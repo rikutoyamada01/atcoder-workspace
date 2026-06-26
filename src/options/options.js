@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Function to apply translation
   const applyTranslations = () => {
     i18n.translatePage(i18nProvider);
-    document.title = `${i18nProvider.t('settings.title')} - ${i18nProvider.t('settings.badge')}`;
+    document.title = `${i18nProvider.t('settings_title')} - ${i18nProvider.t('settings_badge')}`;
 
     if (displayLanguageSelect) {
       displayLanguageSelect.value = i18nProvider.mode;
@@ -180,14 +180,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   splitRatioInput.addEventListener('change', (e) => {
     const val = parseFloat(e.target.value);
-    saveSetting('settings:split_ratio', val, i18nProvider.t('settings.toast.ratioSaved'));
+    saveSetting('settings:split_ratio', val, i18nProvider.t('settings_toast_ratioSaved'));
   });
 
   // 2. Reset Split Ratio
   resetRatioBtn.addEventListener('click', () => {
     splitRatioInput.value = 0.5;
     updateRatioText(0.5);
-    saveSetting('settings:split_ratio', 0.5, i18nProvider.t('settings.toast.ratioReset'));
+    saveSetting('settings:split_ratio', 0.5, i18nProvider.t('settings_toast_ratioReset'));
   });
 
   // 3. Panel Open Default State
@@ -195,26 +195,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     saveSetting(
       'settings:panel_open',
       e.target.checked,
-      i18nProvider.t('settings.toast.panelState')
+      i18nProvider.t('settings_toast_panelState')
     );
   });
 
   // 4. Clear Cache Button
   clearCacheBtn.addEventListener('click', () => {
-    if (confirm(i18nProvider.t('settings.storage.cache.confirm'))) {
+    if (confirm(i18nProvider.t('settings_storage_cache_confirm'))) {
       if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
         chrome.storage.local.get(null, (items) => {
           const keys = Object.keys(items);
           const codeKeys = keys.filter((key) => key.startsWith('code:'));
 
           if (codeKeys.length === 0) {
-            showToast(i18nProvider.t('settings.storage.cache.empty'));
+            showToast(i18nProvider.t('settings_storage_cache_empty'));
             return;
           }
 
           chrome.storage.local.remove(codeKeys, () => {
             calculateCacheStats();
-            showToast(i18nProvider.t('settings.storage.cache.success'));
+            showToast(i18nProvider.t('settings_storage_cache_success'));
           });
         });
       }
@@ -298,7 +298,7 @@ func main() {
       const lang = templateLangSelect.value;
       const key = `settings:template:${lang}`;
       const code = templateCodeArea.value;
-      saveSetting(key, code, i18nProvider.t('settings.template.toast.saved'));
+      saveSetting(key, code, i18nProvider.t('settings_template_toast_saved'));
     });
   }
 
@@ -306,7 +306,7 @@ func main() {
     resetTemplateBtn.addEventListener('click', () => {
       const lang = templateLangSelect.value;
       templateCodeArea.value = DEFAULT_TEMPLATES[lang] || '';
-      showToast(i18nProvider.t('settings.template.toast.reset'));
+      showToast(i18nProvider.t('settings_template_toast_reset'));
     });
   }
 
@@ -360,8 +360,8 @@ func main() {
           </div>
         </td>
         <td class="col-actions">
-          <button class="btn btn-secondary btn-xs edit-btn" data-id="${item.id}" style="margin-right: 4px;">${escapeHtml(i18nProvider.t('settings.snippets.table.edit'))}</button>
-          <button class="btn btn-danger btn-xs delete-btn" data-id="${item.id}">${escapeHtml(i18nProvider.t('settings.snippets.table.delete'))}</button>
+          <button class="btn btn-secondary btn-xs edit-btn" data-id="${item.id}" style="margin-right: 4px;">${escapeHtml(i18nProvider.t('settings_snippets_table_edit'))}</button>
+          <button class="btn btn-danger btn-xs delete-btn" data-id="${item.id}">${escapeHtml(i18nProvider.t('settings_snippets_table_delete'))}</button>
         </td>
       `;
 
@@ -384,7 +384,7 @@ func main() {
       // Edit mode
       const item = customSnippets.find((s) => s.id === id);
       if (!item) return;
-      formTitle.textContent = i18nProvider.t('settings.snippets.form.editTitle');
+      formTitle.textContent = i18nProvider.t('settings_snippets_form_editTitle');
       snippetTitleInput.value = item.title;
       snippetLangSelect.value = item.lang;
       snippetDescInput.value = item.desc;
@@ -392,7 +392,7 @@ func main() {
       snippetCodeInput.value = item.code;
     } else {
       // Add mode
-      formTitle.textContent = i18nProvider.t('settings.snippets.form.addTitle');
+      formTitle.textContent = i18nProvider.t('settings_snippets_form_addTitle');
       snippetTitleInput.value = '';
       snippetLangSelect.value = 'cpp';
       snippetDescInput.value = '';
@@ -417,7 +417,7 @@ func main() {
     const code = snippetCodeInput.value;
 
     if (!title || !code) {
-      showToast(i18nProvider.t('settings.snippets.form.toast.required'));
+      showToast(i18nProvider.t('settings_snippets_form_toast_required'));
       return;
     }
 
@@ -459,8 +459,8 @@ func main() {
       chrome.storage.local.set({ 'settings:custom_snippets': customSnippets }, () => {
         showToast(
           editingSnippetId
-            ? i18nProvider.t('settings.snippets.form.toast.updated')
-            : i18nProvider.t('settings.snippets.form.toast.added')
+            ? i18nProvider.t('settings_snippets_form_toast_updated')
+            : i18nProvider.t('settings_snippets_form_toast_added')
         );
         closeSnippetForm();
         renderCustomSnippets();
@@ -469,8 +469,8 @@ func main() {
       // Offline fallback
       showToast(
         editingSnippetId
-          ? i18nProvider.t('settings.snippets.form.toast.updated')
-          : i18nProvider.t('settings.snippets.form.toast.added')
+          ? i18nProvider.t('settings_snippets_form_toast_updated')
+          : i18nProvider.t('settings_snippets_form_toast_added')
       );
       closeSnippetForm();
       renderCustomSnippets();
@@ -482,16 +482,16 @@ func main() {
     const item = customSnippets.find((s) => s.id === id);
     if (!item) return;
 
-    if (confirm(i18nProvider.t('settings.snippets.form.confirmDelete', [item.title]))) {
+    if (confirm(i18nProvider.t('settings_snippets_form_confirmDelete', [item.title]))) {
       customSnippets = customSnippets.filter((s) => s.id !== id);
 
       if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
         chrome.storage.local.set({ 'settings:custom_snippets': customSnippets }, () => {
-          showToast(i18nProvider.t('settings.snippets.form.toast.deleted'));
+          showToast(i18nProvider.t('settings_snippets_form_toast_deleted'));
           renderCustomSnippets();
         });
       } else {
-        showToast(i18nProvider.t('settings.snippets.form.toast.deleted'));
+        showToast(i18nProvider.t('settings_snippets_form_toast_deleted'));
         renderCustomSnippets();
       }
     }

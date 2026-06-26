@@ -75,8 +75,8 @@ describe('i18n Library Tests', () => {
   describe('JsonI18nLoader', () => {
     test('should load locale messages and translate keys', async () => {
       const messages = {
-        'settings.title': { message: 'AtCoder Workspace Settings' },
-        'button.save': { message: 'Save $1' },
+        settings_title: { message: 'AtCoder Workspace Settings' },
+        button_save: { message: 'Save $1' },
       };
 
       global.fetch.mockResolvedValueOnce({
@@ -90,8 +90,8 @@ describe('i18n Library Tests', () => {
       expect(global.fetch).toHaveBeenCalledWith(
         'chrome-extension://dummy/_locales/en/messages.json'
       );
-      expect(loader.getMessage('settings.title')).toBe('AtCoder Workspace Settings');
-      expect(loader.getMessage('button.save', ['Template'])).toBe('Save Template');
+      expect(loader.getMessage('settings_title')).toBe('AtCoder Workspace Settings');
+      expect(loader.getMessage('button_save', ['Template'])).toBe('Save Template');
       expect(loader.getMessage('non_existent')).toBeNull();
     });
 
@@ -102,7 +102,7 @@ describe('i18n Library Tests', () => {
       global.fetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
-          'settings.title': { message: '設定画面' },
+          settings_title: { message: '設定画面' },
         }),
       });
 
@@ -111,7 +111,7 @@ describe('i18n Library Tests', () => {
 
       expect(global.fetch).toHaveBeenCalledTimes(2);
       expect(loader.locale).toBe('ja');
-      expect(loader.getMessage('settings.title')).toBe('設定画面');
+      expect(loader.getMessage('settings_title')).toBe('設定画面');
     });
   });
 
