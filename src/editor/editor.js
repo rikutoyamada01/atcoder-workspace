@@ -1390,14 +1390,8 @@ impl UnionFind {
     const showReviewButton = acCount >= 5 && !isContestActive;
     const reviewUrl = 'https://chromewebstore.google.com/detail/YOUR_EXTENSION_ID/reviews';
 
-    let milestoneText = '';
-    if (acCount > 0 && acCount % 5 === 0 && !isContestActive) {
-      milestoneText = `<div class="ac-milestone">🎉 累計 ${acCount} 問目のAC達成！素晴らしい精進です！</div>`;
-    }
-
     return `
       <div class="ac-celebration-container">
-        ${milestoneText}
         <div class="ac-action-buttons">
           <a href="${shareUrl}" target="_blank" class="ac-btn ac-btn-share-x" title="結果をX (Twitter) でシェア">
             <svg class="ac-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
