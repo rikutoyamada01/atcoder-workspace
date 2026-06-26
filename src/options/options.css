@@ -114,9 +114,23 @@ body {
   gap: 24px;
 }
 
+.settings-main {
+  grid-column: 1;
+}
+
+.settings-sidebar {
+  grid-column: 2;
+}
+
 @media (max-width: 768px) {
   .settings-grid {
     grid-template-columns: 1fr;
+  }
+  .settings-main {
+    grid-column: auto;
+  }
+  .settings-sidebar {
+    grid-column: auto;
   }
 }
 
