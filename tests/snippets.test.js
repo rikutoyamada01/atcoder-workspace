@@ -17,9 +17,28 @@ const editorJs = fs.readFileSync(path.resolve(__dirname, '../src/editor/editor.j
 describe('Templates and Custom Snippets Integration Tests', () => {
   let store = {};
 
+  let onChangedListeners = [];
+
   beforeEach(() => {
     store = {};
+    onChangedListeners = [];
     global.i18n = i18n;
+
+    const jaMessages = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../_locales/ja/messages.json'), 'utf8'));
+    const enMessages = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../_locales/en/messages.json'), 'utf8'));
+
+    global.fetch = jest.fn((url) => {
+      let data = {};
+      if (url.includes('/en/') || url.includes('_locales/en/')) {
+        data = enMessages;
+      } else {
+        data = jaMessages;
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(data),
+      });
+    });
 
     global.chrome = {
       runtime: {
@@ -28,10 +47,29 @@ describe('Templates and Custom Snippets Integration Tests', () => {
         openOptionsPage: jest.fn(),
       },
       i18n: {
-        getMessage: jest.fn((key) => key),
+        getMessage: jest.fn((key, placeholders) => {
+          const entry = jaMessages[key];
+          if (!entry || !entry.message) return '';
+          let msg = entry.message;
+          if (placeholders) {
+            const arr = Array.isArray(placeholders) ? placeholders : [placeholders];
+            arr.forEach((val, idx) => {
+              msg = msg.replace(new RegExp(`\\$${idx + 1}`, 'g'), val);
+            });
+          }
+          return msg;
+        }),
         getUILanguage: jest.fn(() => 'ja'),
       },
       storage: {
+        onChanged: {
+          addListener: jest.fn((listener) => {
+            onChangedListeners.push(listener);
+          }),
+          removeListener: jest.fn((listener) => {
+            onChangedListeners = onChangedListeners.filter((l) => l !== listener);
+          }),
+        },
         local: {
           get: jest.fn((keys, callback) => {
             const result = {};
@@ -64,6 +102,7 @@ describe('Templates and Custom Snippets Integration Tests', () => {
   afterEach(() => {
     delete global.chrome;
     delete global.i18n;
+    delete global.fetch;
     delete window.scrollTo;
     delete window.open;
   });
@@ -427,7 +466,7 @@ describe('Templates and Custom Snippets Integration Tests', () => {
       // Verify custom snippet + preset snippets are loaded (cpp lang)
       expect(snippetList.innerHTML).toContain('My Custom Dijkstra');
       expect(snippetList.innerHTML).toContain('自作'); // "自作" badge for custom snippet
-      expect(snippetList.innerHTML).toContain('Union-Find (Disjoint Set Union)'); // Preset snippet
+      expect(snippetList.innerHTML).toContain('Union-Find (素集合データ構造)'); // Preset snippet
       expect(snippetList.innerHTML).not.toContain('My Python SegTree'); // Only cpp loaded
 
       // Search filtering
@@ -460,6 +499,45 @@ describe('Templates and Custom Snippets Integration Tests', () => {
       );
 
       jest.useRealTimers();
+    });
+
+    test('live language synchronization updates translations dynamically', async () => {
+      // 1. Simulate init-config to load the page
+      const configMsg = {
+        type: 'init-config',
+        contestId: 'abc300',
+        problemId: 'abc300_a',
+        selectedLanguageId: '5001',
+        languages: [{ value: '5001', text: 'C++ (GCC 12.2)' }],
+        isDark: false,
+      };
+      window.dispatchEvent(new MessageEvent('message', { data: configMsg }));
+
+      // 2. Verify initial translation is loaded
+      const snippetsBtn = document.getElementById('snippets-btn');
+      expect(snippetsBtn.textContent).toBe('📝 スニペット');
+
+      // 3. Trigger onChanged listener representing display language change to English
+      expect(onChangedListeners.length).toBeGreaterThan(0);
+      
+      // Update mocked storage display language setting
+      store['settings:display_language'] = 'en';
+
+      // Call onChanged listeners
+      for (const listener of onChangedListeners) {
+        await listener(
+          { 'settings:display_language': { newValue: 'en', oldValue: 'ja' } },
+          'local'
+        );
+      }
+
+      // Flush microtasks
+      for (let i = 0; i < 10; i++) {
+        await Promise.resolve();
+      }
+
+      // 4. Verify text content has been dynamically updated to English
+      expect(snippetsBtn.textContent).toBe('📝 Snippets');
     });
 
     test('Redirection button inside drawer works correctly', () => {

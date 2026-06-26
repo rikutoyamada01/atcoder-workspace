@@ -250,5 +250,253 @@
   },
   "settings_toast_panelState": {
     "message": "サイドパネルの初期状態を更新しました"
+  },
+  "editor_login_warning_title": {
+    "message": "AtCoderへのログインが必要です"
+  },
+  "editor_login_warning_desc": {
+    "message": "エディタでの実装、ローカルテスト、および提出機能を利用するには、AtCoderへのログインが必要です。"
+  },
+  "editor_login_warning_btn": {
+    "message": "ログイン画面を開く / Open Login"
+  },
+  "editor_login_warning_sub": {
+    "message": "※ログイン完了後、このページをリロード（再読み込み）してください。"
+  },
+  "editor_lang_warning_title": {
+    "message": "プログラミング言語を選択してください"
+  },
+  "editor_lang_warning_desc": {
+    "message": "実装を開始するには、右上のメニューからプログラミング言語を選択してください。<br>Please select a programming language from the top-right menu to start coding."
+  },
+  "editor_toolbar_prev": {
+    "message": "« 前"
+  },
+  "editor_toolbar_next": {
+    "message": "次 »"
+  },
+  "editor_toolbar_test": {
+    "message": "テスト実行"
+  },
+  "editor_toolbar_submit": {
+    "message": "提出"
+  },
+  "editor_toolbar_snippets": {
+    "message": "📝 スニペット"
+  },
+  "editor_toolbar_settings_title": {
+    "message": "設定を開く / Open Settings"
+  },
+  "editor_save_status_loading": {
+    "message": "読み込み中..."
+  },
+  "editor_save_status_saving": {
+    "message": "保存中..."
+  },
+  "editor_save_status_autosaved": {
+    "message": "自動保存"
+  },
+  "editor_save_status_error": {
+    "message": "保存エラー"
+  },
+  "editor_console_title": {
+    "message": "テスト結果"
+  },
+  "editor_console_slider_title": {
+    "message": "コンソール表示切り替え (Ctrl+J)"
+  },
+  "editor_judge_not_logged_in": {
+    "message": "未ログイン"
+  },
+  "editor_judge_submitting": {
+    "message": "提出中..."
+  },
+  "editor_judge_submitted": {
+    "message": "提出処理を開始しました..."
+  },
+  "editor_judge_waiting_bot": {
+    "message": "ボット認証の待機中..."
+  },
+  "editor_judge_running": {
+    "message": "ジャッジ中... ($1)"
+  },
+  "editor_judge_complete": {
+    "message": "ジャッジ完了: $1"
+  },
+  "editor_judge_result_summary": {
+    "message": "結果: $1 | 実行時間: $2 | メモリ: $3"
+  },
+  "editor_runner_running_cases": {
+    "message": "実行中... ($1/$2)"
+  },
+  "editor_runner_all_ac": {
+    "message": "すべてAC ($1/$2)"
+  },
+  "editor_runner_non_ac": {
+    "message": "$1あり ($2/$3 AC)"
+  },
+  "editor_runner_timeout": {
+    "message": "タイムアウト検出 (TLE):"
+  },
+  "editor_runner_mle": {
+    "message": "メモリ制限超過 (MLE):"
+  },
+  "editor_runner_stderr": {
+    "message": "エラー詳細 (stderr):"
+  },
+  "editor_runner_timeout_desc": {
+    "message": "実行制限時間（TLE）を超過しました。"
+  },
+  "editor_runner_mle_desc": {
+    "message": "メモリ制限（MLE）を超過しました。"
+  },
+  "editor_runner_error_desc": {
+    "message": "エラーが発生しました。"
+  },
+  "editor_runner_nav_warn": {
+    "message": "テスト実行中にページ遷移すると、テスト結果が失われます。本当に遷移しますか？"
+  },
+  "editor_presets_uf_desc": {
+    "message": "素集合データ構造。グループの併合と判定をほぼ定数時間で行います。"
+  },
+  "editor_presets_dijkstra_desc": {
+    "message": "負の辺がないグラフにおける単一始点最短経路アルゴリズム。O(E log V) で動作します。"
+  },
+  "editor_presets_binsearch_desc": {
+    "message": "条件を満たす境界値を O(log N) で見つけます。"
+  },
+  "editor_ac_title": {
+    "message": "AtCoderでACしました！ 🎉"
+  },
+  "editor_ac_task": {
+    "message": "問題: $1"
+  },
+  "editor_ac_lang": {
+    "message": "言語: $1"
+  },
+  "editor_ac_time": {
+    "message": "実行時間: $1"
+  },
+  "editor_ac_btn_review": {
+    "message": "Chrome Web Store で評価する"
+  },
+  "editor_ac_btn_share": {
+    "message": "結果をX (Twitter) でシェア"
+  },
+  "editor_drawer_manage_title": {
+    "message": "自作スニペットを追加・管理"
+  },
+  "editor_drawer_manage_btn": {
+    "message": "➕ 追加"
+  },
+  "editor_drawer_close_title": {
+    "message": "閉じる"
+  },
+  "editor_drawer_search_placeholder": {
+    "message": "スニペットを検索..."
+  },
+  "editor_drawer_empty": {
+    "message": "スニペットが見つかりません"
+  },
+  "editor_drawer_badge_custom": {
+    "message": "自作"
+  },
+  "editor_toolbar_prev_title": {
+    "message": "前の問題へ"
+  },
+  "editor_toolbar_next_title": {
+    "message": "次の問題へ"
+  },
+  "editor_toolbar_test_title": {
+    "message": "テスト実行"
+  },
+  "editor_toolbar_submit_title": {
+    "message": "提出"
+  },
+  "editor_toolbar_snippets_title": {
+    "message": "スニペット"
+  },
+  "editor_save_status_saved": {
+    "message": "保存済"
+  },
+  "editor_save_status_no_lang": {
+    "message": "言語未選択"
+  },
+  "editor_presets_uf_title": {
+    "message": "Union-Find (素集合データ構造)"
+  },
+  "editor_presets_dijkstra_title": {
+    "message": "Dijkstra (単一始点最短経路)"
+  },
+  "editor_presets_binsearch_title": {
+    "message": "二分探索 (Binary Search)"
+  },
+  "editor_console_preparing": {
+    "message": "準備中..."
+  },
+  "editor_console_preparing_submit": {
+    "message": "提出準備中..."
+  },
+  "editor_alert_settings_unavailable": {
+    "message": "設定画面は拡張機能として実行されている場合のみ利用可能です。"
+  },
+  "editor_turnstile_force_rendered": {
+    "message": "強制レンダリング起動"
+  },
+  "editor_turnstile_auto_rendered": {
+    "message": "自動レンダリング検出"
+  },
+  "editor_turnstile_token_present": {
+    "message": "既存トークン再利用"
+  },
+  "editor_turnstile_no_container": {
+    "message": "認証不要"
+  },
+  "editor_turnstile_implicit": {
+    "message": "暗黙的ロード"
+  },
+  "editor_turnstile_unknown": {
+    "message": "不明"
+  },
+  "editor_judge_status": {
+    "message": "ステータス"
+  },
+  "editor_judge_time": {
+    "message": "実行時間"
+  },
+  "editor_judge_memory": {
+    "message": "メモリ"
+  },
+  "editor_judge_detail_link": {
+    "message": "提出詳細ページを開く"
+  },
+  "editor_notification_complete_title": {
+    "message": "ジャッジ完了"
+  },
+  "editor_label_error": {
+    "message": "エラー"
+  },
+  "editor_runner_case": {
+    "message": "ケース"
+  },
+  "editor_runner_running": {
+    "message": "実行中"
+  },
+  "editor_runner_expected": {
+    "message": "期待される出力"
+  },
+  "editor_runner_actual": {
+    "message": "実際の出力"
+  },
+  "editor_language_no_info": {
+    "message": "言語情報なし"
+  },
+  "editor_drawer_insert_btn": {
+    "message": "挿入"
+  },
+  "editor_judge_captcha_desc": {
+    "message": "ボット判定（Cloudflare Turnstile）の認証完了を待機しています。<br>画面の左下に表示されたチェックボックス（私は人間です）を手動でクリックして認証を完了させてください。<br>（認証完了後、自動的に提出処理が再開されます）"
   }
 }
+
+
