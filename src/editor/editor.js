@@ -1411,21 +1411,19 @@ impl UnionFind {
       'https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh/reviews?hl=ja';
 
     return `
-      <div class="ac-celebration-container">
-        <div class="ac-action-buttons">
-          ${
-            showReviewButton
-              ? `
-          <a href="${reviewUrl}" target="_blank" class="ac-btn ac-btn-review" title="Chrome Web Store で評価する">
-             ストアで評価する
-          </a>
-          `
-              : ''
-          }
-          <a href="${shareUrl}" target="_blank" class="ac-btn-share-x-icon" title="結果をX (Twitter) でシェア">
-            <svg class="ac-icon-x-only" viewBox="0 0 24 24"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-          </a>
-        </div>
+      <div class="ac-action-buttons" style="margin-top: 8px;">
+        ${
+          showReviewButton
+            ? `
+        <a href="${reviewUrl}" target="_blank" class="ac-btn ac-btn-review" title="Chrome Web Store で評価する">
+           ストアで評価する
+        </a>
+        `
+            : ''
+        }
+        <a href="${shareUrl}" target="_blank" class="ac-btn-share-x-icon" title="結果をX (Twitter) でシェア">
+          <svg class="ac-icon-x-only" viewBox="0 0 24 24"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </a>
       </div>
     `;
   }

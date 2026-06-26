@@ -882,27 +882,10 @@ body.vs-dark-theme .warning-sub {
   color: #777777 !important;
 }
 
-/* AC Celebration Box */
-.ac-celebration-container {
-  margin-top: 12px;
-  padding: 10px;
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-  border: 1px solid #bbf7d0;
-  border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(74, 222, 128, 0.1);
-  box-sizing: border-box;
-}
-
-body.vs-dark-theme .ac-celebration-container {
-  background: linear-gradient(135deg, #052e16 0%, #14532d 100%);
-  border-color: #15803d;
-  box-shadow: 0 2px 8px rgba(21, 128, 61, 0.3);
-}
-
 .ac-action-buttons {
   display: flex;
   gap: 8px;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
 }
 
