@@ -76,6 +76,15 @@ document.addEventListener('DOMContentLoaded', () => {
         panelOpenInput.checked = panelOpen;
       });
 
+      // Load AC statistics
+      chrome.storage.local.get(['stats:ac_problems'], (res) => {
+        const acProblems = res['stats:ac_problems'] || [];
+        const supportAcCountEl = document.getElementById('support-ac-count');
+        if (supportAcCountEl) {
+          supportAcCountEl.textContent = acProblems.length;
+        }
+      });
+
       // Calculate cache stats
       calculateCacheStats();
       // Load active language template
