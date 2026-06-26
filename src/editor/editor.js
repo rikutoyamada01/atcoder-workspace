@@ -783,11 +783,15 @@ impl UnionFind {
 
         if (isAC) {
           handleACStats(contestId, problemId, (acCount) => {
+            const selectedOption = langSelect.options[langSelect.selectedIndex];
+            const langText = selectedOption ? selectedOption.textContent.trim() : '';
             const celebrationHTML = generateACCelebrationHTML(
               contestId,
               problemId,
               e.data.isContestActive,
-              acCount
+              acCount,
+              langText,
+              e.data.time
             );
             updateConsole(celebrationHTML);
           });
@@ -923,11 +927,15 @@ impl UnionFind {
 
           if (isAC) {
             handleACStats(contestId, problemId, (acCount) => {
+              const selectedOption = langSelect.options[langSelect.selectedIndex];
+              const langText = selectedOption ? selectedOption.textContent.trim() : '';
               const celebrationHTML = generateACCelebrationHTML(
                 contestId,
                 problemId,
                 e.data.isContestActive,
-                acCount
+                acCount,
+                langText,
+                e.data.time
               );
               updateConsole(celebrationHTML);
             });
@@ -1382,10 +1390,21 @@ impl UnionFind {
    * @param {string} problemId
    * @param {boolean} isContestActive
    * @param {number} acCount
+   * @param {string} langText
+   * @param {string} time
    * @returns {string}
    */
-  function generateACCelebrationHTML(contestId, problemId, isContestActive, acCount) {
-    const tweetText = `AtCoderで AC しました！\n問題: ${contestId.toUpperCase()} - ${problemId.toUpperCase()}\n#AtCoderWorkspace #AtCoder\n`;
+  function generateACCelebrationHTML(
+    contestId,
+    problemId,
+    isContestActive,
+    acCount,
+    langText,
+    time
+  ) {
+    const formattedProblem = problemId.toUpperCase().replace(contestId.toUpperCase() + '_', '');
+    const timeText = time ? `\n実行時間: ${time}` : '';
+    const tweetText = `AtCoderでACしました！ 🎉\n問題: ${contestId.toUpperCase()} - ${formattedProblem}\n言語: ${langText}${timeText}\n\n#AtCoder #AtCoderWorkspace`;
     const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent('https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh?hl=ja')}`;
     const showReviewButton = acCount >= 5 && !isContestActive;
     const reviewUrl =
@@ -1394,10 +1413,6 @@ impl UnionFind {
     return `
       <div class="ac-celebration-container">
         <div class="ac-action-buttons">
-          <a href="${shareUrl}" target="_blank" class="ac-btn ac-btn-share-x" title="結果をX (Twitter) でシェア">
-            <svg class="ac-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-            結果をXでシェア
-          </a>
           ${
             showReviewButton
               ? `
@@ -1407,6 +1422,9 @@ impl UnionFind {
           `
               : ''
           }
+          <a href="${shareUrl}" target="_blank" class="ac-btn-share-x-icon" title="結果をX (Twitter) でシェア">
+            <svg class="ac-icon-x-only" viewBox="0 0 24 24"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
         </div>
       </div>
     `;

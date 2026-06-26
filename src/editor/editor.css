@@ -922,26 +922,39 @@ body.vs-dark-theme .ac-celebration-container {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.ac-btn-share-x {
+.ac-btn-share-x-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
   background-color: #0f1419;
   color: #ffffff;
   border: 1px solid #333333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
-.ac-btn-share-x:hover {
+.ac-btn-share-x-icon:hover {
   background-color: #272c30;
   transform: translateY(-1px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
 }
 
-body.vs-dark-theme .ac-btn-share-x {
+body.vs-dark-theme .ac-btn-share-x-icon {
   background-color: #ffffff;
   color: #0f1419;
   border: 1px solid #e1e8ed;
 }
 
-body.vs-dark-theme .ac-btn-share-x:hover {
+body.vs-dark-theme .ac-btn-share-x-icon:hover {
   background-color: #e1e8ed;
+}
+
+.ac-icon-x-only {
+  width: 12px;
+  height: 12px;
 }
 
 .ac-btn-review {
