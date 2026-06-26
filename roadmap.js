@@ -266,7 +266,7 @@ const skillsDb = {
 };
 
 // 実装済みの機能IDリスト (開発の進捗に合わせてここへIDを追加するだけで、進捗率やスコアボード、各カードの鍵マークが自動更新されます)
-const completedSkills = ["monaco", "submit", "test"];
+const completedSkills = ["monaco", "submit", "test", "template"];
 
 function updateRoadmapProgress() {
   const totalFeatures = Object.keys(skillsDb).length;

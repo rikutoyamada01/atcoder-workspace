@@ -33,6 +33,7 @@
         <button id="next-btn" class="btn btn-default" title="次の問題へ">次 »</button>
         <button id="test-btn" class="btn btn-success" title="テスト実行">テスト実行</button>
         <button id="submit-btn" class="btn btn-primary" title="提出">提出</button>
+        <button id="snippets-btn" class="btn btn-default" title="スニペット / Snippets">📝 スニペット</button>
         <span id="test-summary"></span>
       </div>
       <div class="toolbar-right">
@@ -43,7 +44,26 @@
         <button id="settings-btn" class="btn btn-default btn-icon" title="設定を開く / Open Settings">⚙️</button>
       </div>
     </div>
-    <div id="editor-container"></div>
+    <div id="editor-main-section">
+      <div id="editor-container"></div>
+      <div id="snippets-drawer" class="snippets-drawer" style="display: none;">
+        <div class="drawer-header">
+          <span class="drawer-title">📝 スニペット / Snippets</span>
+          <div class="drawer-header-actions">
+            <button id="manage-snippets-btn" class="btn btn-default btn-xs btn-add-snippet" title="自作スニペットを追加・管理">➕ 追加</button>
+            <button id="close-drawer-btn" class="close-btn" title="閉じる">&times;</button>
+          </div>
+        </div>
+        <div class="drawer-body">
+          <div class="search-container">
+            <input type="text" id="snippet-search" class="form-control snippet-search" placeholder="スニペットを検索...">
+          </div>
+          <div id="snippet-list" class="snippet-list">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+    </div>
     <div id="console-slider-btn" title="コンソール表示切り替え (Ctrl+J)">▲</div>
     <div id="console-panel" style="display: none;">
       <div class="console-header">

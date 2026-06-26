@@ -82,6 +82,118 @@
             </div>
           </div>
         </section>
+
+        <!-- Card 3: Template Settings -->
+        <section class="settings-card">
+          <div class="card-header">
+            <h2>テンプレート設定 / Template Settings</h2>
+          </div>
+          <div class="card-body">
+            <div class="setting-item-vertical">
+              <div class="setting-info">
+                <label for="template-lang-select">対象言語を選択</label>
+                <p class="setting-description">テンプレートを設定するプログラミング言語を切り替えます。</p>
+              </div>
+              <div class="setting-control-row">
+                <select id="template-lang-select" class="form-control select-lang">
+                  <option value="cpp">C++ (GCC/Clang)</option>
+                  <option value="python">Python3 / PyPy3</option>
+                  <option value="rust">Rust</option>
+                  <option value="java">Java</option>
+                  <option value="go">Go</option>
+                </select>
+                <button id="reset-template-btn" class="btn btn-secondary btn-sm">デフォルトに戻す</button>
+              </div>
+            </div>
+
+            <div class="setting-item-vertical no-border-top no-padding-top">
+              <div class="setting-info margin-bottom-sm">
+                <label for="template-code-area">初期コードテンプレート</label>
+                <p class="setting-description">コードが未記述の問題ページを開いた際、自動的に挿入される初期コードです。</p>
+              </div>
+              <div class="setting-control-vertical-full">
+                <textarea id="template-code-area" class="form-control code-editor-textarea" rows="12" placeholder="// ここにテンプレートコードを入力してください..."></textarea>
+              </div>
+            </div>
+            
+            <div class="setting-item-vertical no-border-top padding-top-md align-right">
+              <button id="save-template-btn" class="btn btn-primary">テンプレートを保存</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Card 4: Custom Snippets Management -->
+        <section id="custom-snippets-section" class="settings-card">
+          <div class="card-header">
+            <h2>自作スニペット管理 / Custom Snippets</h2>
+          </div>
+          <div class="card-body">
+            <div class="setting-item-vertical">
+              <div class="setting-info-row">
+                <div class="setting-info">
+                  <label>登録済みのスニペット</label>
+                  <p class="setting-description">エディタから呼び出せるオリジナルのコードスニペットです。</p>
+                </div>
+                <button id="add-snippet-btn" class="btn btn-success btn-sm">+ 新規追加</button>
+              </div>
+
+              <!-- スニペット登録フォーム (初期非表示) -->
+              <div id="snippet-form-container" class="snippet-form-container" style="display: none;">
+                <h3 id="form-title">新規スニペット追加</h3>
+                <div class="form-group">
+                  <label for="snippet-title-input">タイトル</label>
+                  <input type="text" id="snippet-title-input" class="form-control" placeholder="例: Segment Tree">
+                </div>
+                <div class="form-group">
+                  <label for="snippet-lang-select">対象言語</label>
+                  <select id="snippet-lang-select" class="form-control">
+                    <option value="cpp">C++</option>
+                    <option value="python">Python</option>
+                    <option value="rust">Rust</option>
+                    <option value="java">Java</option>
+                    <option value="go">Go</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="snippet-desc-input">説明</label>
+                  <input type="text" id="snippet-desc-input" class="form-control" placeholder="例: 1点更新・区間クエリ">
+                </div>
+                <div class="form-group">
+                  <label for="snippet-tags-input">タグ (カンマ区切り)</label>
+                  <input type="text" id="snippet-tags-input" class="form-control" placeholder="例: segtree, data-structure">
+                </div>
+                <div class="form-group">
+                  <label for="snippet-code-input">ソースコード (プレースホルダー $1, $2 等を使用可能)</label>
+                  <textarea id="snippet-code-input" class="form-control code-editor-textarea" rows="8" placeholder="// スニペットコードを入力してください..."></textarea>
+                </div>
+                <div class="form-actions">
+                  <button id="cancel-snippet-btn" class="btn btn-secondary btn-sm">キャンセル</button>
+                  <button id="save-snippet-btn" class="btn btn-primary btn-sm">保存</button>
+                </div>
+              </div>
+
+              <!-- スニペット一覧表示エリア -->
+              <div id="snippets-list-container" class="snippets-list-container">
+                <table class="snippets-table">
+                  <thead>
+                    <tr>
+                      <th>タイトル</th>
+                      <th class="col-lang">言語</th>
+                      <th>タグ</th>
+                      <th class="col-actions">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="snippets-table-body">
+                    <!-- JavaScriptで動的生成 -->
+                  </tbody>
+                </table>
+                <div id="no-snippets-message" class="no-snippets-message">
+                  登録されている自作スニペットはありません。
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
 
       <!-- Right Column: Info & Links -->

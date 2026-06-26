@@ -23,6 +23,266 @@
   const consoleResults = document.getElementById('console-results');
   const settingsBtn = document.getElementById('settings-btn');
 
+  // Snippets Drawer Elements
+  const snippetsBtn = document.getElementById('snippets-btn');
+  const snippetsDrawer = document.getElementById('snippets-drawer');
+  const closeDrawerBtn = document.getElementById('close-drawer-btn');
+  const snippetSearch = document.getElementById('snippet-search');
+  const snippetList = document.getElementById('snippet-list');
+  const manageSnippetsBtn = document.getElementById('manage-snippets-btn');
+
+  // Default templates configuration
+  const DEFAULT_TEMPLATES = {
+    cpp: `#include <bits/stdc++.h>
+using namespace std;
+using ll = long long;
+#define rep(i, n) for (int i = 0; i < (int)(n); i++)
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    return 0;
+}`,
+    python: `import sys
+
+def main():
+    input = sys.stdin.read
+    # write code here
+    pass
+
+if __name__ == '__main__':
+    main()`,
+    rust: `use proconio::input;
+
+fn main() {
+    input! {
+        // input variables
+    }
+}`,
+    java: `import java.util.*;
+import java.io.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        // write code here
+    }
+}`,
+    go: `package main
+
+import (
+	"bufio"
+	"fmt"
+	"os"
+)
+
+func main() {
+	reader := bufio.NewReader(os.Stdin)
+	writer := bufio.NewWriter(os.Stdout)
+	defer writer.Flush()
+	// write code here
+}`,
+  };
+
+  // Preset snippets database
+  const PRESET_SNIPPETS = {
+    cpp: [
+      {
+        title: 'Union-Find (Disjoint Set Union)',
+        tags: ['dsu', 'tree', 'graph'],
+        desc: '素集合データ構造。グループの併合と判定をほぼ定数時間で行います。',
+        code: `struct UnionFind {
+    vector<int> par, siz;
+    UnionFind(int n) : par(n, -1), siz(n, 1) { }
+    int root(int x) {
+        if (par[x] == -1) return x;
+        return par[x] = root(par[x]);
+    }
+    bool issame(int x, int y) {
+        return root(x) == root(y);
+    }
+    bool unite(int x, int y) {
+        int rx = root(x), ry = root(y);
+        if (rx == ry) return false;
+        if (siz[rx] < siz[ry]) swap(rx, ry);
+        par[ry] = rx;
+        siz[rx] += siz[ry];
+        return true;
+    }
+    int size(int x) {
+        return siz[root(x)];
+    }
+};`,
+      },
+      {
+        title: 'Dijkstra (単一始点最短経路)',
+        tags: ['graph', 'shortest-path'],
+        desc: '負の辺がないグラフにおける単一始点最短経路アルゴリズム。O(E log V) で動作します。',
+        code: `struct Edge {
+    int to;
+    long long cost;
+};
+using Graph = vector<vector<Edge>>;
+const long long INF = 1LL << 60;
+
+vector<long long> dijkstra(const Graph &G, int s) {
+    vector<long long> dist(G.size(), INF);
+    dist[s] = 0;
+    using P = pair<long long, int>; // {cost, vertex}
+    priority_queue<P, vector<P>, greater<P>> que;
+    que.push({0, s});
+    while (!que.empty()) {
+        auto [d, v] = que.top();
+        que.pop();
+        if (dist[v] < d) continue;
+        for (auto e : G[v]) {
+            if (dist[e.to] > dist[v] + e.cost) {
+                dist[e.to] = dist[v] + e.cost;
+                que.push({dist[e.to], e.to});
+            }
+        }
+    }
+    return dist;
+}`,
+      },
+      {
+        title: '二分探索 (Binary Search)',
+        tags: ['search', 'binary-search'],
+        desc: '条件を満たす境界値を O(log N) で見つけます。',
+        code: `auto solve_binary_search = [&](long long ok, long long ng) {
+    auto is_ok = [&](long long mid) {
+        // 条件を満たすかどうかを返す
+        return \${1:true};
+    };
+    while (abs(ok - ng) > 1) {
+        long long mid = (ok + ng) / 2;
+        if (is_ok(mid)) ok = mid;
+        else ng = mid;
+    }
+    return ok;
+};`,
+      },
+    ],
+    python: [
+      {
+        title: 'Union-Find (Disjoint Set Union)',
+        tags: ['dsu', 'tree', 'graph'],
+        desc: '素集合データ構造。グループの併合と判定をほぼ定数時間で行います。',
+        code: `class UnionFind:
+    def __init__(self, n):
+        self.n = n
+        self.parents = [-1] * n
+
+    def find(self, x):
+        if self.parents[x] < 0:
+            return x
+        else:
+            self.parents[x] = self.find(self.parents[x])
+            return self.parents[x]
+
+    def union(self, x, y):
+        x = self.find(x)
+        y = self.find(y)
+        if x == y:
+            return False
+        if self.parents[x] > self.parents[y]:
+            x, y = y, x
+        self.parents[x] += self.parents[y]
+        self.parents[y] = x
+        return True
+
+    def size(self, x):
+        return -self.parents[self.find(x)]
+
+    def same(self, x, y):
+        return self.find(x) == self.find(y)`,
+      },
+      {
+        title: 'Dijkstra (単一始点最短経路)',
+        tags: ['graph', 'shortest-path'],
+        desc: '負の辺がないグラフにおける単一始点最短経路アルゴリズム。',
+        code: `import heapq
+
+def dijkstra(G, start):
+    INF = float('inf')
+    dist = [INF] * len(G)
+    dist[start] = 0
+    que = [(0, start)] # (cost, vertex)
+    while que:
+        d, v = heapq.heappop(que)
+        if dist[v] < d:
+            continue
+        for to, cost in G[v]:
+            if dist[to] > dist[v] + cost:
+                dist[to] = dist[v] + cost
+                heapq.heappush(que, (dist[to], to))
+    return dist`,
+      },
+      {
+        title: '二分探索 (Binary Search)',
+        tags: ['search', 'binary-search'],
+        desc: '条件を満たす境界値を O(log N) で見つけます。',
+        code: `def solve_binary_search(ok, ng):
+    def is_ok(mid):
+        # 条件を満たすかどうかを返す
+        return \${1:True}
+    
+    while abs(ok - ng) > 1:
+        mid = (ok + ng) // 2
+        if is_ok(mid):
+            ok = mid
+        else:
+            ng = mid
+    return ok`,
+      },
+    ],
+    rust: [
+      {
+        title: 'Union-Find (Disjoint Set Union)',
+        tags: ['dsu', 'tree', 'graph'],
+        desc: '素集合データ構造。グループの併合と判定をほぼ定数時間で行います。',
+        code: `struct UnionFind {
+    parent: Vec<isize>,
+}
+
+impl UnionFind {
+    fn new(n: usize) -> Self {
+        UnionFind { parent: vec![-1; n] }
+    }
+    fn root(&mut self, x: usize) -> usize {
+        if self.parent[x] < 0 {
+            x
+        } else {
+            self.parent[x] = self.root(self.parent[x] as usize) as isize;
+            self.parent[x] as usize
+        }
+    }
+    fn issame(&mut self, x: usize, y: usize) -> bool {
+        self.root(x) == self.root(y)
+    }
+    fn unite(&mut self, x: usize, y: usize) -> bool {
+        let mut rx = self.root(x);
+        let mut ry = self.root(y);
+        if rx == ry {
+            return false;
+        }
+        if self.parent[rx] > self.parent[ry] {
+            std::mem::swap(&mut rx, &mut ry);
+        }
+        self.parent[rx] += self.parent[ry];
+        self.parent[ry] = rx as isize;
+        true
+    }
+    fn size(&mut self, x: usize) -> usize {
+        let r = self.root(x);
+        (-self.parent[r]) as usize
+    }
+}`,
+      },
+    ],
+  };
+
   let isTesting = false;
   let isSubmitting = false;
   let isSubmitPhase1 = false;
@@ -945,67 +1205,85 @@
       };
 
       getInitialCode((initialCode) => {
-        // Create Monaco instance
-        editor = monaco.editor.create(document.getElementById('editor-container'), {
-          value: initialCode,
-          language: mode,
-          theme: isDark ? 'vs-dark' : 'vs',
-          readOnly: !currentLanguageId, // Read-only if no language selected
-          automaticLayout: false, // We control it via message events
+        // Helper: Create Monaco Editor and initialize it
+        const createEditorWithCode = (codeValue) => {
+          editor = monaco.editor.create(document.getElementById('editor-container'), {
+            value: codeValue,
+            language: mode,
+            theme: isDark ? 'vs-dark' : 'vs',
+            readOnly: !currentLanguageId, // Read-only if no language selected
+            automaticLayout: false, // We control it via message events
 
-          // F-2 requirements: Disable AI & Intellisense / Auto-suggestions
-          quickSuggestions: false,
-          parameterHints: { enabled: false },
-          suggestOnTriggerCharacters: false,
-          snippetSuggestions: 'none',
-          wordBasedSuggestions: false,
-          minimap: { enabled: false }, // Keep interface clean
+            // F-2 requirements: Disable AI & Intellisense / Auto-suggestions
+            quickSuggestions: false,
+            parameterHints: { enabled: false },
+            suggestOnTriggerCharacters: false,
+            snippetSuggestions: 'none',
+            wordBasedSuggestions: false,
+            minimap: { enabled: false }, // Keep interface clean
 
-          // Coding assist features (still enabled)
-          tabSize: 4,
-          insertSpaces: true,
-          autoIndent: 'brackets',
-          autoClosingBrackets: 'always',
-          autoClosingQuotes: 'always',
-          formatOnType: true,
-          formatOnPaste: true,
-          fontSize: 14,
-          lineHeight: 20,
+            // Coding assist features (still enabled)
+            tabSize: 4,
+            insertSpaces: true,
+            autoIndent: 'brackets',
+            autoClosingBrackets: 'always',
+            autoClosingQuotes: 'always',
+            formatOnType: true,
+            formatOnPaste: true,
+            fontSize: 14,
+            lineHeight: 20,
 
-          // Scrolling configuration
-          scrollbar: {
-            vertical: 'visible',
-            horizontal: 'visible',
-            useShadows: false,
-            verticalScrollbarSize: 10,
-            horizontalScrollbarSize: 10,
-          },
-          scrollBeyondLastLine: false,
-          padding: {
-            bottom: 100, // Adds a 100px padding (approx. 5 lines) at the bottom
-          },
-        });
+            // Scrolling configuration
+            scrollbar: {
+              vertical: 'visible',
+              horizontal: 'visible',
+              useShadows: false,
+              verticalScrollbarSize: 10,
+              horizontalScrollbarSize: 10,
+            },
+            scrollBeyondLastLine: false,
+            padding: {
+              bottom: 100, // Adds a 100px padding (approx. 5 lines) at the bottom
+            },
+          });
 
-        // Add Monaco shortcut key for toggling console (Ctrl+J)
-        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyJ, () => {
-          toggleConsole();
-        });
+          // Add Monaco shortcut key for toggling console (Ctrl+J)
+          editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyJ, () => {
+            toggleConsole();
+          });
 
-        // Trigger layout asynchronously to ensure correct size on load
-        setTimeout(() => {
-          if (editor) editor.layout();
-        }, 100);
+          // Trigger layout asynchronously to ensure correct size on load
+          setTimeout(() => {
+            if (editor) editor.layout();
+          }, 100);
 
-        saveStatus.textContent = '保存済';
+          saveStatus.textContent = '保存済';
 
-        // Set up change listener for Auto-Save (F-3)
-        editor.onDidChangeModelContent(() => {
-          saveStatus.textContent = '変更中...';
-          clearTimeout(saveTimeout);
-          saveTimeout = setTimeout(() => {
-            saveCode();
-          }, 1500);
-        });
+          // Set up change listener for Auto-Save (F-3)
+          editor.onDidChangeModelContent(() => {
+            saveStatus.textContent = '変更中...';
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+              saveCode();
+            }, 1500);
+          });
+        };
+
+        // Apply Template if empty
+        if (!initialCode && currentLanguageId) {
+          const templateKey = `settings:template:${mode}`;
+          chrome.storage.local.get([templateKey], (tplRes) => {
+            const templateCode =
+              tplRes[templateKey] !== undefined
+                ? tplRes[templateKey]
+                : DEFAULT_TEMPLATES[mode] || '';
+            createEditorWithCode(templateCode);
+            // Save the newly loaded template code immediately
+            saveCodeSync();
+          });
+        } else {
+          createEditorWithCode(initialCode);
+        }
       });
     });
   }
@@ -1025,14 +1303,10 @@
       return;
     }
 
-    // Load new code
-    const storageKey = `code:${contestId}:${problemId}:${currentLanguageId}`;
-    chrome.storage.local.get([storageKey], (res) => {
-      const code = res[storageKey] || '';
-
-      // Update Monaco Editor model
+    // Helper: Set model with code value and bind listener
+    const applyModelWithCode = (codeValue) => {
       const oldModel = editor.getModel();
-      const newModel = monaco.editor.createModel(code, mode);
+      const newModel = monaco.editor.createModel(codeValue, mode);
       editor.setModel(newModel);
       if (oldModel) oldModel.dispose();
 
@@ -1053,6 +1327,31 @@
       });
 
       updateEditorLanguageState();
+
+      // Update snippets list if drawer is open
+      if (snippetsDrawer && snippetsDrawer.style.display !== 'none') {
+        renderSnippets();
+      }
+    };
+
+    // Load new code
+    const storageKey = `code:${contestId}:${problemId}:${currentLanguageId}`;
+    chrome.storage.local.get([storageKey], (res) => {
+      const code = res[storageKey] || '';
+
+      if (!code) {
+        // Apply Template if empty
+        const templateKey = `settings:template:${mode}`;
+        chrome.storage.local.get([templateKey], (tplRes) => {
+          const templateCode =
+            tplRes[templateKey] !== undefined ? tplRes[templateKey] : DEFAULT_TEMPLATES[mode] || '';
+          applyModelWithCode(templateCode);
+          // Save the newly loaded template code immediately
+          saveCodeSync();
+        });
+      } else {
+        applyModelWithCode(code);
+      }
     });
   }
 
@@ -1090,6 +1389,168 @@
       saveCodeSync();
     }
   });
+
+  // --- Snippets Drawer Logic ---
+
+  function toggleDrawer(forceState) {
+    if (!snippetsDrawer) return;
+    const isVisible = snippetsDrawer.style.display !== 'none';
+    const nextState = forceState !== undefined ? forceState : !isVisible;
+
+    if (nextState) {
+      snippetsDrawer.style.display = 'flex';
+      if (snippetsBtn) snippetsBtn.classList.add('active');
+      renderSnippets();
+    } else {
+      snippetsDrawer.style.display = 'none';
+      if (snippetsBtn) snippetsBtn.classList.remove('active');
+    }
+
+    // Force editor layout refresh to adjust size to the drawer
+    setTimeout(() => {
+      if (editor) {
+        editor.layout();
+      }
+    }, 0);
+  }
+
+  function insertSnippet(snippetText) {
+    if (!editor) return;
+    editor.focus();
+
+    // Try using snippetController2 first for placeholder support
+    const contribution = editor.getContribution('snippetController2');
+    if (contribution && typeof contribution.insert === 'function') {
+      contribution.insert(snippetText, 0, 0, false, false);
+    } else {
+      // Fallback to simple edit
+      const selection = editor.getSelection();
+      const range = new monaco.Range(
+        selection.startLineNumber,
+        selection.startColumn,
+        selection.endLineNumber,
+        selection.endColumn
+      );
+      const id = { major: 1, minor: 1 };
+      const textEdit = { identifier: id, range: range, text: snippetText, forceMoveMarkers: true };
+      editor.executeEdits('snippets-drawer', [textEdit]);
+    }
+  }
+
+  function renderSnippets() {
+    if (!snippetList) return;
+    snippetList.innerHTML = '';
+
+    if (!langSelect) return;
+    const selectedOption = langSelect.options[langSelect.selectedIndex];
+    const langText = selectedOption ? selectedOption.textContent : '';
+    const mode = getLanguageMode(langText);
+
+    // Get preset snippets
+    const presets = PRESET_SNIPPETS[mode] || [];
+
+    // Helper to draw snippets list
+    const drawSnippets = (list) => {
+      const query = snippetSearch ? snippetSearch.value.toLowerCase().trim() : '';
+
+      const filtered = list.filter((item) => {
+        if (!query) return true;
+        const titleMatch = item.title.toLowerCase().includes(query);
+        const descMatch = item.desc.toLowerCase().includes(query);
+        const tagMatch = item.tags.some((tag) => tag.toLowerCase().includes(query));
+        return titleMatch || descMatch || tagMatch;
+      });
+
+      if (filtered.length === 0) {
+        snippetList.innerHTML = `<div style="text-align: center; color: #888; font-size: 11px; padding: 20px 0;">スニペットが見つかりません</div>`;
+        return;
+      }
+
+      filtered.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'snippet-card';
+        card.innerHTML = `
+          <div class="snippet-card-header" data-index="${index}">
+            <div class="snippet-header-left">
+              <span>${escapeHtml(item.title)}</span>
+              <div class="snippet-tags">
+                ${item.isCustom ? '<span class="snippet-tag snippet-tag-custom">自作</span>' : ''}
+                ${item.tags.map((t) => `<span class="snippet-tag">${escapeHtml(t)}</span>`).join('')}
+              </div>
+            </div>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="snippet-card-body" style="display: none;">
+            <div class="snippet-desc">${escapeHtml(item.desc)}</div>
+            <pre class="snippet-preview">${escapeHtml(item.code)}</pre>
+            <div class="snippet-actions">
+              <button class="btn-insert" data-index="${index}">挿入</button>
+            </div>
+          </div>
+        `;
+
+        const header = card.querySelector('.snippet-card-header');
+        const body = card.querySelector('.snippet-card-body');
+        const chevron = card.querySelector('.chevron');
+        const insertBtn = card.querySelector('.btn-insert');
+
+        header.onclick = () => {
+          const isVisible = body.style.display !== 'none';
+          body.style.display = isVisible ? 'none' : 'flex';
+          chevron.textContent = isVisible ? '▼' : '▲';
+        };
+
+        insertBtn.onclick = (e) => {
+          e.stopPropagation();
+          insertSnippet(item.code);
+        };
+
+        snippetList.appendChild(card);
+      });
+    };
+
+    // Load custom snippets and merge
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get(['settings:custom_snippets'], (res) => {
+        const custom = res['settings:custom_snippets'] || [];
+        const customFiltered = custom.filter((s) => s.lang === mode);
+
+        const mergedList = [
+          ...customFiltered.map((s) => ({ ...s, isCustom: true })),
+          ...presets.map((s) => ({ ...s, isCustom: false })),
+        ];
+        drawSnippets(mergedList);
+      });
+    } else {
+      // Mock / Offline fallback
+      const mergedList = presets.map((s) => ({ ...s, isCustom: false }));
+      drawSnippets(mergedList);
+    }
+  }
+
+  // Setup Event Listeners for snippets drawer
+  if (snippetsBtn) {
+    snippetsBtn.onclick = () => toggleDrawer();
+  }
+
+  if (closeDrawerBtn) {
+    closeDrawerBtn.onclick = () => toggleDrawer(false);
+  }
+
+  if (snippetSearch) {
+    snippetSearch.oninput = () => renderSnippets();
+  }
+
+  if (manageSnippetsBtn) {
+    manageSnippetsBtn.onclick = () => {
+      if (typeof chrome !== 'undefined' && chrome.runtime) {
+        const url = chrome.runtime.getURL('src/options/options.html#custom-snippets-section');
+        window.open(url);
+      } else {
+        alert('設定画面は拡張機能として実行されている場合のみ利用可能です。');
+      }
+    };
+  }
 
   // Global keyboard shortcut for the editor iframe itself (Ctrl+J)
   window.addEventListener('keydown', (e) => {
