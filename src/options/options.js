@@ -5,8 +5,11 @@
 
 'use strict';
 
-document.addEventListener('DOMContentLoaded', () => {
+/* global i18n */
+
+document.addEventListener('DOMContentLoaded', async () => {
   // Elements
+  const displayLanguageSelect = document.getElementById('display-language');
   const splitRatioInput = document.getElementById('split-ratio');
   const splitRatioValue = document.getElementById('split-ratio-value');
   const resetRatioBtn = document.getElementById('reset-ratio-btn');
@@ -40,6 +43,22 @@ document.addEventListener('DOMContentLoaded', () => {
   // State Variables
   let customSnippets = [];
   let editingSnippetId = null;
+
+  // Initialize i18n
+  const i18nProvider = new i18n.I18nProvider();
+  await i18nProvider.init();
+
+  // Function to apply translation
+  const applyTranslations = () => {
+    i18n.translatePage(i18nProvider);
+    document.title = `${i18nProvider.t('settings.title')} - ${i18nProvider.t('settings.badge')}`;
+
+    if (displayLanguageSelect) {
+      displayLanguageSelect.value = i18nProvider.mode;
+    }
+  };
+
+  applyTranslations();
 
   // Load extension version from manifest
   if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getManifest) {
@@ -120,7 +139,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const keys = Object.keys(items);
         // Saved codes starts with "code:"
         const codeKeys = keys.filter((key) => key.startsWith('code:'));
-        cacheCountEl.textContent = `${codeKeys.length} 件`;
+        const countUnit = i18nProvider.locale === 'ja' ? ' 件' : ' items';
+        cacheCountEl.textContent = `${codeKeys.length}${countUnit}`;
       });
     }
   };
@@ -137,6 +157,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Language selector
+  if (displayLanguageSelect) {
+    displayLanguageSelect.addEventListener('change', async (e) => {
+      const mode = e.target.value;
+      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        await new Promise((resolve) => {
+          chrome.storage.local.set({ 'settings:display_language': mode }, resolve);
+        });
+      }
+      await i18nProvider.init();
+      applyTranslations();
+      renderCustomSnippets();
+      calculateCacheStats();
+    });
+  }
+
   // 1. Split Ratio Slider
   splitRatioInput.addEventListener('input', (e) => {
     updateRatioText(e.target.value);
@@ -144,41 +180,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
   splitRatioInput.addEventListener('change', (e) => {
     const val = parseFloat(e.target.value);
-    saveSetting('settings:split_ratio', val, '分割比率を保存しました');
+    saveSetting('settings:split_ratio', val, i18nProvider.t('settings.toast.ratioSaved'));
   });
 
   // 2. Reset Split Ratio
   resetRatioBtn.addEventListener('click', () => {
     splitRatioInput.value = 0.5;
     updateRatioText(0.5);
-    saveSetting('settings:split_ratio', 0.5, '分割比率をリセットしました');
+    saveSetting('settings:split_ratio', 0.5, i18nProvider.t('settings.toast.ratioReset'));
   });
 
   // 3. Panel Open Default State
   panelOpenInput.addEventListener('change', (e) => {
-    saveSetting('settings:panel_open', e.target.checked, 'サイドパネルの初期状態を更新しました');
+    saveSetting(
+      'settings:panel_open',
+      e.target.checked,
+      i18nProvider.t('settings.toast.panelState')
+    );
   });
 
   // 4. Clear Cache Button
   clearCacheBtn.addEventListener('click', () => {
-    if (
-      confirm(
-        '保存されているすべてのソースコード履歴を消去します。よろしいですか？\n(この操作は取り消せません)'
-      )
-    ) {
+    if (confirm(i18nProvider.t('settings.storage.cache.confirm'))) {
       if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
         chrome.storage.local.get(null, (items) => {
           const keys = Object.keys(items);
           const codeKeys = keys.filter((key) => key.startsWith('code:'));
 
           if (codeKeys.length === 0) {
-            showToast('削除するキャッシュデータはありません');
+            showToast(i18nProvider.t('settings.storage.cache.empty'));
             return;
           }
 
           chrome.storage.local.remove(codeKeys, () => {
             calculateCacheStats();
-            showToast('キャッシュデータをすべて削除しました');
+            showToast(i18nProvider.t('settings.storage.cache.success'));
           });
         });
       }
@@ -262,7 +298,7 @@ func main() {
       const lang = templateLangSelect.value;
       const key = `settings:template:${lang}`;
       const code = templateCodeArea.value;
-      saveSetting(key, code, 'テンプレートを保存しました');
+      saveSetting(key, code, i18nProvider.t('settings.template.toast.saved'));
     });
   }
 
@@ -270,7 +306,7 @@ func main() {
     resetTemplateBtn.addEventListener('click', () => {
       const lang = templateLangSelect.value;
       templateCodeArea.value = DEFAULT_TEMPLATES[lang] || '';
-      showToast('デフォルトをロードしました（保存ボタンを押すと確定します）');
+      showToast(i18nProvider.t('settings.template.toast.reset'));
     });
   }
 
@@ -324,8 +360,8 @@ func main() {
           </div>
         </td>
         <td class="col-actions">
-          <button class="btn btn-secondary btn-xs edit-btn" data-id="${item.id}" style="margin-right: 4px;">編集</button>
-          <button class="btn btn-danger btn-xs delete-btn" data-id="${item.id}">削除</button>
+          <button class="btn btn-secondary btn-xs edit-btn" data-id="${item.id}" style="margin-right: 4px;">${escapeHtml(i18nProvider.t('settings.snippets.table.edit'))}</button>
+          <button class="btn btn-danger btn-xs delete-btn" data-id="${item.id}">${escapeHtml(i18nProvider.t('settings.snippets.table.delete'))}</button>
         </td>
       `;
 
@@ -348,7 +384,7 @@ func main() {
       // Edit mode
       const item = customSnippets.find((s) => s.id === id);
       if (!item) return;
-      formTitle.textContent = 'スニペットを編集';
+      formTitle.textContent = i18nProvider.t('settings.snippets.form.editTitle');
       snippetTitleInput.value = item.title;
       snippetLangSelect.value = item.lang;
       snippetDescInput.value = item.desc;
@@ -356,7 +392,7 @@ func main() {
       snippetCodeInput.value = item.code;
     } else {
       // Add mode
-      formTitle.textContent = '新規スニペット追加';
+      formTitle.textContent = i18nProvider.t('settings.snippets.form.addTitle');
       snippetTitleInput.value = '';
       snippetLangSelect.value = 'cpp';
       snippetDescInput.value = '';
@@ -381,7 +417,7 @@ func main() {
     const code = snippetCodeInput.value;
 
     if (!title || !code) {
-      showToast('タイトルとソースコードは必須項目です');
+      showToast(i18nProvider.t('settings.snippets.form.toast.required'));
       return;
     }
 
@@ -421,7 +457,11 @@ func main() {
     // Save to storage
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
       chrome.storage.local.set({ 'settings:custom_snippets': customSnippets }, () => {
-        showToast(editingSnippetId ? 'スニペットを更新しました' : 'スニペットを追加しました');
+        showToast(
+          editingSnippetId
+            ? i18nProvider.t('settings.snippets.form.toast.updated')
+            : i18nProvider.t('settings.snippets.form.toast.added')
+        );
         closeSnippetForm();
         renderCustomSnippets();
       });
@@ -429,8 +469,8 @@ func main() {
       // Offline fallback
       showToast(
         editingSnippetId
-          ? 'スニペットを更新しました（ローカルテスト）'
-          : 'スニペットを追加しました（ローカルテスト）'
+          ? i18nProvider.t('settings.snippets.form.toast.updated')
+          : i18nProvider.t('settings.snippets.form.toast.added')
       );
       closeSnippetForm();
       renderCustomSnippets();
@@ -442,16 +482,16 @@ func main() {
     const item = customSnippets.find((s) => s.id === id);
     if (!item) return;
 
-    if (confirm(`スニペット「${item.title}」を削除してもよろしいですか？`)) {
+    if (confirm(i18nProvider.t('settings.snippets.form.confirmDelete', [item.title]))) {
       customSnippets = customSnippets.filter((s) => s.id !== id);
 
       if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
         chrome.storage.local.set({ 'settings:custom_snippets': customSnippets }, () => {
-          showToast('スニペットを削除しました');
+          showToast(i18nProvider.t('settings.snippets.form.toast.deleted'));
           renderCustomSnippets();
         });
       } else {
-        showToast('スニペットを削除しました（ローカルテスト）');
+        showToast(i18nProvider.t('settings.snippets.form.toast.deleted'));
         renderCustomSnippets();
       }
     }

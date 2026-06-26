@@ -25,6 +25,7 @@ const filesToCopy = [
   { src: 'manifest.json', dest: 'manifest.json' },
   { src: 'LICENSE', dest: 'LICENSE' },
   { src: 'README.md', dest: 'README.md' },
+  { src: '_locales', dest: '_locales', isDir: true },
   { src: 'src', dest: 'src', isDir: true },
   { src: 'lib', dest: 'lib', isDir: true },
 ];

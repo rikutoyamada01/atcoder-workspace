@@ -6,6 +6,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const i18n = require('../src/lib/i18n.js');
 
 const optionsHtml = fs.readFileSync(path.resolve(__dirname, '../src/options/options.html'), 'utf8');
 const optionsJs = fs.readFileSync(path.resolve(__dirname, '../src/options/options.js'), 'utf8');
@@ -18,13 +19,17 @@ describe('Templates and Custom Snippets Integration Tests', () => {
 
   beforeEach(() => {
     store = {};
+    global.i18n = i18n;
 
-    // Mock chrome extension APIs
     global.chrome = {
       runtime: {
         id: 'dummy-extension-id',
         getURL: jest.fn((p) => p),
         openOptionsPage: jest.fn(),
+      },
+      i18n: {
+        getMessage: jest.fn((key) => key),
+        getUILanguage: jest.fn(() => 'ja'),
       },
       storage: {
         local: {
@@ -58,6 +63,7 @@ describe('Templates and Custom Snippets Integration Tests', () => {
 
   afterEach(() => {
     delete global.chrome;
+    delete global.i18n;
     delete window.scrollTo;
     delete window.open;
   });
@@ -174,7 +180,7 @@ describe('Templates and Custom Snippets Integration Tests', () => {
       expect(snippetsTableBody.innerHTML).not.toContain('Updated SegTree');
     });
 
-    test('Scrolls to custom snippets section if page hash is present', () => {
+    test('Scrolls to custom snippets section if page hash is present', async () => {
       // 1. Initialize fake timers first
       jest.useFakeTimers();
 
@@ -188,6 +194,11 @@ describe('Templates and Custom Snippets Integration Tests', () => {
 
       // 4. Re-dispatch event to run loadSettings again
       document.dispatchEvent(new Event('DOMContentLoaded'));
+
+      // Flush microtasks to allow async DOMContentLoaded listener to progress
+      for (let i = 0; i < 10; i++) {
+        await Promise.resolve();
+      }
 
       // 5. Fast-forward timer past 300ms
       jest.advanceTimersByTime(350);

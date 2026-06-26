@@ -1,0 +1,254 @@
+{
+  "extName": {
+    "message": "AtCoder Workspace"
+  },
+  "extDesc": {
+    "message": "Workspace extension that embeds an editor on AtCoder problem pages, allowing you to code, test, and submit in a single tab."
+  },
+  "settings.title": {
+    "message": "AtCoder Workspace"
+  },
+  "settings.subtitle": {
+    "message": "Competitive Programming Workspace for AtCoder"
+  },
+  "settings.back": {
+    "message": "← Back"
+  },
+  "settings.badge": {
+    "message": "Settings"
+  },
+  "settings.general.title": {
+    "message": "General Settings"
+  },
+  "settings.general.lang.label": {
+    "message": "Display Language"
+  },
+  "settings.general.lang.desc": {
+    "message": "Change the display language for the settings screen."
+  },
+  "settings.general.lang.auto": {
+    "message": "Auto (System Settings)"
+  },
+  "settings.general.lang.ja": {
+    "message": "日本語"
+  },
+  "settings.general.lang.en": {
+    "message": "English"
+  },
+  "settings.general.ratio.label": {
+    "message": "Default Split Ratio"
+  },
+  "settings.general.ratio.desc": {
+    "message": "Initial width ratio of the editor and the problem statement when opening a problem page."
+  },
+  "settings.general.ratio.reset": {
+    "message": "Reset to Default"
+  },
+  "settings.general.panelOpen.label": {
+    "message": "Open Editor by Default"
+  },
+  "settings.general.panelOpen.desc": {
+    "message": "Automatically open the editor when navigating to a problem page."
+  },
+  "settings.storage.title": {
+    "message": "Data & Storage"
+  },
+  "settings.storage.cache.label": {
+    "message": "Saved Code History"
+  },
+  "settings.storage.cache.desc": {
+    "message": "Information on submitted code and temporary data saved in the browser's local storage."
+  },
+  "settings.storage.cache.count": {
+    "message": "Cache count:"
+  },
+  "settings.storage.cache.clear": {
+    "message": "Clear All Cache Data"
+  },
+  "settings.storage.cache.confirm": {
+    "message": "All saved source code history will be cleared. Are you sure?\n(This action cannot be undone)"
+  },
+  "settings.storage.cache.empty": {
+    "message": "No cache data to delete"
+  },
+  "settings.storage.cache.success": {
+    "message": "Successfully cleared all cache data"
+  },
+  "settings.template.title": {
+    "message": "Template Settings"
+  },
+  "settings.template.lang.label": {
+    "message": "Select Language"
+  },
+  "settings.template.lang.desc": {
+    "message": "Switch the programming language to configure the template."
+  },
+  "settings.template.code.label": {
+    "message": "Initial Code Template"
+  },
+  "settings.template.code.desc": {
+    "message": "Initial code automatically inserted when opening a problem page without any written code."
+  },
+  "settings.template.code.placeholder": {
+    "message": "// Enter template code here..."
+  },
+  "settings.template.reset": {
+    "message": "Reset to Default"
+  },
+  "settings.template.save": {
+    "message": "Save Template"
+  },
+  "settings.template.toast.saved": {
+    "message": "Template saved"
+  },
+  "settings.template.toast.reset": {
+    "message": "Loaded default (press Save to confirm)"
+  },
+  "settings.snippets.title": {
+    "message": "Custom Snippets"
+  },
+  "settings.snippets.label": {
+    "message": "Registered Snippets"
+  },
+  "settings.snippets.desc": {
+    "message": "Original code snippets that can be called from the editor."
+  },
+  "settings.snippets.add": {
+    "message": "+ Add New"
+  },
+  "settings.snippets.table.title": {
+    "message": "Title"
+  },
+  "settings.snippets.table.lang": {
+    "message": "Language"
+  },
+  "settings.snippets.table.tags": {
+    "message": "Tags"
+  },
+  "settings.snippets.table.actions": {
+    "message": "Actions"
+  },
+  "settings.snippets.table.edit": {
+    "message": "Edit"
+  },
+  "settings.snippets.table.delete": {
+    "message": "Delete"
+  },
+  "settings.snippets.table.empty": {
+    "message": "No custom snippets registered."
+  },
+  "settings.snippets.form.addTitle": {
+    "message": "Add New Snippet"
+  },
+  "settings.snippets.form.editTitle": {
+    "message": "Edit Snippet"
+  },
+  "settings.snippets.form.label.title": {
+    "message": "Title"
+  },
+  "settings.snippets.form.label.lang": {
+    "message": "Target Language"
+  },
+  "settings.snippets.form.label.desc": {
+    "message": "Description"
+  },
+  "settings.snippets.form.label.tags": {
+    "message": "Tags (comma-separated)"
+  },
+  "settings.snippets.form.label.code": {
+    "message": "Source Code (Placeholders like $1, $2 can be used)"
+  },
+  "settings.snippets.form.placeholder.title": {
+    "message": "e.g., Segment Tree"
+  },
+  "settings.snippets.form.placeholder.desc": {
+    "message": "e.g., Point Update Range Query"
+  },
+  "settings.snippets.form.placeholder.tags": {
+    "message": "e.g., segtree, data-structure"
+  },
+  "settings.snippets.form.placeholder.code": {
+    "message": "// Enter snippet code here..."
+  },
+  "settings.snippets.form.cancel": {
+    "message": "Cancel"
+  },
+  "settings.snippets.form.save": {
+    "message": "Save"
+  },
+  "settings.snippets.form.toast.required": {
+    "message": "Title and source code are required fields"
+  },
+  "settings.snippets.form.toast.added": {
+    "message": "Snippet added"
+  },
+  "settings.snippets.form.toast.updated": {
+    "message": "Snippet updated"
+  },
+  "settings.snippets.form.toast.deleted": {
+    "message": "Snippet deleted"
+  },
+  "settings.snippets.form.confirmDelete": {
+    "message": "Are you sure you want to delete snippet \"$1\"?"
+  },
+  "settings.support.title": {
+    "message": "❤️ Support the Developer"
+  },
+  "settings.support.intro": {
+    "message": "AtCoder Workspace is developed as open source by an individual. If you like it, your support would be highly appreciated!"
+  },
+  "settings.support.acCount": {
+    "message": "🏆 Your Total AC Count:"
+  },
+  "settings.support.acUnit": {
+    "message": " problems"
+  },
+  "settings.support.storeReview": {
+    "message": "🌟 Rate 5 Stars on Web Store"
+  },
+  "settings.support.feedback.bug": {
+    "message": "🐛 Report a Bug"
+  },
+  "settings.support.feedback.feature": {
+    "message": "💡 Suggest a Feature"
+  },
+  "settings.info.title": {
+    "message": "About this extension"
+  },
+  "settings.info.version": {
+    "message": "Version:"
+  },
+  "settings.info.license": {
+    "message": "License:"
+  },
+  "settings.info.dataTransmission": {
+    "message": "Data Transmission:"
+  },
+  "settings.info.dataTransmissionValue": {
+    "message": "None (Fully runs locally)"
+  },
+  "settings.links.title": {
+    "message": "Resources"
+  },
+  "settings.links.presentation": {
+    "message": "Concept Presentation"
+  },
+  "settings.links.roadmap": {
+    "message": "Development Roadmap"
+  },
+  "settings.links.privacy": {
+    "message": "Privacy Policy"
+  },
+  "settings.links.github": {
+    "message": "GitHub Repository"
+  },
+  "settings.toast.ratioSaved": {
+    "message": "Split ratio saved"
+  },
+  "settings.toast.ratioReset": {
+    "message": "Split ratio reset"
+  },
+  "settings.toast.panelState": {
+    "message": "Updated initial side panel state"
+  }
+}
