@@ -1386,9 +1386,10 @@ impl UnionFind {
    */
   function generateACCelebrationHTML(contestId, problemId, isContestActive, acCount) {
     const tweetText = `AtCoderで AC しました！\n問題: ${contestId.toUpperCase()} - ${problemId.toUpperCase()}\n#AtCoderWorkspace #AtCoder\n`;
-    const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent('https://chromewebstore.google.com/detail/YOUR_EXTENSION_ID')}`;
+    const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent('https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh?hl=ja')}`;
     const showReviewButton = acCount >= 5 && !isContestActive;
-    const reviewUrl = 'https://chromewebstore.google.com/detail/YOUR_EXTENSION_ID/reviews';
+    const reviewUrl =
+      'https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh/reviews?hl=ja';
 
     return `
       <div class="ac-celebration-container">
