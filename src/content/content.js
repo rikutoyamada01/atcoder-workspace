@@ -235,6 +235,7 @@
                   time: res.time,
                   memory: res.memory,
                   turnstileDebug: res.turnstileDebug,
+                  isContestActive: isContestActive(),
                 });
               } else {
                 notifyEditor({
@@ -507,6 +508,26 @@
   });
 
   /**
+   * Checks if the current contest is active/running.
+   * @returns {boolean}
+   */
+  function isContestActive() {
+    const timer = document.getElementById('contest-timer');
+    if (!timer) return false;
+    const text = timer.textContent.trim();
+    if (
+      !text ||
+      text === '00:00:00' ||
+      text.includes('終了') ||
+      text.includes('Finished') ||
+      text.includes('閉じる')
+    ) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
    * Checks if there is a pending submission in storage and resumes polling if found.
    */
   function checkPendingSubmission() {
@@ -554,6 +575,7 @@
             status: pollRes.status,
             time: pollRes.time,
             memory: pollRes.memory,
+            isContestActive: isContestActive(),
           });
         } else {
           notifyEditor({

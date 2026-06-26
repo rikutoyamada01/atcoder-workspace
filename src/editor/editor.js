@@ -765,18 +765,35 @@ impl UnionFind {
           turnstileMap[e.data.turnstileDebug] || e.data.turnstileDebug || '不明';
 
         // Update Console Results
-        consoleResults.innerHTML = `
-          <div style="font-size: 12px; color: #333;">
-            <div style="margin-bottom: 8px;">ステータス: <span class="case-status status-${e.data.status.toLowerCase()}">${escapeHtml(e.data.status)}</span></div>
-            <div style="margin-bottom: 4px;">実行時間: ${escapeHtml(e.data.time)}</div>
-            <div style="margin-bottom: 4px;">メモリ: ${escapeHtml(e.data.memory)}</div>
-            <div style="margin-bottom: 8px; color: #888; font-size: 11px;">[Debug] Turnstile: ${escapeHtml(turnstileText)}</div>
-            <div>
-              <a href="https://atcoder.jp/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">提出詳細ページを開く (ID: ${e.data.submissionId})</a>
+        const updateConsole = (celebrationHTML = '') => {
+          consoleResults.innerHTML = `
+            <div style="font-size: 12px; color: #333;">
+              <div style="margin-bottom: 8px;">ステータス: <span class="case-status status-${e.data.status.toLowerCase()}">${escapeHtml(e.data.status)}</span></div>
+              <div style="margin-bottom: 4px;">実行時間: ${escapeHtml(e.data.time)}</div>
+              <div style="margin-bottom: 4px;">メモリ: ${escapeHtml(e.data.memory)}</div>
+              <div style="margin-bottom: 8px; color: #888; font-size: 11px;">[Debug] Turnstile: ${escapeHtml(turnstileText)}</div>
+              <div>
+                <a href="https://atcoder.jp/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">提出詳細ページを開く (ID: ${e.data.submissionId})</a>
+              </div>
+              ${celebrationHTML}
             </div>
-          </div>
-        `;
-        consoleResults.scrollTop = consoleResults.scrollHeight;
+          `;
+          consoleResults.scrollTop = consoleResults.scrollHeight;
+        };
+
+        if (isAC) {
+          handleACStats(contestId, problemId, (acCount) => {
+            const celebrationHTML = generateACCelebrationHTML(
+              contestId,
+              problemId,
+              e.data.isContestActive,
+              acCount
+            );
+            updateConsole(celebrationHTML);
+          });
+        } else {
+          updateConsole();
+        }
 
         // Trigger Notification
         if (typeof chrome !== 'undefined' && chrome.notifications && chrome.notifications.create) {
@@ -889,17 +906,34 @@ impl UnionFind {
           testSummary.textContent = `ジャッジ完了: ${e.data.status}`;
           testSummary.className = isAC ? 'summary-ac' : 'summary-wa';
 
-          consoleResults.innerHTML = `
-            <div style="font-size: 12px; color: #333;">
-              <div style="margin-bottom: 8px;">ステータス: <span class="case-status status-${e.data.status.toLowerCase()}">${escapeHtml(e.data.status)}</span></div>
-              <div style="margin-bottom: 4px;">実行時間: ${escapeHtml(e.data.time)}</div>
-              <div style="margin-bottom: 8px;">メモリ: ${escapeHtml(e.data.memory)}</div>
-              <div>
-                <a href="https://atcoder.jp/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">提出詳細ページを開く (ID: ${e.data.submissionId})</a>
+          const updateConsole = (celebrationHTML = '') => {
+            consoleResults.innerHTML = `
+              <div style="font-size: 12px; color: #333;">
+                <div style="margin-bottom: 8px;">ステータス: <span class="case-status status-${e.data.status.toLowerCase()}">${escapeHtml(e.data.status)}</span></div>
+                <div style="margin-bottom: 4px;">実行時間: ${escapeHtml(e.data.time)}</div>
+                <div style="margin-bottom: 8px;">メモリ: ${escapeHtml(e.data.memory)}</div>
+                <div>
+                  <a href="https://atcoder.jp/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">提出詳細ページを開く (ID: ${e.data.submissionId})</a>
+                </div>
+                ${celebrationHTML}
               </div>
-            </div>
-          `;
-          consoleResults.scrollTop = consoleResults.scrollHeight;
+            `;
+            consoleResults.scrollTop = consoleResults.scrollHeight;
+          };
+
+          if (isAC) {
+            handleACStats(contestId, problemId, (acCount) => {
+              const celebrationHTML = generateACCelebrationHTML(
+                contestId,
+                problemId,
+                e.data.isContestActive,
+                acCount
+              );
+              updateConsole(celebrationHTML);
+            });
+          } else {
+            updateConsole();
+          }
         }
         break;
       }
@@ -1315,6 +1349,72 @@ impl UnionFind {
         }
       });
     });
+  }
+
+  /**
+   * Records Accepted problems and tracks stats to trigger review prompt.
+   * @param {string} contestId
+   * @param {string} problemId
+   * @param {function} callback
+   */
+  function handleACStats(contestId, problemId, callback) {
+    if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.local) {
+      callback(0);
+      return;
+    }
+    chrome.storage.local.get(['stats:ac_problems'], (res) => {
+      const acProblems = res['stats:ac_problems'] || [];
+      const problemKey = `${contestId}:${problemId}`;
+      if (!acProblems.includes(problemKey)) {
+        acProblems.push(problemKey);
+        chrome.storage.local.set({ 'stats:ac_problems': acProblems }, () => {
+          callback(acProblems.length);
+        });
+      } else {
+        callback(acProblems.length);
+      }
+    });
+  }
+
+  /**
+   * Generates celebration HTML with social sharing and review prompt.
+   * @param {string} contestId
+   * @param {string} problemId
+   * @param {boolean} isContestActive
+   * @param {number} acCount
+   * @returns {string}
+   */
+  function generateACCelebrationHTML(contestId, problemId, isContestActive, acCount) {
+    const tweetText = `AtCoderで AC しました！\n問題: ${contestId.toUpperCase()} - ${problemId.toUpperCase()}\n#AtCoderWorkspace #AtCoder\n`;
+    const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent('https://chromewebstore.google.com/detail/YOUR_EXTENSION_ID')}`;
+    const showReviewButton = acCount >= 5 && !isContestActive;
+    const reviewUrl = 'https://chromewebstore.google.com/detail/YOUR_EXTENSION_ID/reviews';
+
+    let milestoneText = '';
+    if (acCount > 0 && acCount % 5 === 0 && !isContestActive) {
+      milestoneText = `<div class="ac-milestone">🎉 累計 ${acCount} 問目のAC達成！素晴らしい精進です！</div>`;
+    }
+
+    return `
+      <div class="ac-celebration-container">
+        ${milestoneText}
+        <div class="ac-action-buttons">
+          <a href="${shareUrl}" target="_blank" class="ac-btn ac-btn-share-x" title="結果をX (Twitter) でシェア">
+            <svg class="ac-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            結果をXでシェア
+          </a>
+          ${
+            showReviewButton
+              ? `
+          <a href="${reviewUrl}" target="_blank" class="ac-btn ac-btn-review" title="Chrome Web Store で評価する">
+             ストアで評価する
+          </a>
+          `
+              : ''
+          }
+        </div>
+      </div>
+    `;
   }
 
   function onLanguageChanged() {
