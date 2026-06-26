@@ -3,11 +3,36 @@
 
   window.AtCoderWorkspace = window.AtCoderWorkspace || {};
 
+  const TIMEOUT_MS = 15000; // 実行結果タイムアウト (15秒)
+  const IDLE_TIMEOUT_MS = 20000; // 空き状態待ちタイムアウト (20秒)
+  const IDLE_CHECK_INTERVAL_MS = 300; // 空き状態確認ポーリング間隔 (300ms)
+  const NEXT_CASE_DELAY_MS = 50; // 次のケース実行前の遅延 (50ms)
+  const LOCK_RETRY_DELAY_MS = 1500; // ロック発生時の再試行遅延 (1500ms)
+  const DEFAULT_TIME_LIMIT_MS = 2000; // デフォルトの実行時間制限 (2000ms)
+  const DEFAULT_MEMORY_LIMIT_MB = 1024; // デフォルトのメモリ制限 (1024MB)
+
   /**
    * Runner communicates with AtCoder's custom test endpoint
    * to submit, poll, and verify solutions against sample test cases.
    */
   class Runner {
+    /**
+     * Calculates the next polling interval based on elapsed time.
+     * @private
+     * @param {number} startTime
+     * @returns {number}
+     */
+    _getPollInterval(startTime) {
+      const elapsed = Date.now() - startTime;
+      if (elapsed < 1000) {
+        return 200;
+      }
+      if (elapsed < 3000) {
+        return 500;
+      }
+      return 1000;
+    }
+
     /**
      * Polls the custom test JSON endpoint until completion or timeout.
      * @param {string} contestId
@@ -16,7 +41,7 @@
      * @param {number} startTime
      */
     pollResult(contestId, resolve, reject, startTime) {
-      if (Date.now() - startTime > 15000) {
+      if (Date.now() - startTime > TIMEOUT_MS) {
         // 15 seconds timeout
         reject(new Error('TLE: 実行制限時間を超過しました (15秒)'));
         return;
@@ -37,7 +62,10 @@
             // AtCoder Custom Test Statuses:
             // 0: Queued, 1: Compiling, 2: Running, 3: Completed
             if (status === 0 || status === 1 || status === 2) {
-              setTimeout(() => this.pollResult(contestId, resolve, reject, startTime), 1000);
+              setTimeout(
+                () => this.pollResult(contestId, resolve, reject, startTime),
+                this._getPollInterval(startTime)
+              );
             } else {
               // Decode Base64 Output/Error as fallback if plaintext root properties are missing
               const stdout =
@@ -62,7 +90,10 @@
               });
             }
           } else {
-            setTimeout(() => this.pollResult(contestId, resolve, reject, startTime), 1000);
+            setTimeout(
+              () => this.pollResult(contestId, resolve, reject, startTime),
+              this._getPollInterval(startTime)
+            );
           }
         })
         .catch((err) => {
@@ -77,7 +108,7 @@
      * @param {number} startTime
      */
     ensureIdle(contestId, onIdle, startTime) {
-      if (Date.now() - startTime > 20000) {
+      if (Date.now() - startTime > IDLE_TIMEOUT_MS) {
         // 20 seconds timeout
         console.warn('[AtCoder Workspace] Idle check timed out, proceeding anyway.');
         onIdle();
@@ -103,7 +134,10 @@
                 status,
                 '), waiting...'
               );
-              setTimeout(() => this.ensureIdle(contestId, onIdle, startTime), 1000);
+              setTimeout(
+                () => this.ensureIdle(contestId, onIdle, startTime),
+                IDLE_CHECK_INTERVAL_MS
+              );
               return;
             }
           }
@@ -147,7 +181,7 @@
                 message: 'CSRFトークンが見つかりません。',
               });
               index++;
-              setTimeout(runNext, 1000);
+              setTimeout(runNext, NEXT_CASE_DELAY_MS);
               return;
             }
 
@@ -213,11 +247,11 @@
                 const timeLimit =
                   scraper && typeof scraper.extractTimeLimit === 'function'
                     ? scraper.extractTimeLimit()
-                    : 2000;
+                    : DEFAULT_TIME_LIMIT_MS;
                 const memoryLimit =
                   scraper && typeof scraper.extractMemoryLimit === 'function'
                     ? scraper.extractMemoryLimit()
-                    : 1024;
+                    : DEFAULT_MEMORY_LIMIT_MB;
 
                 let status = 'WA';
                 if (timeConsumption >= timeLimit) {
@@ -244,7 +278,7 @@
                 });
 
                 index++;
-                setTimeout(runNext, 1000);
+                setTimeout(runNext, NEXT_CASE_DELAY_MS);
               })
               .catch((err) => {
                 console.warn(`[AtCoder Workspace] Case ${index + 1} submission error:`, err);
@@ -252,7 +286,7 @@
                 if (err.message && err.message.includes('LockError')) {
                   // Retry same case on lock
                   console.log(`[AtCoder Workspace] Retrying case ${index + 1} due to lock...`);
-                  setTimeout(runNext, 1500);
+                  setTimeout(runNext, LOCK_RETRY_DELAY_MS);
                 } else {
                   const isTle = err.message && err.message.includes('TLE');
                   onCaseResult({
@@ -261,7 +295,7 @@
                     message: err.message || '実行エラーが発生しました。',
                   });
                   index++;
-                  setTimeout(runNext, 1000);
+                  setTimeout(runNext, NEXT_CASE_DELAY_MS);
                 }
               });
           },

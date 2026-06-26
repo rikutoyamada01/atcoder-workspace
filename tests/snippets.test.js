@@ -72,7 +72,7 @@ describe('Templates and Custom Snippets Integration Tests', () => {
 
       // Set up options DOM
       document.body.innerHTML = optionsHtml;
-      
+
       // Load and evaluate options.js script
       const script = document.createElement('script');
       script.textContent = optionsJs;
@@ -194,7 +194,7 @@ describe('Templates and Custom Snippets Integration Tests', () => {
 
       // 6. Assert
       expect(sectionMockScroll).toHaveBeenCalled();
-      
+
       // Clean up
       window.location.hash = '';
       jest.useRealTimers();
@@ -216,13 +216,21 @@ describe('Templates and Custom Snippets Integration Tests', () => {
         insert: jest.fn(),
       };
 
+      let editorValue = '';
+
       mockEditor = {
-        getValue: jest.fn(() => ''),
-        setValue: jest.fn(),
+        getValue: jest.fn(() => editorValue),
+        setValue: jest.fn((val) => {
+          editorValue = val;
+        }),
         getModel: jest.fn(() => ({
           dispose: jest.fn(),
         })),
-        setModel: jest.fn(),
+        setModel: jest.fn((model) => {
+          if (model && model._value !== undefined) {
+            editorValue = model._value;
+          }
+        }),
         updateOptions: jest.fn(),
         addCommand: jest.fn(),
         layout: jest.fn(),
@@ -240,16 +248,22 @@ describe('Templates and Custom Snippets Integration Tests', () => {
           }
           return null;
         }),
-        onDidChangeModelContent: jest.fn((callback) => {
+        onDidChangeModelContent: jest.fn((_callback) => {
           return { dispose: jest.fn() };
         }),
       };
 
       global.monaco = {
         editor: {
-          create: jest.fn(() => mockEditor),
-          createModel: jest.fn(() => ({
+          create: jest.fn((container, options) => {
+            if (options && options.value !== undefined) {
+              editorValue = options.value;
+            }
+            return mockEditor;
+          }),
+          createModel: jest.fn((val) => ({
             dispose: jest.fn(),
+            _value: val,
           })),
         },
         KeyMod: {
@@ -258,12 +272,12 @@ describe('Templates and Custom Snippets Integration Tests', () => {
         KeyCode: {
           KeyJ: 40,
         },
-        Range: function(sl, sc, el, ec) {
+        Range: function (sl, sc, el, ec) {
           this.startLineNumber = sl;
           this.startColumn = sc;
           this.endLineNumber = el;
           this.endColumn = ec;
-        }
+        },
       };
 
       // Set up editor DOM
@@ -296,8 +310,58 @@ describe('Templates and Custom Snippets Integration Tests', () => {
 
       // Editor should create with default C++ template (since local storage config is empty)
       expect(global.monaco.editor.create).toHaveBeenCalled();
-      expect(global.monaco.editor.create.mock.calls[0][1].value).toContain('#include <bits/stdc++.h>');
+      expect(global.monaco.editor.create.mock.calls[0][1].value).toContain(
+        '#include <bits/stdc++.h>'
+      );
       expect(global.chrome.storage.local.set).toHaveBeenCalled();
+    });
+
+    test('fetches latest submission from AtCoder if local code history is empty', async () => {
+      const parentPostMessageMock = jest
+        .spyOn(window.parent, 'postMessage')
+        .mockImplementation(() => {});
+
+      const configMsg = {
+        type: 'init-config',
+        contestId: 'abc300',
+        problemId: 'abc300_a',
+        selectedLanguageId: '5001',
+        languages: [{ value: '5001', text: 'C++ (GCC 12.2)' }],
+        isDark: true,
+      };
+
+      window.dispatchEvent(new MessageEvent('message', { data: configMsg }));
+
+      expect(parentPostMessageMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'fetch-latest-submission',
+          languageId: '5001',
+          mode: 'cpp',
+        }),
+        '*'
+      );
+
+      const submissionLoadedMsg = {
+        type: 'latest-submission-loaded',
+        code: '// previously submitted solution code',
+        mode: 'cpp',
+      };
+
+      window.dispatchEvent(new MessageEvent('message', { data: submissionLoadedMsg }));
+
+      expect(global.monaco.editor.createModel).toHaveBeenCalledWith(
+        '// previously submitted solution code',
+        'cpp'
+      );
+      expect(mockEditor.setModel).toHaveBeenCalled();
+
+      expect(global.chrome.storage.local.set).toHaveBeenCalledWith(
+        expect.objectContaining({
+          'code:abc300:abc300_a:5001': '// previously submitted solution code',
+        })
+      );
+
+      parentPostMessageMock.mockRestore();
     });
 
     test('Snippets Drawer lists custom snippets alongside presets and search filters them', () => {
@@ -320,7 +384,7 @@ describe('Templates and Custom Snippets Integration Tests', () => {
           desc: 'Python segment tree',
           tags: ['data-structure'],
           code: 'class SegTree:',
-        }
+        },
       ];
 
       // Simulate init-config
@@ -345,7 +409,7 @@ describe('Templates and Custom Snippets Integration Tests', () => {
       // Click to open drawer
       snippetsBtn.dispatchEvent(new Event('click'));
       jest.advanceTimersByTime(10); // Advance timer to let toggleDrawer setTimeout(..., 0) execute
-      
+
       expect(snippetsDrawer.style.display).toBe('flex');
       expect(mockEditor.layout).toHaveBeenCalled();
 
@@ -366,7 +430,7 @@ describe('Templates and Custom Snippets Integration Tests', () => {
       const card = snippetList.querySelector('.snippet-card');
       const cardHeader = card.querySelector('.snippet-card-header');
       const cardBody = card.querySelector('.snippet-card-body');
-      
+
       // Expand card body
       cardHeader.dispatchEvent(new Event('click'));
       expect(cardBody.style.display).toBe('flex');
@@ -376,8 +440,14 @@ describe('Templates and Custom Snippets Integration Tests', () => {
       insertBtn.dispatchEvent(new Event('click'));
 
       expect(mockEditor.focus).toHaveBeenCalled();
-      expect(mockSnippetController.insert).toHaveBeenCalledWith('void my_dijkstra() {}', 0, 0, false, false);
-      
+      expect(mockSnippetController.insert).toHaveBeenCalledWith(
+        'void my_dijkstra() {}',
+        0,
+        0,
+        false,
+        false
+      );
+
       jest.useRealTimers();
     });
 

@@ -904,6 +904,28 @@ impl UnionFind {
         break;
       }
 
+      case 'latest-submission-loaded': {
+        const selectedOption = langSelect.options[langSelect.selectedIndex];
+        const langText = selectedOption ? selectedOption.textContent : '';
+        const mode = getLanguageMode(langText);
+
+        if (e.data.mode === mode && editor) {
+          const code = e.data.code;
+          if (code) {
+            // Apply the fetched submission code
+            const oldModel = editor.getModel();
+            const newModel = monaco.editor.createModel(code, mode);
+            editor.setModel(newModel);
+            if (oldModel) oldModel.dispose();
+            saveCodeSync();
+          } else {
+            // No past submission found, save the template code (which is currently in the editor) to storage
+            saveCodeSync();
+          }
+        }
+        break;
+      }
+
       case 'test-start':
         isTesting = true;
         setButtonsDisabled(true);
@@ -1278,8 +1300,15 @@ impl UnionFind {
                 ? tplRes[templateKey]
                 : DEFAULT_TEMPLATES[mode] || '';
             createEditorWithCode(templateCode);
-            // Save the newly loaded template code immediately
-            saveCodeSync();
+            // Request latest submission from AtCoder (instead of saving template immediately)
+            window.parent.postMessage(
+              {
+                type: 'fetch-latest-submission',
+                languageId: currentLanguageId,
+                mode: mode,
+              },
+              '*'
+            );
           });
         } else {
           createEditorWithCode(initialCode);
@@ -1346,8 +1375,15 @@ impl UnionFind {
           const templateCode =
             tplRes[templateKey] !== undefined ? tplRes[templateKey] : DEFAULT_TEMPLATES[mode] || '';
           applyModelWithCode(templateCode);
-          // Save the newly loaded template code immediately
-          saveCodeSync();
+          // Request latest submission from AtCoder (instead of saving template immediately)
+          window.parent.postMessage(
+            {
+              type: 'fetch-latest-submission',
+              languageId: currentLanguageId,
+              mode: mode,
+            },
+            '*'
+          );
         });
       } else {
         applyModelWithCode(code);

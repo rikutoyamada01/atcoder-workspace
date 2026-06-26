@@ -256,6 +256,129 @@
           }
           break;
 
+        case 'fetch-latest-submission': {
+          const mode = e.data.mode;
+
+          const getLanguageMode = (langText) => {
+            if (!langText) return 'plaintext';
+            const lower = langText.toLowerCase();
+            if (
+              lower.includes('c++') ||
+              lower.includes('gcc') ||
+              lower.includes('clang++') ||
+              lower.includes('g++')
+            )
+              return 'cpp';
+            if (lower.includes('python') || lower.includes('pypy')) return 'python';
+            if (lower.includes('rust')) return 'rust';
+            if (lower.includes('java')) return 'java';
+            if (lower.includes('go') || lower.includes('golang')) return 'go';
+            if (lower.includes('haskell')) return 'haskell';
+            if (lower.includes('javascript') || lower.includes('node') || lower.includes('js'))
+              return 'javascript';
+            if (lower.includes('typescript') || lower.includes('ts')) return 'typescript';
+            if (lower.includes('ruby')) return 'ruby';
+            if (lower.includes('c#') || lower.includes('mono')) return 'csharp';
+            if (lower.includes('php')) return 'php';
+            if (lower.includes('kotlin')) return 'kotlin';
+            if (lower.includes('swift')) return 'swift';
+            if (lower.includes('scala')) return 'scala';
+            if (lower.includes('bash') || lower.includes('shell')) return 'shell';
+            return 'plaintext';
+          };
+
+          // Fetch user's submissions page
+          fetch(`/contests/${contestId}/submissions/me?f.Task=${problemId}`)
+            .then((res) => {
+              if (!res.ok) throw new Error('Failed to fetch submissions list');
+              return res.text();
+            })
+            .then((html) => {
+              const parser = new DOMParser();
+              const doc = parser.parseFromString(html, 'text/html');
+              const rows = Array.from(doc.querySelectorAll('table tbody tr'));
+              let foundSubmissionId = null;
+
+              const currentLangSelect = getLangSelect();
+              const selectedOption = currentLangSelect
+                ? currentLangSelect.options[currentLangSelect.selectedIndex]
+                : null;
+              const selectedLanguageText = selectedOption ? selectedOption.textContent.trim() : '';
+
+              for (const row of rows) {
+                const cells = row.querySelectorAll('td');
+                if (cells.length < 4) continue;
+
+                const rowLanguageText = cells[3].textContent.trim();
+                if (rowLanguageText === selectedLanguageText) {
+                  const detailLink = Array.from(row.querySelectorAll('a')).find((a) => {
+                    const href = a.getAttribute('href');
+                    return href && href.match(/\/submissions\/\d+/);
+                  });
+                  if (detailLink) {
+                    const href = detailLink.getAttribute('href');
+                    const match = href.match(/\/submissions\/(\d+)/);
+                    if (match) {
+                      foundSubmissionId = match[1];
+                      break;
+                    }
+                  }
+                }
+              }
+
+              if (!foundSubmissionId) {
+                // Fallback to match by language mode name (case-insensitive)
+                for (const row of rows) {
+                  const cells = row.querySelectorAll('td');
+                  if (cells.length < 4) continue;
+                  const rowLanguageText = cells[3].textContent.trim();
+                  if (getLanguageMode(rowLanguageText) === mode) {
+                    const detailLink = Array.from(row.querySelectorAll('a')).find((a) => {
+                      const href = a.getAttribute('href');
+                      return href && href.match(/\/submissions\/\d+/);
+                    });
+                    if (detailLink) {
+                      const href = detailLink.getAttribute('href');
+                      const match = href.match(/\/submissions\/(\d+)/);
+                      if (match) {
+                        foundSubmissionId = match[1];
+                        break;
+                      }
+                    }
+                  }
+                }
+              }
+
+              if (!foundSubmissionId) {
+                notifyEditor({ type: 'latest-submission-loaded', code: null, mode });
+                return;
+              }
+
+              // Fetch submission details
+              return fetch(`/contests/${contestId}/submissions/${foundSubmissionId}`)
+                .then((res) => {
+                  if (!res.ok) throw new Error('Failed to fetch submission details');
+                  return res.text();
+                })
+                .then((detailHtml) => {
+                  const detailParser = new DOMParser();
+                  const detailDoc = detailParser.parseFromString(detailHtml, 'text/html');
+                  const codeElem = detailDoc.getElementById('submission-code');
+                  if (codeElem) {
+                    const code = codeElem.textContent;
+                    notifyEditor({ type: 'latest-submission-loaded', code, mode });
+                  } else {
+                    notifyEditor({ type: 'latest-submission-loaded', code: null, mode });
+                  }
+                });
+            })
+            .catch((err) => {
+              console.warn('[AtCoder Workspace] Error fetching past submission:', err);
+              notifyEditor({ type: 'latest-submission-loaded', code: null, mode });
+            });
+          break;
+        }
+
         case 'run-tests':
           try {
             if (!e.data.languageId) {
