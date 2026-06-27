@@ -38,6 +38,11 @@
       "js": ["src/content/turnstile-kick.js"],
       "world": "MAIN",
       "run_at": "document_start"
+    },
+    {
+      "matches": ["https://atcoder.jp/contests/*/tasks", "https://atcoder.jp/contests/*/tasks?*"],
+      "js": ["src/content/tasklist.js"],
+      "run_at": "document_idle"
     }
   ],
   "web_accessible_resources": [

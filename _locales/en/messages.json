@@ -496,6 +496,42 @@
   },
   "editor_judge_captcha_desc": {
     "message": "Waiting for bot verification (Cloudflare Turnstile) to complete.<br>Please manually click the checkbox (I am human) displayed at the bottom-left of the screen to complete verification.<br>(The submission process will resume automatically after verification.)"
+  },
+  "editor_ac_btn_mark_editorial": {
+    "message": "Mark as Editorial AC"
+  },
+  "editor_ac_btn_marked_editorial": {
+    "message": "Marked as Editorial AC"
+  },
+  "options_status_title": {
+    "message": "解答ステータス管理 / Problem Statuses"
+  },
+  "options_status_desc": {
+    "message": "Manage and edit your self/editorial AC statuses for solved problems individually."
+  },
+  "options_status_col_contest": {
+    "message": "Contest"
+  },
+  "options_status_col_problem": {
+    "message": "Problem"
+  },
+  "options_status_col_status": {
+    "message": "Status"
+  },
+  "options_status_option_unsolved": {
+    "message": "Unsolved"
+  },
+  "options_status_option_self": {
+    "message": "Self AC"
+  },
+  "options_status_option_editorial": {
+    "message": "Editorial AC"
+  },
+  "options_status_empty": {
+    "message": "No problem statuses recorded yet."
+  },
+  "options_status_toast_saved": {
+    "message": "Saved problem status"
   }
 }
 

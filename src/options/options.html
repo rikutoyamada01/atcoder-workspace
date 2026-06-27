@@ -98,6 +98,38 @@
           </div>
         </section>
 
+        <!-- Card: Problem Status Management -->
+        <section class="settings-card">
+          <div class="card-header">
+            <h2 data-i18n="options_status_title">解答ステータス管理 / Problem Statuses</h2>
+          </div>
+          <div class="card-body">
+            <div class="setting-item-vertical">
+              <div class="setting-info">
+                <p class="setting-description" data-i18n="options_status_desc">これまでACした問題の自力・解説ステータスを個別に管理・編集できます。</p>
+              </div>
+              
+              <div class="status-table-container" style="margin-top: 15px; width: 100%;">
+                <table class="status-table">
+                  <thead>
+                    <tr>
+                      <th data-i18n="options_status_col_contest">コンテスト</th>
+                      <th data-i18n="options_status_col_problem">問題</th>
+                      <th data-i18n="options_status_col_status">ステータス</th>
+                    </tr>
+                  </thead>
+                  <tbody id="status-table-body">
+                    <!-- JSで動的生成 -->
+                  </tbody>
+                </table>
+                <div id="no-status-message" class="no-status-message" data-i18n="options_status_empty" style="text-align: center; padding: 20px; color: #999; display: none;">
+                  記録された解答ステータスはありません。
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <!-- Card 3: Template Settings -->
         <section class="settings-card">
           <div class="card-header">

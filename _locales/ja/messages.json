@@ -496,6 +496,42 @@
   },
   "editor_judge_captcha_desc": {
     "message": "ボット判定（Cloudflare Turnstile）の認証完了を待機しています。<br>画面の左下に表示されたチェックボックス（私は人間です）を手動でクリックして認証を完了させてください。<br>（認証完了後、自動的に提出処理が再開されます）"
+  },
+  "editor_ac_btn_mark_editorial": {
+    "message": "解説ACとしてマーク"
+  },
+  "editor_ac_btn_marked_editorial": {
+    "message": "解説ACとして記録済"
+  },
+  "options_status_title": {
+    "message": "解答ステータス管理 / Problem Statuses"
+  },
+  "options_status_desc": {
+    "message": "これまでACした問題の自力・解説ステータスを個別に管理・編集できます。"
+  },
+  "options_status_col_contest": {
+    "message": "コンテスト"
+  },
+  "options_status_col_problem": {
+    "message": "問題"
+  },
+  "options_status_col_status": {
+    "message": "ステータス"
+  },
+  "options_status_option_unsolved": {
+    "message": "未学習"
+  },
+  "options_status_option_self": {
+    "message": "自力AC"
+  },
+  "options_status_option_editorial": {
+    "message": "解説AC"
+  },
+  "options_status_empty": {
+    "message": "記録された解答ステータスはありません。"
+  },
+  "options_status_toast_saved": {
+    "message": "解答ステータスを保存しました"
   }
 }
 

@@ -170,6 +170,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       applyTranslations();
       renderCustomSnippets();
       calculateCacheStats();
+      loadProblemStatuses();
     });
   }
 
@@ -509,6 +510,113 @@ func main() {
     }
   };
 
+  // --- Problem Statuses Logic ---
+  const statusTableBody = document.getElementById('status-table-body');
+  const noStatusMessage = document.getElementById('no-status-message');
+
+  const loadProblemStatuses = () => {
+    if (!statusTableBody) return;
+
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get(['stats:ac_problems'], (res) => {
+        const acProblems = res['stats:ac_problems'] || [];
+
+        if (acProblems.length === 0) {
+          noStatusMessage.style.display = 'block';
+          statusTableBody.parentElement.style.display = 'none';
+          return;
+        }
+
+        // Get status keys for all AC problems
+        const statusKeys = acProblems.map((p) => {
+          const parts = p.split(':');
+          return `status:${parts[0]}:${parts[1]}`;
+        });
+
+        chrome.storage.local.get(statusKeys, (statusRes) => {
+          renderProblemStatuses(acProblems, statusRes);
+        });
+      });
+    } else {
+      // Mock data for local testing
+      const mockAc = ['abc300:abc300_a', 'abc300:abc300_b', 'abc301:abc301_a'];
+      const mockStatuses = {
+        'status:abc300:abc300_a': 'self_ac',
+        'status:abc300:abc300_b': 'editorial_ac',
+      };
+      renderProblemStatuses(mockAc, mockStatuses);
+    }
+  };
+
+  const renderProblemStatuses = (acProblems, statuses) => {
+    statusTableBody.innerHTML = '';
+    noStatusMessage.style.display = 'none';
+    statusTableBody.parentElement.style.display = 'table';
+
+    // Sort by contest ID, then problem ID
+    acProblems.sort();
+
+    acProblems.forEach((problemKey) => {
+      const parts = problemKey.split(':');
+      if (parts.length < 2) return;
+      const contestId = parts[0];
+      const problemId = parts[1];
+
+      const statusKey = `status:${contestId}:${problemId}`;
+      // Default to 'self_ac' if solved but no status key is set yet
+      const currentStatus = statuses[statusKey] || 'self_ac';
+
+      const formattedProblem = problemId.toUpperCase().replace(contestId.toUpperCase() + '_', '');
+      const formattedContest = contestId.toUpperCase();
+
+      const row = document.createElement('tr');
+
+      let dotClass = 'dot-self';
+      if (currentStatus === 'editorial_ac') dotClass = 'dot-editorial';
+      if (currentStatus === 'unsolved') dotClass = 'dot-unsolved';
+
+      row.innerHTML = `
+        <td style="font-weight: 600;">${escapeHtml(formattedContest)}</td>
+        <td>${escapeHtml(formattedProblem)}</td>
+        <td class="status-select-cell">
+          <div style="display: flex; align-items: center;">
+            <span class="status-badge-dot ${dotClass}" id="dot-${problemKey.replace(':', '-')}"></span>
+            <select class="form-control status-select" data-contest="${escapeHtml(contestId)}" data-problem="${escapeHtml(problemId)}" data-key="${escapeHtml(problemKey)}">
+              <option value="unsolved" ${currentStatus === 'unsolved' ? 'selected' : ''}>${escapeHtml(i18nProvider.t('options_status_option_unsolved'))}</option>
+              <option value="self_ac" ${currentStatus === 'self_ac' ? 'selected' : ''}>${escapeHtml(i18nProvider.t('options_status_option_self'))}</option>
+              <option value="editorial_ac" ${currentStatus === 'editorial_ac' ? 'selected' : ''}>${escapeHtml(i18nProvider.t('options_status_option_editorial'))}</option>
+            </select>
+          </div>
+        </td>
+      `;
+
+      const select = row.querySelector('.status-select');
+      select.addEventListener('change', (e) => {
+        const newStatus = e.target.value;
+        const cId = e.target.getAttribute('data-contest');
+        const pId = e.target.getAttribute('data-problem');
+        const pKey = e.target.getAttribute('data-key');
+
+        saveSetting(
+          `status:${cId}:${pId}`,
+          newStatus,
+          i18nProvider.t('options_status_toast_saved')
+        );
+
+        // Update badge dot color
+        const dot = document.getElementById(`dot-${pKey.replace(':', '-')}`);
+        if (dot) {
+          dot.className = 'status-badge-dot';
+          if (newStatus === 'self_ac') dot.classList.add('dot-self');
+          if (newStatus === 'editorial_ac') dot.classList.add('dot-editorial');
+          if (newStatus === 'unsolved') dot.classList.add('dot-unsolved');
+        }
+      });
+
+      statusTableBody.appendChild(row);
+    });
+  };
+
   // HTML Escape helper
   function escapeHtml(str) {
     if (!str) return '';
@@ -535,4 +643,5 @@ func main() {
 
   // Init
   loadSettings();
+  loadProblemStatuses();
 });
