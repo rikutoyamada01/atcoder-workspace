@@ -24,8 +24,12 @@ describe('Templates and Custom Snippets Integration Tests', () => {
     onChangedListeners = [];
     global.i18n = i18n;
 
-    const jaMessages = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../_locales/ja/messages.json'), 'utf8'));
-    const enMessages = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../_locales/en/messages.json'), 'utf8'));
+    const jaMessages = JSON.parse(
+      fs.readFileSync(path.resolve(__dirname, '../_locales/ja/messages.json'), 'utf8')
+    );
+    const enMessages = JSON.parse(
+      fs.readFileSync(path.resolve(__dirname, '../_locales/en/messages.json'), 'utf8')
+    );
 
     global.fetch = jest.fn((url) => {
       let data = {};
@@ -519,7 +523,7 @@ describe('Templates and Custom Snippets Integration Tests', () => {
 
       // 3. Trigger onChanged listener representing display language change to English
       expect(onChangedListeners.length).toBeGreaterThan(0);
-      
+
       // Update mocked storage display language setting
       store['settings:display_language'] = 'en';
 

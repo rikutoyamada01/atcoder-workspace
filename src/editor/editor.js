@@ -106,7 +106,6 @@
     });
   }
 
-
   // Default templates configuration
   const DEFAULT_TEMPLATES = {
     cpp: `#include <bits/stdc++.h>
@@ -610,7 +609,9 @@ impl UnionFind {
 
     // Open console drawer
     toggleConsole(true);
-    const prepSubmitText = i18nProvider ? i18nProvider.t('editor_console_preparing_submit') : '提出準備中...';
+    const prepSubmitText = i18nProvider
+      ? i18nProvider.t('editor_console_preparing_submit')
+      : '提出準備中...';
     consoleResults.innerHTML = `<div style="font-size: 12px; color: #777;">${escapeHtml(prepSubmitText)}</div>`;
 
     console.log('[AtCoder Workspace] Editor: Sending submit-code message to parent', {
@@ -635,7 +636,9 @@ impl UnionFind {
         const url = chrome.runtime.getURL('src/options/options.html');
         window.open(url);
       } else {
-        const alertText = i18nProvider ? i18nProvider.t('editor_alert_settings_unavailable') : '設定画面は拡張機能として実行されている場合のみ利用可能です。';
+        const alertText = i18nProvider
+          ? i18nProvider.t('editor_alert_settings_unavailable')
+          : '設定画面は拡張機能として実行されている場合のみ利用可能です。';
         alert(alertText);
       }
     };
@@ -763,20 +766,27 @@ impl UnionFind {
         setButtonsDisabled(true);
         toggleConsole(true);
 
-        testSummary.textContent = i18nProvider ? i18nProvider.t('editor_judge_submitting') : '提出中...';
+        testSummary.textContent = i18nProvider
+          ? i18nProvider.t('editor_judge_submitting')
+          : '提出中...';
         testSummary.className = 'summary-running';
 
-        const submitStartedText = i18nProvider ? i18nProvider.t('editor_judge_submitted') : '提出処理を開始しました...';
-        consoleResults.innerHTML =
-          `<div style="font-size: 12px; color: #777;">${escapeHtml(submitStartedText)}</div>`;
+        const submitStartedText = i18nProvider
+          ? i18nProvider.t('editor_judge_submitted')
+          : '提出処理を開始しました...';
+        consoleResults.innerHTML = `<div style="font-size: 12px; color: #777;">${escapeHtml(submitStartedText)}</div>`;
         break;
       }
 
       case 'submit-captcha-waiting': {
-        testSummary.textContent = i18nProvider ? i18nProvider.t('editor_judge_waiting_bot') : 'ボット認証の待機中...';
+        testSummary.textContent = i18nProvider
+          ? i18nProvider.t('editor_judge_waiting_bot')
+          : 'ボット認証の待機中...';
         testSummary.className = 'summary-running';
 
-        const captchaDescHtml = i18nProvider ? i18nProvider.t('editor_judge_captcha_desc') : 'ボット判定（Cloudflare Turnstile）の認証完了を待機しています。<br>画面の左下に表示されたチェックボックス（私は人間です）を手動でクリックして認証を完了させてください。<br>（認証完了後、自動的に提出処理が再開されます）';
+        const captchaDescHtml = i18nProvider
+          ? i18nProvider.t('editor_judge_captcha_desc')
+          : 'ボット判定（Cloudflare Turnstile）の認証完了を待機しています。<br>画面の左下に表示されたチェックボックス（私は人間です）を手動でクリックして認証を完了させてください。<br>（認証完了後、自動的に提出処理が再開されます）';
         consoleResults.innerHTML = `
           <div style="font-size: 12px; color: #333;">
             <div style="margin-bottom: 8px; color: #ff8c00; font-weight: bold;">⚠️ ${escapeHtml(e.data.message)}</div>
@@ -793,19 +803,29 @@ impl UnionFind {
         setButtonsDisabled(true); // Re-enable navigation if available because Phase 1 is done
 
         const turnstileMap = {
-          'force-rendered': i18nProvider ? i18nProvider.t('editor_turnstile_force_rendered') : '強制レンダリング起動',
-          'auto-rendered': i18nProvider ? i18nProvider.t('editor_turnstile_auto_rendered') : '自動レンダリング検出',
-          token_already_present: i18nProvider ? i18nProvider.t('editor_turnstile_token_present') : '既存トークン再利用',
+          'force-rendered': i18nProvider
+            ? i18nProvider.t('editor_turnstile_force_rendered')
+            : '強制レンダリング起動',
+          'auto-rendered': i18nProvider
+            ? i18nProvider.t('editor_turnstile_auto_rendered')
+            : '自動レンダリング検出',
+          token_already_present: i18nProvider
+            ? i18nProvider.t('editor_turnstile_token_present')
+            : '既存トークン再利用',
           no_container: i18nProvider ? i18nProvider.t('editor_turnstile_no_container') : '認証不要',
           implicit: i18nProvider ? i18nProvider.t('editor_turnstile_implicit') : '暗黙的ロード',
         };
         const turnstileText =
-          turnstileMap[e.data.turnstileDebug] || e.data.turnstileDebug || (i18nProvider ? i18nProvider.t('editor_turnstile_unknown') : '不明');
+          turnstileMap[e.data.turnstileDebug] ||
+          e.data.turnstileDebug ||
+          (i18nProvider ? i18nProvider.t('editor_turnstile_unknown') : '不明');
 
         const statusLabel = i18nProvider ? i18nProvider.t('editor_judge_status') : 'ステータス';
         const timeLabel = i18nProvider ? i18nProvider.t('editor_judge_time') : '実行時間';
         const memoryLabel = i18nProvider ? i18nProvider.t('editor_judge_memory') : 'メモリ';
-        const detailLinkLabel = i18nProvider ? i18nProvider.t('editor_judge_detail_link') : '提出詳細ページを開く';
+        const detailLinkLabel = i18nProvider
+          ? i18nProvider.t('editor_judge_detail_link')
+          : '提出詳細ページを開く';
 
         // Update Console Results
         consoleResults.innerHTML = `
@@ -821,7 +841,9 @@ impl UnionFind {
         `;
         consoleResults.scrollTop = consoleResults.scrollHeight;
 
-        testSummary.textContent = i18nProvider ? i18nProvider.t('editor_judge_running', [e.data.status]) : `ジャッジ中... (${e.data.status})`;
+        testSummary.textContent = i18nProvider
+          ? i18nProvider.t('editor_judge_running', [e.data.status])
+          : `ジャッジ中... (${e.data.status})`;
         testSummary.className = 'summary-running';
         break;
       }
@@ -833,29 +855,43 @@ impl UnionFind {
 
         const isAC = e.data.status === 'AC';
         if (isAC) {
-          testSummary.textContent = i18nProvider ? i18nProvider.t('editor_judge_complete', [e.data.status]) : `ジャッジ完了: ${e.data.status}`;
+          testSummary.textContent = i18nProvider
+            ? i18nProvider.t('editor_judge_complete', [e.data.status])
+            : `ジャッジ完了: ${e.data.status}`;
           testSummary.className = 'summary-ac';
           playChimeAC();
         } else {
-          testSummary.textContent = i18nProvider ? i18nProvider.t('editor_judge_complete', [e.data.status]) : `ジャッジ完了: ${e.data.status}`;
+          testSummary.textContent = i18nProvider
+            ? i18nProvider.t('editor_judge_complete', [e.data.status])
+            : `ジャッジ完了: ${e.data.status}`;
           testSummary.className = 'summary-wa';
           playBeepWA();
         }
 
         const turnstileMap = {
-          'force-rendered': i18nProvider ? i18nProvider.t('editor_turnstile_force_rendered') : '強制レンダリング起動',
-          'auto-rendered': i18nProvider ? i18nProvider.t('editor_turnstile_auto_rendered') : '自動レンダリング検出',
-          token_already_present: i18nProvider ? i18nProvider.t('editor_turnstile_token_present') : '既存トークン再利用',
+          'force-rendered': i18nProvider
+            ? i18nProvider.t('editor_turnstile_force_rendered')
+            : '強制レンダリング起動',
+          'auto-rendered': i18nProvider
+            ? i18nProvider.t('editor_turnstile_auto_rendered')
+            : '自動レンダリング検出',
+          token_already_present: i18nProvider
+            ? i18nProvider.t('editor_turnstile_token_present')
+            : '既存トークン再利用',
           no_container: i18nProvider ? i18nProvider.t('editor_turnstile_no_container') : '認証不要',
           implicit: i18nProvider ? i18nProvider.t('editor_turnstile_implicit') : '暗黙的ロード',
         };
         const turnstileText =
-          turnstileMap[e.data.turnstileDebug] || e.data.turnstileDebug || (i18nProvider ? i18nProvider.t('editor_turnstile_unknown') : '不明');
+          turnstileMap[e.data.turnstileDebug] ||
+          e.data.turnstileDebug ||
+          (i18nProvider ? i18nProvider.t('editor_turnstile_unknown') : '不明');
 
         const statusLabel = i18nProvider ? i18nProvider.t('editor_judge_status') : 'ステータス';
         const timeLabel = i18nProvider ? i18nProvider.t('editor_judge_time') : '実行時間';
         const memoryLabel = i18nProvider ? i18nProvider.t('editor_judge_memory') : 'メモリ';
-        const detailLinkLabel = i18nProvider ? i18nProvider.t('editor_judge_detail_link') : '提出詳細ページを開く';
+        const detailLinkLabel = i18nProvider
+          ? i18nProvider.t('editor_judge_detail_link')
+          : '提出詳細ページを開く';
 
         // Update Console Results
         const updateConsole = (celebrationHTML = '') => {
@@ -894,8 +930,16 @@ impl UnionFind {
 
         // Trigger Notification
         if (typeof chrome !== 'undefined' && chrome.notifications && chrome.notifications.create) {
-          const notificationTitle = i18nProvider ? i18nProvider.t('editor_notification_complete_title') : 'ジャッジ完了';
-          const notificationMessage = i18nProvider ? i18nProvider.t('editor_judge_result_summary', [e.data.status, e.data.time, e.data.memory]) : `結果: ${e.data.status} | 実行時間: ${e.data.time} | メモリ: ${e.data.memory}`;
+          const notificationTitle = i18nProvider
+            ? i18nProvider.t('editor_notification_complete_title')
+            : 'ジャッジ完了';
+          const notificationMessage = i18nProvider
+            ? i18nProvider.t('editor_judge_result_summary', [
+                e.data.status,
+                e.data.time,
+                e.data.memory,
+              ])
+            : `結果: ${e.data.status} | 実行時間: ${e.data.time} | メモリ: ${e.data.memory}`;
           chrome.notifications.create({
             type: 'basic',
             iconUrl:
@@ -949,13 +993,17 @@ impl UnionFind {
           setButtonsDisabled(true);
           toggleConsole(true);
 
-          testSummary.textContent = i18nProvider ? i18nProvider.t('editor_judge_running', [e.data.status]) : `ジャッジ中... (${e.data.status})`;
+          testSummary.textContent = i18nProvider
+            ? i18nProvider.t('editor_judge_running', [e.data.status])
+            : `ジャッジ中... (${e.data.status})`;
           testSummary.className = 'summary-running';
 
           const statusLabel = i18nProvider ? i18nProvider.t('editor_judge_status') : 'ステータス';
           const timeLabel = i18nProvider ? i18nProvider.t('editor_judge_time') : '実行時間';
           const memoryLabel = i18nProvider ? i18nProvider.t('editor_judge_memory') : 'メモリ';
-          const detailLinkLabel = i18nProvider ? i18nProvider.t('editor_judge_detail_link') : '提出詳細ページを開く';
+          const detailLinkLabel = i18nProvider
+            ? i18nProvider.t('editor_judge_detail_link')
+            : '提出詳細ページを開く';
 
           consoleResults.innerHTML = `
             <div style="font-size: 12px; color: #333;">
@@ -981,8 +1029,16 @@ impl UnionFind {
 
         // Trigger Notification
         if (typeof chrome !== 'undefined' && chrome.notifications && chrome.notifications.create) {
-          const notificationTitle = i18nProvider ? i18nProvider.t('editor_notification_complete_title') : 'ジャッジ完了';
-          const notificationMessage = i18nProvider ? i18nProvider.t('editor_judge_result_summary', [e.data.status, e.data.time, e.data.memory]) : `結果: ${e.data.status} | 実行時間: ${e.data.time} | メモリ: ${e.data.memory}`;
+          const notificationTitle = i18nProvider
+            ? i18nProvider.t('editor_notification_complete_title')
+            : 'ジャッジ完了';
+          const notificationMessage = i18nProvider
+            ? i18nProvider.t('editor_judge_result_summary', [
+                e.data.status,
+                e.data.time,
+                e.data.memory,
+              ])
+            : `結果: ${e.data.status} | 実行時間: ${e.data.time} | メモリ: ${e.data.memory}`;
           chrome.notifications.create({
             type: 'basic',
             iconUrl:
@@ -1011,13 +1067,17 @@ impl UnionFind {
           isSubmitPhase1 = false;
           setButtonsDisabled(false);
 
-          testSummary.textContent = i18nProvider ? i18nProvider.t('editor_judge_complete', [e.data.status]) : `ジャッジ完了: ${e.data.status}`;
+          testSummary.textContent = i18nProvider
+            ? i18nProvider.t('editor_judge_complete', [e.data.status])
+            : `ジャッジ完了: ${e.data.status}`;
           testSummary.className = isAC ? 'summary-ac' : 'summary-wa';
 
           const statusLabel = i18nProvider ? i18nProvider.t('editor_judge_status') : 'ステータス';
           const timeLabel = i18nProvider ? i18nProvider.t('editor_judge_time') : '実行時間';
           const memoryLabel = i18nProvider ? i18nProvider.t('editor_judge_memory') : 'メモリ';
-          const detailLinkLabel = i18nProvider ? i18nProvider.t('editor_judge_detail_link') : '提出詳細ページを開く';
+          const detailLinkLabel = i18nProvider
+            ? i18nProvider.t('editor_judge_detail_link')
+            : '提出詳細ページを開く';
 
           const updateConsole = (celebrationHTML = '') => {
             consoleResults.innerHTML = `
@@ -1094,7 +1154,9 @@ impl UnionFind {
         totalCount = e.data.total;
         caseStatuses = [];
 
-        testSummary.textContent = i18nProvider ? i18nProvider.t('editor_runner_running_cases', ['0', totalCount]) : `実行中... (0/${totalCount})`;
+        testSummary.textContent = i18nProvider
+          ? i18nProvider.t('editor_runner_running_cases', ['0', totalCount])
+          : `実行中... (0/${totalCount})`;
         testSummary.className = 'summary-running';
 
         consoleResults.innerHTML = '';
@@ -1151,8 +1213,12 @@ impl UnionFind {
           if (status === 'AC' || status === 'WA') {
             body.style.display = status === 'AC' ? 'none' : 'block';
             icon.textContent = status === 'AC' ? '▶' : '▼';
-            const expectedLabel = i18nProvider ? i18nProvider.t('editor_runner_expected') : '期待される出力';
-            const actualLabel = i18nProvider ? i18nProvider.t('editor_runner_actual') : '実際の出力';
+            const expectedLabel = i18nProvider
+              ? i18nProvider.t('editor_runner_expected')
+              : '期待される出力';
+            const actualLabel = i18nProvider
+              ? i18nProvider.t('editor_runner_actual')
+              : '実際の出力';
             bodyHtml = `
               <div class="case-io-grid">
                 <div class="case-io-block">
@@ -1170,18 +1236,30 @@ impl UnionFind {
             icon.textContent = '▼';
             const labelText =
               status === 'TLE'
-                ? (i18nProvider ? i18nProvider.t('editor_runner_timeout') : 'タイムアウト検出 (TLE):')
+                ? i18nProvider
+                  ? i18nProvider.t('editor_runner_timeout')
+                  : 'タイムアウト検出 (TLE):'
                 : status === 'MLE'
-                  ? (i18nProvider ? i18nProvider.t('editor_runner_mle') : 'メモリ制限超過 (MLE):')
-                  : (i18nProvider ? i18nProvider.t('editor_runner_stderr') : 'エラー詳細 (stderr):');
+                  ? i18nProvider
+                    ? i18nProvider.t('editor_runner_mle')
+                    : 'メモリ制限超過 (MLE):'
+                  : i18nProvider
+                    ? i18nProvider.t('editor_runner_stderr')
+                    : 'エラー詳細 (stderr):';
             const errMsg =
               e.data.stderr ||
               e.data.message ||
               (status === 'TLE'
-                ? (i18nProvider ? i18nProvider.t('editor_runner_timeout_desc') : '実行制限時間（TLE）を超過しました。')
+                ? i18nProvider
+                  ? i18nProvider.t('editor_runner_timeout_desc')
+                  : '実行制限時間（TLE）を超過しました。'
                 : status === 'MLE'
-                  ? (i18nProvider ? i18nProvider.t('editor_runner_mle_desc') : 'メモリ制限（MLE）を超過しました。')
-                  : (i18nProvider ? i18nProvider.t('editor_runner_error_desc') : 'エラーが発生しました。'));
+                  ? i18nProvider
+                    ? i18nProvider.t('editor_runner_mle_desc')
+                    : 'メモリ制限（MLE）を超過しました。'
+                  : i18nProvider
+                    ? i18nProvider.t('editor_runner_error_desc')
+                    : 'エラーが発生しました。');
             bodyHtml = `
               <div class="case-error-block">
                 <div class="case-io-label">${escapeHtml(labelText)}</div>
@@ -1200,7 +1278,9 @@ impl UnionFind {
           };
         }
 
-        testSummary.textContent = i18nProvider ? i18nProvider.t('editor_runner_running_cases', [resultsCount, totalCount]) : `実行中... (${resultsCount}/${totalCount})`;
+        testSummary.textContent = i18nProvider
+          ? i18nProvider.t('editor_runner_running_cases', [resultsCount, totalCount])
+          : `実行中... (${resultsCount}/${totalCount})`;
 
         // Auto-scroll to the bottom of the console results
         consoleResults.scrollTop = consoleResults.scrollHeight;
@@ -1212,7 +1292,9 @@ impl UnionFind {
         setButtonsDisabled(false);
 
         if (acCount === totalCount) {
-          testSummary.textContent = i18nProvider ? i18nProvider.t('editor_runner_all_ac', [acCount, totalCount]) : `すべてAC (${acCount}/${totalCount})`;
+          testSummary.textContent = i18nProvider
+            ? i18nProvider.t('editor_runner_all_ac', [acCount, totalCount])
+            : `すべてAC (${acCount}/${totalCount})`;
           testSummary.className = 'summary-ac';
         } else {
           // Priority of statuses to display in the overall summary
@@ -1232,7 +1314,9 @@ impl UnionFind {
             displayStatus = uniqueNonAcStatuses[0];
           }
 
-          testSummary.textContent = i18nProvider ? i18nProvider.t('editor_runner_non_ac', [displayStatus, acCount, totalCount]) : `${displayStatus}あり (${acCount}/${totalCount} AC)`;
+          testSummary.textContent = i18nProvider
+            ? i18nProvider.t('editor_runner_non_ac', [displayStatus, acCount, totalCount])
+            : `${displayStatus}あり (${acCount}/${totalCount} AC)`;
           testSummary.className = 'summary-wa';
         }
         break;
@@ -1264,10 +1348,10 @@ impl UnionFind {
       prevBtn.disabled = isSubmitPhase1 || isTesting ? true : false;
       prevBtn.onclick = () => {
         if (isTesting) {
-          const navWarnText = i18nProvider ? i18nProvider.t('editor_runner_nav_warn') : 'テスト実行中にページ遷移すると、テスト結果が失われます。本当に遷移しますか？';
-          if (
-            !confirm(navWarnText)
-          ) {
+          const navWarnText = i18nProvider
+            ? i18nProvider.t('editor_runner_nav_warn')
+            : 'テスト実行中にページ遷移すると、テスト結果が失われます。本当に遷移しますか？';
+          if (!confirm(navWarnText)) {
             return;
           }
         }
@@ -1282,10 +1366,10 @@ impl UnionFind {
       nextBtn.disabled = isSubmitPhase1 || isTesting ? true : false;
       nextBtn.onclick = () => {
         if (isTesting) {
-          const navWarnText = i18nProvider ? i18nProvider.t('editor_runner_nav_warn') : 'テスト実行中にページ遷移すると、テスト結果が失われます。本当に遷移しますか？';
-          if (
-            !confirm(navWarnText)
-          ) {
+          const navWarnText = i18nProvider
+            ? i18nProvider.t('editor_runner_nav_warn')
+            : 'テスト実行中にページ遷移すると、テスト結果が失われます。本当に遷移しますか？';
+          if (!confirm(navWarnText)) {
             return;
           }
         }
@@ -1538,16 +1622,26 @@ impl UnionFind {
   ) {
     const formattedProblem = problemId.toUpperCase().replace(contestId.toUpperCase() + '_', '');
     const titleText = i18nProvider ? i18nProvider.t('editor_ac_title') : 'AtCoderでACしました！ 🎉';
-    const taskText = i18nProvider ? i18nProvider.t('editor_ac_task', [`${contestId.toUpperCase()} - ${formattedProblem}`]) : `問題: ${contestId.toUpperCase()} - ${formattedProblem}`;
-    const langLabel = i18nProvider ? i18nProvider.t('editor_ac_lang', [langText]) : `言語: ${langText}`;
-    const timeLabel = time ? ('\n' + (i18nProvider ? i18nProvider.t('editor_ac_time', [time]) : `実行時間: ${time}`)) : '';
+    const taskText = i18nProvider
+      ? i18nProvider.t('editor_ac_task', [`${contestId.toUpperCase()} - ${formattedProblem}`])
+      : `問題: ${contestId.toUpperCase()} - ${formattedProblem}`;
+    const langLabel = i18nProvider
+      ? i18nProvider.t('editor_ac_lang', [langText])
+      : `言語: ${langText}`;
+    const timeLabel = time
+      ? '\n' + (i18nProvider ? i18nProvider.t('editor_ac_time', [time]) : `実行時間: ${time}`)
+      : '';
     const tweetText = `${titleText}\n${taskText}\n${langLabel}${timeLabel}\n\n#AtCoder #AtCoderWorkspace`;
     const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent('https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh?hl=ja')}`;
     const showReviewButton = acCount >= 5 && !isContestActive;
     const reviewUrl =
       'https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh/reviews?hl=ja';
-    const reviewBtnText = i18nProvider ? i18nProvider.t('editor_ac_btn_review') : 'Chrome Web Store で評価する';
-    const shareBtnText = i18nProvider ? i18nProvider.t('editor_ac_btn_share') : '結果をX (Twitter) でシェア';
+    const reviewBtnText = i18nProvider
+      ? i18nProvider.t('editor_ac_btn_review')
+      : 'Chrome Web Store で評価する';
+    const shareBtnText = i18nProvider
+      ? i18nProvider.t('editor_ac_btn_share')
+      : '結果をX (Twitter) でシェア';
 
     return `
       <div class="ac-action-buttons" style="margin-top: 8px;">
@@ -1772,7 +1866,9 @@ impl UnionFind {
       });
 
       if (filtered.length === 0) {
-        const emptyText = i18nProvider ? i18nProvider.t('editor_drawer_empty') : 'スニペットが見つかりません';
+        const emptyText = i18nProvider
+          ? i18nProvider.t('editor_drawer_empty')
+          : 'スニペットが見つかりません';
         snippetList.innerHTML = `<div style="text-align: center; color: #888; font-size: 11px; padding: 20px 0;">${escapeHtml(emptyText)}</div>`;
         return;
       }
@@ -1781,7 +1877,9 @@ impl UnionFind {
         const { title, desc } = getPresetTranslation(item);
         const card = document.createElement('div');
         card.className = 'snippet-card';
-        const customBadgeText = i18nProvider ? i18nProvider.t('editor_drawer_badge_custom') : '自作';
+        const customBadgeText = i18nProvider
+          ? i18nProvider.t('editor_drawer_badge_custom')
+          : '自作';
         const insertBtnText = i18nProvider ? i18nProvider.t('editor_drawer_insert_btn') : '挿入';
 
         card.innerHTML = `
@@ -1862,7 +1960,9 @@ impl UnionFind {
         const url = chrome.runtime.getURL('src/options/options.html#custom-snippets-section');
         window.open(url);
       } else {
-        const alertText = i18nProvider ? i18nProvider.t('editor_alert_settings_unavailable') : '設定画面は拡張機能として実行されている場合のみ利用可能です。';
+        const alertText = i18nProvider
+          ? i18nProvider.t('editor_alert_settings_unavailable')
+          : '設定画面は拡張機能として実行されている場合のみ利用可能です。';
         alert(alertText);
       }
     };
