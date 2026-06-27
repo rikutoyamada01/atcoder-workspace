@@ -71,8 +71,14 @@ describe('Runner Module Tests', () => {
     expect(global.fetch).toHaveBeenCalledTimes(1);
     expect(onIdle).not.toHaveBeenCalled();
 
-    // Advance timer by 1000ms to trigger setTimeout
-    jest.advanceTimersByTime(1000);
+    // Idle check interval is 300ms.
+    // Advance timer by 299ms: should not poll again.
+    jest.advanceTimersByTime(299);
+    await flushPromises();
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+
+    // Advance timer by 1ms (total 300ms): should trigger poll.
+    jest.advanceTimersByTime(1);
     await flushPromises();
 
     expect(global.fetch).toHaveBeenCalledTimes(2);
@@ -144,7 +150,14 @@ describe('Runner Module Tests', () => {
       message: 'CSRFトークンが見つかりません。',
     });
 
-    jest.advanceTimersByTime(1000); // Wait next case delay
+    // Next case delay is 50ms.
+    // Advance by 49ms: should not complete yet.
+    jest.advanceTimersByTime(49);
+    await flushPromises();
+    expect(onComplete).not.toHaveBeenCalled();
+
+    // Advance by 1ms (total 50ms): should complete.
+    jest.advanceTimersByTime(1);
     await flushPromises();
 
     expect(onComplete).toHaveBeenCalled();
@@ -206,7 +219,14 @@ describe('Runner Module Tests', () => {
       stderr: '',
     });
 
-    jest.advanceTimersByTime(1000); // Case completed delay
+    // Next case delay is 50ms.
+    // Advance by 49ms: should not complete yet.
+    jest.advanceTimersByTime(49);
+    await flushPromises();
+    expect(onComplete).not.toHaveBeenCalled();
+
+    // Advance by 1ms (total 50ms): should complete.
+    jest.advanceTimersByTime(1);
     await flushPromises();
 
     expect(onComplete).toHaveBeenCalled();
@@ -353,5 +373,111 @@ describe('Runner Module Tests', () => {
       status: 'TLE',
       message: 'TLE: 実行制限時間を超過しました (15秒)',
     });
+  });
+
+  test('pollResult schedules next poll with dynamic backoff depending on elapsed time', async () => {
+    const startTime = Date.now();
+    let nowMock = startTime;
+    jest.spyOn(Date, 'now').mockImplementation(() => nowMock);
+
+    // Mock fetch to return running status (Status 1) so it keeps polling
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ Result: { Status: 1 } }),
+    });
+
+    const resolve = jest.fn();
+    const reject = jest.fn();
+
+    // Poll 1 (at 0ms elapsed) -> schedules next for 200ms
+    runner.pollResult('abc100', resolve, reject, startTime);
+    await flushPromises();
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+
+    // Advance by 199ms: should not poll.
+    nowMock = startTime + 199;
+    jest.advanceTimersByTime(199);
+    await flushPromises();
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+
+    // Advance by 1ms (total 200ms): Poll 2 fires -> schedules next for 400ms
+    nowMock = startTime + 200;
+    jest.advanceTimersByTime(1);
+    await flushPromises();
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+
+    // Advance by 199ms: should not poll.
+    nowMock = startTime + 399;
+    jest.advanceTimersByTime(199);
+    await flushPromises();
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+
+    // Advance by 1ms (total 400ms): Poll 3 fires -> schedules next for 600ms
+    nowMock = startTime + 400;
+    jest.advanceTimersByTime(1);
+    await flushPromises();
+    expect(global.fetch).toHaveBeenCalledTimes(3);
+
+    // Advance to 600ms
+    nowMock = startTime + 600;
+    jest.advanceTimersByTime(200);
+    await flushPromises();
+    expect(global.fetch).toHaveBeenCalledTimes(4); // Poll 4 at 600ms, schedules next for 800ms
+
+    // Advance to 800ms
+    nowMock = startTime + 800;
+    jest.advanceTimersByTime(200);
+    await flushPromises();
+    expect(global.fetch).toHaveBeenCalledTimes(5); // Poll 5 at 800ms, schedules next for 1000ms
+
+    // Advance to 1000ms
+    nowMock = startTime + 1000;
+    jest.advanceTimersByTime(200);
+    await flushPromises();
+    expect(global.fetch).toHaveBeenCalledTimes(6); // Poll 6 at 1000ms, schedules next for 1500ms (elapsed >= 1000ms)
+
+    // Now polling interval is 500ms.
+    // Advance by 499ms: should not poll.
+    nowMock = startTime + 1499;
+    jest.advanceTimersByTime(499);
+    await flushPromises();
+    expect(global.fetch).toHaveBeenCalledTimes(6);
+
+    // Advance by 1ms (total 1500ms): Poll 7 fires -> schedules next for 2000ms
+    nowMock = startTime + 1500;
+    jest.advanceTimersByTime(1);
+    await flushPromises();
+    expect(global.fetch).toHaveBeenCalledTimes(7);
+
+    // Advance to 2000ms
+    nowMock = startTime + 2000;
+    jest.advanceTimersByTime(500);
+    await flushPromises();
+    expect(global.fetch).toHaveBeenCalledTimes(8); // Poll 8 at 2000ms, schedules next for 2500ms
+
+    // Advance to 2500ms
+    nowMock = startTime + 2500;
+    jest.advanceTimersByTime(500);
+    await flushPromises();
+    expect(global.fetch).toHaveBeenCalledTimes(9); // Poll 9 at 2500ms, schedules next for 3000ms
+
+    // Advance to 3000ms
+    nowMock = startTime + 3000;
+    jest.advanceTimersByTime(500);
+    await flushPromises();
+    expect(global.fetch).toHaveBeenCalledTimes(10); // Poll 10 at 3000ms, schedules next for 4000ms (elapsed >= 3000ms)
+
+    // Now polling interval is 1000ms.
+    // Advance by 999ms: should not poll.
+    nowMock = startTime + 3999;
+    jest.advanceTimersByTime(999);
+    await flushPromises();
+    expect(global.fetch).toHaveBeenCalledTimes(10);
+
+    // Advance by 1ms (total 4000ms): Poll 11 fires -> schedules next for 5000ms
+    nowMock = startTime + 4000;
+    jest.advanceTimersByTime(1);
+    await flushPromises();
+    expect(global.fetch).toHaveBeenCalledTimes(11);
   });
 });

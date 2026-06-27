@@ -1,0 +1,502 @@
+{
+  "extName": {
+    "message": "AtCoder Workspace"
+  },
+  "extDesc": {
+    "message": "AtCoderの問題ページ上にエディタを埋め込み、単一タブでコーディング・テスト・提出を完結させるワークスペース拡張"
+  },
+  "settings_title": {
+    "message": "AtCoder Workspace"
+  },
+  "settings_subtitle": {
+    "message": "Competitive Programming Workspace for AtCoder"
+  },
+  "settings_back": {
+    "message": "← 戻る / Back"
+  },
+  "settings_badge": {
+    "message": "設定"
+  },
+  "settings_general_title": {
+    "message": "一般設定 / General Settings"
+  },
+  "settings_general_lang_label": {
+    "message": "表示言語 / Display Language"
+  },
+  "settings_general_lang_desc": {
+    "message": "設定画面の表示言語を切り替えます。 / Change display language."
+  },
+  "settings_general_lang_auto": {
+    "message": "自動 (システム設定) / Auto"
+  },
+  "settings_general_lang_ja": {
+    "message": "日本語"
+  },
+  "settings_general_lang_en": {
+    "message": "English"
+  },
+  "settings_general_ratio_label": {
+    "message": "分割比率のデフォルト値"
+  },
+  "settings_general_ratio_desc": {
+    "message": "問題ページを開いた際のエディタと問題文の初期幅比率です。"
+  },
+  "settings_general_ratio_reset": {
+    "message": "デフォルトに戻す"
+  },
+  "settings_general_panelOpen_label": {
+    "message": "エディタをデフォルトで開く"
+  },
+  "settings_general_panelOpen_desc": {
+    "message": "問題ページに遷移した際、自動的にエディタを開いた状態にします。"
+  },
+  "settings_storage_title": {
+    "message": "データとストレージ / Data & Storage"
+  },
+  "settings_storage_cache_label": {
+    "message": "自動保存されたコードの履歴"
+  },
+  "settings_storage_cache_desc": {
+    "message": "ブラウザのローカル領域に保存されている提出コードや一時保存データの情報です。"
+  },
+  "settings_storage_cache_count": {
+    "message": "キャッシュ件数:"
+  },
+  "settings_storage_cache_clear": {
+    "message": "すべてのキャッシュデータを消去"
+  },
+  "settings_storage_cache_confirm": {
+    "message": "保存されているすべてのソースコード履歴を消去します。よろしいですか？\n(この操作は取り消せません)"
+  },
+  "settings_storage_cache_empty": {
+    "message": "削除するキャッシュデータはありません"
+  },
+  "settings_storage_cache_success": {
+    "message": "キャッシュデータをすべて削除しました"
+  },
+  "settings_template_title": {
+    "message": "テンプレート設定 / Template Settings"
+  },
+  "settings_template_lang_label": {
+    "message": "対象言語を選択"
+  },
+  "settings_template_lang_desc": {
+    "message": "テンプレートを設定するプログラミング言語を切り替えます。"
+  },
+  "settings_template_code_label": {
+    "message": "初期コードテンプレート"
+  },
+  "settings_template_code_desc": {
+    "message": "コードが未記述の問題ページを開いた際、自動的に挿入される初期コードです。"
+  },
+  "settings_template_code_placeholder": {
+    "message": "// ここにテンプレートコードを入力してください..."
+  },
+  "settings_template_reset": {
+    "message": "デフォルトに戻す"
+  },
+  "settings_template_save": {
+    "message": "テンプレートを保存"
+  },
+  "settings_template_toast_saved": {
+    "message": "テンプレートを保存しました"
+  },
+  "settings_template_toast_reset": {
+    "message": "デフォルトをロードしました（保存ボタンを押すと確定します）"
+  },
+  "settings_snippets_title": {
+    "message": "自作スニペット管理 / Custom Snippets"
+  },
+  "settings_snippets_label": {
+    "message": "登録済みのスニペット"
+  },
+  "settings_snippets_desc": {
+    "message": "エディタから呼び出せるオリジナルのコードスニペットです。"
+  },
+  "settings_snippets_add": {
+    "message": "+ 新規追加"
+  },
+  "settings_snippets_table_title": {
+    "message": "タイトル"
+  },
+  "settings_snippets_table_lang": {
+    "message": "言語"
+  },
+  "settings_snippets_table_tags": {
+    "message": "タグ"
+  },
+  "settings_snippets_table_actions": {
+    "message": "操作"
+  },
+  "settings_snippets_table_edit": {
+    "message": "編集"
+  },
+  "settings_snippets_table_delete": {
+    "message": "削除"
+  },
+  "settings_snippets_table_empty": {
+    "message": "登録されている自作スニペットはありません。"
+  },
+  "settings_snippets_form_addTitle": {
+    "message": "新規スニペット追加"
+  },
+  "settings_snippets_form_editTitle": {
+    "message": "スニペットを編集"
+  },
+  "settings_snippets_form_label_title": {
+    "message": "タイトル"
+  },
+  "settings_snippets_form_label_lang": {
+    "message": "対象言語"
+  },
+  "settings_snippets_form_label_desc": {
+    "message": "説明"
+  },
+  "settings_snippets_form_label_tags": {
+    "message": "タグ (カンマ区切り)"
+  },
+  "settings_snippets_form_label_code": {
+    "message": "ソースコード (プレースホルダー $1, $2 等を使用可能)"
+  },
+  "settings_snippets_form_placeholder_title": {
+    "message": "例: Segment Tree"
+  },
+  "settings_snippets_form_placeholder_desc": {
+    "message": "例: 1点更新・区間クエリ"
+  },
+  "settings_snippets_form_placeholder_tags": {
+    "message": "例: segtree, data-structure"
+  },
+  "settings_snippets_form_placeholder_code": {
+    "message": "// スニペットコードを入力してください..."
+  },
+  "settings_snippets_form_cancel": {
+    "message": "キャンセル"
+  },
+  "settings_snippets_form_save": {
+    "message": "保存"
+  },
+  "settings_snippets_form_toast_required": {
+    "message": "タイトルとソースコードは必須項目です"
+  },
+  "settings_snippets_form_toast_added": {
+    "message": "スニペットを追加しました"
+  },
+  "settings_snippets_form_toast_updated": {
+    "message": "スニペットを更新しました"
+  },
+  "settings_snippets_form_toast_deleted": {
+    "message": "スニペットを削除しました"
+  },
+  "settings_snippets_form_confirmDelete": {
+    "message": "スニペット「$1」を削除してもよろしいですか？"
+  },
+  "settings_support_title": {
+    "message": "❤️ 開発者を応援する / Support"
+  },
+  "settings_support_intro": {
+    "message": "AtCoder Workspace は個人でオープンソース開発しています。もし気に入っていただけましたら、応援いただけますと幸いです！"
+  },
+  "settings_support_acCount": {
+    "message": "🏆 あなたの累計AC数:"
+  },
+  "settings_support_acUnit": {
+    "message": "問"
+  },
+  "settings_support_storeReview": {
+    "message": "🌟 ストアで星5評価を送る"
+  },
+  "settings_support_feedback_bug": {
+    "message": "🐛 不具合を報告"
+  },
+  "settings_support_feedback_feature": {
+    "message": "💡 機能の提案"
+  },
+  "settings_info_title": {
+    "message": "この拡張機能について"
+  },
+  "settings_info_version": {
+    "message": "バージョン:"
+  },
+  "settings_info_license": {
+    "message": "ライセンス:"
+  },
+  "settings_info_dataTransmission": {
+    "message": "データ送信:"
+  },
+  "settings_info_dataTransmissionValue": {
+    "message": "送信なし (完全ローカル動作)"
+  },
+  "settings_links_title": {
+    "message": "関連リンク / Resources"
+  },
+  "settings_links_presentation": {
+    "message": "コンセプトプレゼンテーション"
+  },
+  "settings_links_roadmap": {
+    "message": "開発ロードマップ"
+  },
+  "settings_links_privacy": {
+    "message": "プライバシーポリシー"
+  },
+  "settings_links_github": {
+    "message": "GitHub リポジトリ"
+  },
+  "settings_toast_ratioSaved": {
+    "message": "分割比率を保存しました"
+  },
+  "settings_toast_ratioReset": {
+    "message": "分割比率をリセットしました"
+  },
+  "settings_toast_panelState": {
+    "message": "サイドパネルの初期状態を更新しました"
+  },
+  "editor_login_warning_title": {
+    "message": "AtCoderへのログインが必要です"
+  },
+  "editor_login_warning_desc": {
+    "message": "エディタでの実装、ローカルテスト、および提出機能を利用するには、AtCoderへのログインが必要です。"
+  },
+  "editor_login_warning_btn": {
+    "message": "ログイン画面を開く / Open Login"
+  },
+  "editor_login_warning_sub": {
+    "message": "※ログイン完了後、このページをリロード（再読み込み）してください。"
+  },
+  "editor_lang_warning_title": {
+    "message": "プログラミング言語を選択してください"
+  },
+  "editor_lang_warning_desc": {
+    "message": "実装を開始するには、右上のメニューからプログラミング言語を選択してください。<br>Please select a programming language from the top-right menu to start coding."
+  },
+  "editor_toolbar_prev": {
+    "message": "« 前"
+  },
+  "editor_toolbar_next": {
+    "message": "次 »"
+  },
+  "editor_toolbar_test": {
+    "message": "テスト実行"
+  },
+  "editor_toolbar_submit": {
+    "message": "提出"
+  },
+  "editor_toolbar_snippets": {
+    "message": "📝 スニペット"
+  },
+  "editor_toolbar_settings_title": {
+    "message": "設定を開く / Open Settings"
+  },
+  "editor_save_status_loading": {
+    "message": "読み込み中..."
+  },
+  "editor_save_status_saving": {
+    "message": "保存中..."
+  },
+  "editor_save_status_autosaved": {
+    "message": "自動保存"
+  },
+  "editor_save_status_error": {
+    "message": "保存エラー"
+  },
+  "editor_console_title": {
+    "message": "テスト結果"
+  },
+  "editor_console_slider_title": {
+    "message": "コンソール表示切り替え (Ctrl+J)"
+  },
+  "editor_judge_not_logged_in": {
+    "message": "未ログイン"
+  },
+  "editor_judge_submitting": {
+    "message": "提出中..."
+  },
+  "editor_judge_submitted": {
+    "message": "提出処理を開始しました..."
+  },
+  "editor_judge_waiting_bot": {
+    "message": "ボット認証の待機中..."
+  },
+  "editor_judge_running": {
+    "message": "ジャッジ中... ($1)"
+  },
+  "editor_judge_complete": {
+    "message": "ジャッジ完了: $1"
+  },
+  "editor_judge_result_summary": {
+    "message": "結果: $1 | 実行時間: $2 | メモリ: $3"
+  },
+  "editor_runner_running_cases": {
+    "message": "実行中... ($1/$2)"
+  },
+  "editor_runner_all_ac": {
+    "message": "すべてAC ($1/$2)"
+  },
+  "editor_runner_non_ac": {
+    "message": "$1あり ($2/$3 AC)"
+  },
+  "editor_runner_timeout": {
+    "message": "タイムアウト検出 (TLE):"
+  },
+  "editor_runner_mle": {
+    "message": "メモリ制限超過 (MLE):"
+  },
+  "editor_runner_stderr": {
+    "message": "エラー詳細 (stderr):"
+  },
+  "editor_runner_timeout_desc": {
+    "message": "実行制限時間（TLE）を超過しました。"
+  },
+  "editor_runner_mle_desc": {
+    "message": "メモリ制限（MLE）を超過しました。"
+  },
+  "editor_runner_error_desc": {
+    "message": "エラーが発生しました。"
+  },
+  "editor_runner_nav_warn": {
+    "message": "テスト実行中にページ遷移すると、テスト結果が失われます。本当に遷移しますか？"
+  },
+  "editor_presets_uf_desc": {
+    "message": "素集合データ構造。グループの併合と判定をほぼ定数時間で行います。"
+  },
+  "editor_presets_dijkstra_desc": {
+    "message": "負の辺がないグラフにおける単一始点最短経路アルゴリズム。O(E log V) で動作します。"
+  },
+  "editor_presets_binsearch_desc": {
+    "message": "条件を満たす境界値を O(log N) で見つけます。"
+  },
+  "editor_ac_title": {
+    "message": "AtCoderでACしました！ 🎉"
+  },
+  "editor_ac_task": {
+    "message": "問題: $1"
+  },
+  "editor_ac_lang": {
+    "message": "言語: $1"
+  },
+  "editor_ac_time": {
+    "message": "実行時間: $1"
+  },
+  "editor_ac_btn_review": {
+    "message": "Chrome Web Store で評価する"
+  },
+  "editor_ac_btn_share": {
+    "message": "結果をX (Twitter) でシェア"
+  },
+  "editor_drawer_manage_title": {
+    "message": "自作スニペットを追加・管理"
+  },
+  "editor_drawer_manage_btn": {
+    "message": "➕ 追加"
+  },
+  "editor_drawer_close_title": {
+    "message": "閉じる"
+  },
+  "editor_drawer_search_placeholder": {
+    "message": "スニペットを検索..."
+  },
+  "editor_drawer_empty": {
+    "message": "スニペットが見つかりません"
+  },
+  "editor_drawer_badge_custom": {
+    "message": "自作"
+  },
+  "editor_toolbar_prev_title": {
+    "message": "前の問題へ"
+  },
+  "editor_toolbar_next_title": {
+    "message": "次の問題へ"
+  },
+  "editor_toolbar_test_title": {
+    "message": "テスト実行"
+  },
+  "editor_toolbar_submit_title": {
+    "message": "提出"
+  },
+  "editor_toolbar_snippets_title": {
+    "message": "スニペット"
+  },
+  "editor_save_status_saved": {
+    "message": "保存済"
+  },
+  "editor_save_status_no_lang": {
+    "message": "言語未選択"
+  },
+  "editor_presets_uf_title": {
+    "message": "Union-Find (素集合データ構造)"
+  },
+  "editor_presets_dijkstra_title": {
+    "message": "Dijkstra (単一始点最短経路)"
+  },
+  "editor_presets_binsearch_title": {
+    "message": "二分探索 (Binary Search)"
+  },
+  "editor_console_preparing": {
+    "message": "準備中..."
+  },
+  "editor_console_preparing_submit": {
+    "message": "提出準備中..."
+  },
+  "editor_alert_settings_unavailable": {
+    "message": "設定画面は拡張機能として実行されている場合のみ利用可能です。"
+  },
+  "editor_turnstile_force_rendered": {
+    "message": "強制レンダリング起動"
+  },
+  "editor_turnstile_auto_rendered": {
+    "message": "自動レンダリング検出"
+  },
+  "editor_turnstile_token_present": {
+    "message": "既存トークン再利用"
+  },
+  "editor_turnstile_no_container": {
+    "message": "認証不要"
+  },
+  "editor_turnstile_implicit": {
+    "message": "暗黙的ロード"
+  },
+  "editor_turnstile_unknown": {
+    "message": "不明"
+  },
+  "editor_judge_status": {
+    "message": "ステータス"
+  },
+  "editor_judge_time": {
+    "message": "実行時間"
+  },
+  "editor_judge_memory": {
+    "message": "メモリ"
+  },
+  "editor_judge_detail_link": {
+    "message": "提出詳細ページを開く"
+  },
+  "editor_notification_complete_title": {
+    "message": "ジャッジ完了"
+  },
+  "editor_label_error": {
+    "message": "エラー"
+  },
+  "editor_runner_case": {
+    "message": "ケース"
+  },
+  "editor_runner_running": {
+    "message": "実行中"
+  },
+  "editor_runner_expected": {
+    "message": "期待される出力"
+  },
+  "editor_runner_actual": {
+    "message": "実際の出力"
+  },
+  "editor_language_no_info": {
+    "message": "言語情報なし"
+  },
+  "editor_drawer_insert_btn": {
+    "message": "挿入"
+  },
+  "editor_judge_captcha_desc": {
+    "message": "ボット判定（Cloudflare Turnstile）の認証完了を待機しています。<br>画面の左下に表示されたチェックボックス（私は人間です）を手動でクリックして認証を完了させてください。<br>（認証完了後、自動的に提出処理が再開されます）"
+  }
+}
+
+

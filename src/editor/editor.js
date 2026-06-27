@@ -1,3 +1,5 @@
+/* global i18n */
+
 (function () {
   'use strict';
 
@@ -22,6 +24,339 @@
   const consolePanel = document.getElementById('console-panel');
   const consoleResults = document.getElementById('console-results');
   const settingsBtn = document.getElementById('settings-btn');
+
+  // Snippets Drawer Elements
+  const snippetsBtn = document.getElementById('snippets-btn');
+  const snippetsDrawer = document.getElementById('snippets-drawer');
+  const closeDrawerBtn = document.getElementById('close-drawer-btn');
+  const snippetSearch = document.getElementById('snippet-search');
+  const snippetList = document.getElementById('snippet-list');
+  const manageSnippetsBtn = document.getElementById('manage-snippets-btn');
+
+  // i18n initialization
+  let i18nProvider = null;
+  if (typeof i18n !== 'undefined' && i18n.I18nProvider) {
+    i18nProvider = new i18n.I18nProvider();
+  }
+
+  let currentSaveStatusState = 'loading'; // 'loading', 'saving', 'saved', 'no-lang', 'not-logged-in', 'error'
+
+  function updateSaveStatusText() {
+    if (!saveStatus) return;
+    if (!i18nProvider) return;
+
+    switch (currentSaveStatusState) {
+      case 'loading':
+        saveStatus.textContent = i18nProvider.t('editor_save_status_loading') || '読み込み中...';
+        break;
+      case 'saving':
+        saveStatus.textContent = i18nProvider.t('editor_save_status_saving') || '変更中...';
+        break;
+      case 'saved':
+        saveStatus.textContent = i18nProvider.t('editor_save_status_saved') || '保存済';
+        break;
+      case 'no-lang':
+        saveStatus.textContent = i18nProvider.t('editor_save_status_no_lang') || '言語未選択';
+        break;
+      case 'not-logged-in':
+        saveStatus.textContent = i18nProvider.t('editor_judge_not_logged_in') || '未ログイン';
+        break;
+      case 'error':
+        saveStatus.textContent = i18nProvider.t('editor_save_status_error') || '保存エラー';
+        break;
+    }
+  }
+
+  function setSaveStatus(state) {
+    currentSaveStatusState = state;
+    updateSaveStatusText();
+  }
+
+  function applyTranslations() {
+    if (i18nProvider && typeof i18n !== 'undefined' && i18n.translatePage) {
+      i18n.translatePage(i18nProvider);
+    }
+    updateSaveStatusText();
+    updateEditorLanguageState();
+  }
+
+  async function initI18n() {
+    if (i18nProvider) {
+      await i18nProvider.init();
+      applyTranslations();
+    }
+  }
+
+  // Run initial translation
+  initI18n();
+
+  // Listen for storage changes to sync language setting live
+  if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged) {
+    chrome.storage.onChanged.addListener(async (changes, areaName) => {
+      if (areaName === 'local' && changes['settings:display_language']) {
+        if (i18nProvider) {
+          await i18nProvider.init();
+          applyTranslations();
+          // Update snippets list if drawer is open
+          if (snippetsDrawer && snippetsDrawer.style.display !== 'none') {
+            renderSnippets();
+          }
+        }
+      }
+    });
+  }
+
+  // Default templates configuration
+  const DEFAULT_TEMPLATES = {
+    cpp: `#include <bits/stdc++.h>
+using namespace std;
+using ll = long long;
+#define rep(i, n) for (int i = 0; i < (int)(n); i++)
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    return 0;
+}`,
+    python: `import sys
+
+def main():
+    input = sys.stdin.read
+    # write code here
+    pass
+
+if __name__ == '__main__':
+    main()`,
+    rust: `use proconio::input;
+
+fn main() {
+    input! {
+        // input variables
+    }
+}`,
+    java: `import java.util.*;
+import java.io.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        // write code here
+    }
+}`,
+    go: `package main
+
+import (
+	"bufio"
+	"fmt"
+	"os"
+)
+
+func main() {
+	reader := bufio.NewReader(os.Stdin)
+	writer := bufio.NewWriter(os.Stdout)
+	defer writer.Flush()
+	// write code here
+}`,
+  };
+
+  // Preset snippets database
+  const PRESET_SNIPPETS = {
+    cpp: [
+      {
+        title: 'Union-Find (Disjoint Set Union)',
+        tags: ['dsu', 'tree', 'graph'],
+        desc: '素集合データ構造。グループの併合と判定をほぼ定数時間で行います。',
+        code: `struct UnionFind {
+    vector<int> par, siz;
+    UnionFind(int n) : par(n, -1), siz(n, 1) { }
+    int root(int x) {
+        if (par[x] == -1) return x;
+        return par[x] = root(par[x]);
+    }
+    bool issame(int x, int y) {
+        return root(x) == root(y);
+    }
+    bool unite(int x, int y) {
+        int rx = root(x), ry = root(y);
+        if (rx == ry) return false;
+        if (siz[rx] < siz[ry]) swap(rx, ry);
+        par[ry] = rx;
+        siz[rx] += siz[ry];
+        return true;
+    }
+    int size(int x) {
+        return siz[root(x)];
+    }
+};`,
+      },
+      {
+        title: 'Dijkstra (単一始点最短経路)',
+        tags: ['graph', 'shortest-path'],
+        desc: '負の辺がないグラフにおける単一始点最短経路アルゴリズム。O(E log V) で動作します。',
+        code: `struct Edge {
+    int to;
+    long long cost;
+};
+using Graph = vector<vector<Edge>>;
+const long long INF = 1LL << 60;
+
+vector<long long> dijkstra(const Graph &G, int s) {
+    vector<long long> dist(G.size(), INF);
+    dist[s] = 0;
+    using P = pair<long long, int>; // {cost, vertex}
+    priority_queue<P, vector<P>, greater<P>> que;
+    que.push({0, s});
+    while (!que.empty()) {
+        auto [d, v] = que.top();
+        que.pop();
+        if (dist[v] < d) continue;
+        for (auto e : G[v]) {
+            if (dist[e.to] > dist[v] + e.cost) {
+                dist[e.to] = dist[v] + e.cost;
+                que.push({dist[e.to], e.to});
+            }
+        }
+    }
+    return dist;
+}`,
+      },
+      {
+        title: '二分探索 (Binary Search)',
+        tags: ['search', 'binary-search'],
+        desc: '条件を満たす境界値を O(log N) で見つけます。',
+        code: `auto solve_binary_search = [&](long long ok, long long ng) {
+    auto is_ok = [&](long long mid) {
+        // 条件を満たすかどうかを返す
+        return \${1:true};
+    };
+    while (abs(ok - ng) > 1) {
+        long long mid = (ok + ng) / 2;
+        if (is_ok(mid)) ok = mid;
+        else ng = mid;
+    }
+    return ok;
+};`,
+      },
+    ],
+    python: [
+      {
+        title: 'Union-Find (Disjoint Set Union)',
+        tags: ['dsu', 'tree', 'graph'],
+        desc: '素集合データ構造。グループの併合と判定をほぼ定数時間で行います。',
+        code: `class UnionFind:
+    def __init__(self, n):
+        self.n = n
+        self.parents = [-1] * n
+
+    def find(self, x):
+        if self.parents[x] < 0:
+            return x
+        else:
+            self.parents[x] = self.find(self.parents[x])
+            return self.parents[x]
+
+    def union(self, x, y):
+        x = self.find(x)
+        y = self.find(y)
+        if x == y:
+            return False
+        if self.parents[x] > self.parents[y]:
+            x, y = y, x
+        self.parents[x] += self.parents[y]
+        self.parents[y] = x
+        return True
+
+    def size(self, x):
+        return -self.parents[self.find(x)]
+
+    def same(self, x, y):
+        return self.find(x) == self.find(y)`,
+      },
+      {
+        title: 'Dijkstra (単一始点最短経路)',
+        tags: ['graph', 'shortest-path'],
+        desc: '負の辺がないグラフにおける単一始点最短経路アルゴリズム。',
+        code: `import heapq
+
+def dijkstra(G, start):
+    INF = float('inf')
+    dist = [INF] * len(G)
+    dist[start] = 0
+    que = [(0, start)] # (cost, vertex)
+    while que:
+        d, v = heapq.heappop(que)
+        if dist[v] < d:
+            continue
+        for to, cost in G[v]:
+            if dist[to] > dist[v] + cost:
+                dist[to] = dist[v] + cost
+                heapq.heappush(que, (dist[to], to))
+    return dist`,
+      },
+      {
+        title: '二分探索 (Binary Search)',
+        tags: ['search', 'binary-search'],
+        desc: '条件を満たす境界値を O(log N) で見つけます。',
+        code: `def solve_binary_search(ok, ng):
+    def is_ok(mid):
+        # 条件を満たすかどうかを返す
+        return \${1:True}
+    
+    while abs(ok - ng) > 1:
+        mid = (ok + ng) // 2
+        if is_ok(mid):
+            ok = mid
+        else:
+            ng = mid
+    return ok`,
+      },
+    ],
+    rust: [
+      {
+        title: 'Union-Find (Disjoint Set Union)',
+        tags: ['dsu', 'tree', 'graph'],
+        desc: '素集合データ構造。グループの併合と判定をほぼ定数時間で行います。',
+        code: `struct UnionFind {
+    parent: Vec<isize>,
+}
+
+impl UnionFind {
+    fn new(n: usize) -> Self {
+        UnionFind { parent: vec![-1; n] }
+    }
+    fn root(&mut self, x: usize) -> usize {
+        if self.parent[x] < 0 {
+            x
+        } else {
+            self.parent[x] = self.root(self.parent[x] as usize) as isize;
+            self.parent[x] as usize
+        }
+    }
+    fn issame(&mut self, x: usize, y: usize) -> bool {
+        self.root(x) == self.root(y)
+    }
+    fn unite(&mut self, x: usize, y: usize) -> bool {
+        let mut rx = self.root(x);
+        let mut ry = self.root(y);
+        if rx == ry {
+            return false;
+        }
+        if self.parent[rx] > self.parent[ry] {
+            std::mem::swap(&mut rx, &mut ry);
+        }
+        self.parent[rx] += self.parent[ry];
+        self.parent[ry] = rx as isize;
+        true
+    }
+    fn size(&mut self, x: usize) -> usize {
+        let r = self.root(x);
+        (-self.parent[r]) as usize
+    }
+}`,
+      },
+    ],
+  };
 
   let isTesting = false;
   let isSubmitting = false;
@@ -250,7 +585,8 @@
 
     // Open console drawer
     toggleConsole(true);
-    consoleResults.innerHTML = '<div style="font-size: 12px; color: #777;">準備中...</div>';
+    const prepText = i18nProvider ? i18nProvider.t('editor_console_preparing') : '準備中...';
+    consoleResults.innerHTML = `<div style="font-size: 12px; color: #777;">${escapeHtml(prepText)}</div>`;
 
     console.log('[AtCoder Workspace] Editor: Sending run-tests message to parent', {
       languageId: currentLanguageId,
@@ -273,7 +609,10 @@
 
     // Open console drawer
     toggleConsole(true);
-    consoleResults.innerHTML = '<div style="font-size: 12px; color: #777;">提出準備中...</div>';
+    const prepSubmitText = i18nProvider
+      ? i18nProvider.t('editor_console_preparing_submit')
+      : '提出準備中...';
+    consoleResults.innerHTML = `<div style="font-size: 12px; color: #777;">${escapeHtml(prepSubmitText)}</div>`;
 
     console.log('[AtCoder Workspace] Editor: Sending submit-code message to parent', {
       languageId: currentLanguageId,
@@ -292,10 +631,15 @@
 
   if (settingsBtn) {
     settingsBtn.onclick = () => {
-      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.openOptionsPage) {
-        chrome.runtime.openOptionsPage();
+      console.log('[AtCoder Workspace] Editor: Settings button clicked');
+      if (typeof chrome !== 'undefined' && chrome.runtime) {
+        const url = chrome.runtime.getURL('src/options/options.html');
+        window.open(url);
       } else {
-        alert('設定画面は拡張機能として実行されている場合のみ利用可能です。');
+        const alertText = i18nProvider
+          ? i18nProvider.t('editor_alert_settings_unavailable')
+          : '設定画面は拡張機能として実行されている場合のみ利用可能です。';
+        alert(alertText);
       }
     };
   }
@@ -374,7 +718,7 @@
             editorContainer.style.display = 'none';
           }
           setButtonsDisabled(true);
-          saveStatus.textContent = '未ログイン';
+          setSaveStatus('not-logged-in');
         } else {
           if (loginWarning) {
             loginWarning.style.display = 'none';
@@ -416,64 +760,90 @@
         toggleConsole();
         break;
 
-      case 'submit-start':
+      case 'submit-start': {
         isSubmitting = true;
         isSubmitPhase1 = true;
         setButtonsDisabled(true);
         toggleConsole(true);
 
-        testSummary.textContent = '提出中...';
+        testSummary.textContent = i18nProvider
+          ? i18nProvider.t('editor_judge_submitting')
+          : '提出中...';
         testSummary.className = 'summary-running';
 
-        consoleResults.innerHTML =
-          '<div style="font-size: 12px; color: #777;">提出処理を開始しました...</div>';
+        const submitStartedText = i18nProvider
+          ? i18nProvider.t('editor_judge_submitted')
+          : '提出処理を開始しました...';
+        consoleResults.innerHTML = `<div style="font-size: 12px; color: #777;">${escapeHtml(submitStartedText)}</div>`;
         break;
+      }
 
-      case 'submit-captcha-waiting':
-        testSummary.textContent = 'ボット認証の待機中...';
+      case 'submit-captcha-waiting': {
+        testSummary.textContent = i18nProvider
+          ? i18nProvider.t('editor_judge_waiting_bot')
+          : 'ボット認証の待機中...';
         testSummary.className = 'summary-running';
 
+        const captchaDescHtml = i18nProvider
+          ? i18nProvider.t('editor_judge_captcha_desc')
+          : 'ボット判定（Cloudflare Turnstile）の認証完了を待機しています。<br>画面の左下に表示されたチェックボックス（私は人間です）を手動でクリックして認証を完了させてください。<br>（認証完了後、自動的に提出処理が再開されます）';
         consoleResults.innerHTML = `
           <div style="font-size: 12px; color: #333;">
             <div style="margin-bottom: 8px; color: #ff8c00; font-weight: bold;">⚠️ ${escapeHtml(e.data.message)}</div>
             <div style="line-height: 1.6;">
-              ボット判定（Cloudflare Turnstile）の認証完了を待機しています。<br>
-              画面の左下に表示されたチェックボックス（私は人間です）を手動でクリックして認証を完了させてください。<br>
-              （認証完了後、自動的に提出処理が再開されます）
+              ${captchaDescHtml}
             </div>
           </div>
         `;
         break;
+      }
 
       case 'submit-status': {
         isSubmitPhase1 = false;
         setButtonsDisabled(true); // Re-enable navigation if available because Phase 1 is done
 
         const turnstileMap = {
-          'force-rendered': '強制レンダリング起動',
-          'auto-rendered': '自動レンダリング検出',
-          token_already_present: '既存トークン再利用',
-          no_container: '認証不要',
-          implicit: '暗黙的ロード',
+          'force-rendered': i18nProvider
+            ? i18nProvider.t('editor_turnstile_force_rendered')
+            : '強制レンダリング起動',
+          'auto-rendered': i18nProvider
+            ? i18nProvider.t('editor_turnstile_auto_rendered')
+            : '自動レンダリング検出',
+          token_already_present: i18nProvider
+            ? i18nProvider.t('editor_turnstile_token_present')
+            : '既存トークン再利用',
+          no_container: i18nProvider ? i18nProvider.t('editor_turnstile_no_container') : '認証不要',
+          implicit: i18nProvider ? i18nProvider.t('editor_turnstile_implicit') : '暗黙的ロード',
         };
         const turnstileText =
-          turnstileMap[e.data.turnstileDebug] || e.data.turnstileDebug || '不明';
+          turnstileMap[e.data.turnstileDebug] ||
+          e.data.turnstileDebug ||
+          (i18nProvider ? i18nProvider.t('editor_turnstile_unknown') : '不明');
+
+        const statusLabel = i18nProvider ? i18nProvider.t('editor_judge_status') : 'ステータス';
+        const timeLabel = i18nProvider ? i18nProvider.t('editor_judge_time') : '実行時間';
+        const memoryLabel = i18nProvider ? i18nProvider.t('editor_judge_memory') : 'メモリ';
+        const detailLinkLabel = i18nProvider
+          ? i18nProvider.t('editor_judge_detail_link')
+          : '提出詳細ページを開く';
 
         // Update Console Results
         consoleResults.innerHTML = `
           <div style="font-size: 12px; color: #333;">
-            <div style="margin-bottom: 8px;">ステータス: <span class="case-status status-running">${escapeHtml(e.data.status)}</span></div>
-            <div style="margin-bottom: 4px;">実行時間: ${escapeHtml(e.data.time)}</div>
-            <div style="margin-bottom: 4px;">メモリ: ${escapeHtml(e.data.memory)}</div>
+            <div style="margin-bottom: 8px;">${escapeHtml(statusLabel)}: <span class="case-status status-running">${escapeHtml(e.data.status)}</span></div>
+            <div style="margin-bottom: 4px;">${escapeHtml(timeLabel)}: ${escapeHtml(e.data.time)}</div>
+            <div style="margin-bottom: 4px;">${escapeHtml(memoryLabel)}: ${escapeHtml(e.data.memory)}</div>
             <div style="margin-bottom: 8px; color: #888; font-size: 11px;">[Debug] Turnstile: ${escapeHtml(turnstileText)}</div>
             <div>
-              <a href="https://atcoder.jp/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">提出詳細ページを開く (ID: ${e.data.submissionId})</a>
+              <a href="https://atcoder.jp/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">${escapeHtml(detailLinkLabel)} (ID: ${e.data.submissionId})</a>
             </div>
           </div>
         `;
         consoleResults.scrollTop = consoleResults.scrollHeight;
 
-        testSummary.textContent = `ジャッジ中... (${e.data.status})`;
+        testSummary.textContent = i18nProvider
+          ? i18nProvider.t('editor_judge_running', [e.data.status])
+          : `ジャッジ中... (${e.data.status})`;
         testSummary.className = 'summary-running';
         break;
       }
@@ -485,47 +855,97 @@
 
         const isAC = e.data.status === 'AC';
         if (isAC) {
-          testSummary.textContent = `ジャッジ完了: ${e.data.status}`;
+          testSummary.textContent = i18nProvider
+            ? i18nProvider.t('editor_judge_complete', [e.data.status])
+            : `ジャッジ完了: ${e.data.status}`;
           testSummary.className = 'summary-ac';
           playChimeAC();
         } else {
-          testSummary.textContent = `ジャッジ完了: ${e.data.status}`;
+          testSummary.textContent = i18nProvider
+            ? i18nProvider.t('editor_judge_complete', [e.data.status])
+            : `ジャッジ完了: ${e.data.status}`;
           testSummary.className = 'summary-wa';
           playBeepWA();
         }
 
         const turnstileMap = {
-          'force-rendered': '強制レンダリング起動',
-          'auto-rendered': '自動レンダリング検出',
-          token_already_present: '既存トークン再利用',
-          no_container: '認証不要',
-          implicit: '暗黙的ロード',
+          'force-rendered': i18nProvider
+            ? i18nProvider.t('editor_turnstile_force_rendered')
+            : '強制レンダリング起動',
+          'auto-rendered': i18nProvider
+            ? i18nProvider.t('editor_turnstile_auto_rendered')
+            : '自動レンダリング検出',
+          token_already_present: i18nProvider
+            ? i18nProvider.t('editor_turnstile_token_present')
+            : '既存トークン再利用',
+          no_container: i18nProvider ? i18nProvider.t('editor_turnstile_no_container') : '認証不要',
+          implicit: i18nProvider ? i18nProvider.t('editor_turnstile_implicit') : '暗黙的ロード',
         };
         const turnstileText =
-          turnstileMap[e.data.turnstileDebug] || e.data.turnstileDebug || '不明';
+          turnstileMap[e.data.turnstileDebug] ||
+          e.data.turnstileDebug ||
+          (i18nProvider ? i18nProvider.t('editor_turnstile_unknown') : '不明');
+
+        const statusLabel = i18nProvider ? i18nProvider.t('editor_judge_status') : 'ステータス';
+        const timeLabel = i18nProvider ? i18nProvider.t('editor_judge_time') : '実行時間';
+        const memoryLabel = i18nProvider ? i18nProvider.t('editor_judge_memory') : 'メモリ';
+        const detailLinkLabel = i18nProvider
+          ? i18nProvider.t('editor_judge_detail_link')
+          : '提出詳細ページを開く';
 
         // Update Console Results
-        consoleResults.innerHTML = `
-          <div style="font-size: 12px; color: #333;">
-            <div style="margin-bottom: 8px;">ステータス: <span class="case-status status-${e.data.status.toLowerCase()}">${escapeHtml(e.data.status)}</span></div>
-            <div style="margin-bottom: 4px;">実行時間: ${escapeHtml(e.data.time)}</div>
-            <div style="margin-bottom: 4px;">メモリ: ${escapeHtml(e.data.memory)}</div>
-            <div style="margin-bottom: 8px; color: #888; font-size: 11px;">[Debug] Turnstile: ${escapeHtml(turnstileText)}</div>
-            <div>
-              <a href="https://atcoder.jp/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">提出詳細ページを開く (ID: ${e.data.submissionId})</a>
+        const updateConsole = (celebrationHTML = '') => {
+          consoleResults.innerHTML = `
+            <div style="font-size: 12px; color: #333;">
+              <div style="margin-bottom: 8px;">${escapeHtml(statusLabel)}: <span class="case-status status-${e.data.status.toLowerCase()}">${escapeHtml(e.data.status)}</span></div>
+              <div style="margin-bottom: 4px;">${escapeHtml(timeLabel)}: ${escapeHtml(e.data.time)}</div>
+              <div style="margin-bottom: 4px;">${escapeHtml(memoryLabel)}: ${escapeHtml(e.data.memory)}</div>
+              <div style="margin-bottom: 8px; color: #888; font-size: 11px;">[Debug] Turnstile: ${escapeHtml(turnstileText)}</div>
+              <div>
+                <a href="https://atcoder.jp/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">${escapeHtml(detailLinkLabel)} (ID: ${e.data.submissionId})</a>
+              </div>
+              ${celebrationHTML}
             </div>
-          </div>
-        `;
-        consoleResults.scrollTop = consoleResults.scrollHeight;
+          `;
+          consoleResults.scrollTop = consoleResults.scrollHeight;
+        };
+
+        if (isAC) {
+          handleACStats(contestId, problemId, (acCount) => {
+            const selectedOption = langSelect.options[langSelect.selectedIndex];
+            const langText = selectedOption ? selectedOption.textContent.trim() : '';
+            const celebrationHTML = generateACCelebrationHTML(
+              contestId,
+              problemId,
+              e.data.isContestActive,
+              acCount,
+              langText,
+              e.data.time
+            );
+            updateConsole(celebrationHTML);
+          });
+        } else {
+          updateConsole();
+        }
 
         // Trigger Notification
         if (typeof chrome !== 'undefined' && chrome.notifications && chrome.notifications.create) {
+          const notificationTitle = i18nProvider
+            ? i18nProvider.t('editor_notification_complete_title')
+            : 'ジャッジ完了';
+          const notificationMessage = i18nProvider
+            ? i18nProvider.t('editor_judge_result_summary', [
+                e.data.status,
+                e.data.time,
+                e.data.memory,
+              ])
+            : `結果: ${e.data.status} | 実行時間: ${e.data.time} | メモリ: ${e.data.memory}`;
           chrome.notifications.create({
             type: 'basic',
             iconUrl:
               'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
-            title: `ジャッジ完了 (${problemId})`,
-            message: `結果: ${e.data.status} | 実行時間: ${e.data.time} | メモリ: ${e.data.memory}`,
+            title: `${notificationTitle} (${problemId})`,
+            message: notificationMessage,
             priority: 1,
           });
         }
@@ -547,22 +967,24 @@
         break;
       }
 
-      case 'submit-error':
+      case 'submit-error': {
         isSubmitting = false;
         isSubmitPhase1 = false;
         setButtonsDisabled(false);
 
-        testSummary.textContent = `エラー: ${e.data.message}`;
+        const errorLabel = i18nProvider ? i18nProvider.t('editor_label_error') : 'エラー';
+        testSummary.textContent = `${errorLabel}: ${e.data.message}`;
         testSummary.className = 'summary-wa';
 
         consoleResults.innerHTML = `
           <div class="case-error-block">
-            <div class="case-io-label">エラー:</div>
+            <div class="case-io-label">${escapeHtml(errorLabel)}:</div>
             <pre class="case-error-content">${escapeHtml(e.data.message)}</pre>
           </div>
         `;
         consoleResults.scrollTop = consoleResults.scrollHeight;
         break;
+      }
 
       case 'pending-submit-status':
         if (e.data.problemId === problemId) {
@@ -571,16 +993,25 @@
           setButtonsDisabled(true);
           toggleConsole(true);
 
-          testSummary.textContent = `ジャッジ中... (${e.data.status})`;
+          testSummary.textContent = i18nProvider
+            ? i18nProvider.t('editor_judge_running', [e.data.status])
+            : `ジャッジ中... (${e.data.status})`;
           testSummary.className = 'summary-running';
+
+          const statusLabel = i18nProvider ? i18nProvider.t('editor_judge_status') : 'ステータス';
+          const timeLabel = i18nProvider ? i18nProvider.t('editor_judge_time') : '実行時間';
+          const memoryLabel = i18nProvider ? i18nProvider.t('editor_judge_memory') : 'メモリ';
+          const detailLinkLabel = i18nProvider
+            ? i18nProvider.t('editor_judge_detail_link')
+            : '提出詳細ページを開く';
 
           consoleResults.innerHTML = `
             <div style="font-size: 12px; color: #333;">
-              <div style="margin-bottom: 8px;">ステータス: <span class="case-status status-running">${escapeHtml(e.data.status)}</span></div>
-              <div style="margin-bottom: 4px;">実行時間: ${escapeHtml(e.data.time)}</div>
-              <div style="margin-bottom: 8px;">メモリ: ${escapeHtml(e.data.memory)}</div>
+              <div style="margin-bottom: 8px;">${escapeHtml(statusLabel)}: <span class="case-status status-running">${escapeHtml(e.data.status)}</span></div>
+              <div style="margin-bottom: 4px;">${escapeHtml(timeLabel)}: ${escapeHtml(e.data.time)}</div>
+              <div style="margin-bottom: 8px;">${escapeHtml(memoryLabel)}: ${escapeHtml(e.data.memory)}</div>
               <div>
-                <a href="https://atcoder.jp/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">提出詳細ページを開く (ID: ${e.data.submissionId})</a>
+                <a href="https://atcoder.jp/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">${escapeHtml(detailLinkLabel)} (ID: ${e.data.submissionId})</a>
               </div>
             </div>
           `;
@@ -598,12 +1029,22 @@
 
         // Trigger Notification
         if (typeof chrome !== 'undefined' && chrome.notifications && chrome.notifications.create) {
+          const notificationTitle = i18nProvider
+            ? i18nProvider.t('editor_notification_complete_title')
+            : 'ジャッジ完了';
+          const notificationMessage = i18nProvider
+            ? i18nProvider.t('editor_judge_result_summary', [
+                e.data.status,
+                e.data.time,
+                e.data.memory,
+              ])
+            : `結果: ${e.data.status} | 実行時間: ${e.data.time} | メモリ: ${e.data.memory}`;
           chrome.notifications.create({
             type: 'basic',
             iconUrl:
               'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
-            title: `ジャッジ完了 (${e.data.problemId})`,
-            message: `結果: ${e.data.status} | 実行時間: ${e.data.time} | メモリ: ${e.data.memory}`,
+            title: `${notificationTitle} (${e.data.problemId})`,
+            message: notificationMessage,
             priority: 1,
           });
         }
@@ -626,20 +1067,79 @@
           isSubmitPhase1 = false;
           setButtonsDisabled(false);
 
-          testSummary.textContent = `ジャッジ完了: ${e.data.status}`;
+          testSummary.textContent = i18nProvider
+            ? i18nProvider.t('editor_judge_complete', [e.data.status])
+            : `ジャッジ完了: ${e.data.status}`;
           testSummary.className = isAC ? 'summary-ac' : 'summary-wa';
 
-          consoleResults.innerHTML = `
-            <div style="font-size: 12px; color: #333;">
-              <div style="margin-bottom: 8px;">ステータス: <span class="case-status status-${e.data.status.toLowerCase()}">${escapeHtml(e.data.status)}</span></div>
-              <div style="margin-bottom: 4px;">実行時間: ${escapeHtml(e.data.time)}</div>
-              <div style="margin-bottom: 8px;">メモリ: ${escapeHtml(e.data.memory)}</div>
-              <div>
-                <a href="https://atcoder.jp/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">提出詳細ページを開く (ID: ${e.data.submissionId})</a>
+          const statusLabel = i18nProvider ? i18nProvider.t('editor_judge_status') : 'ステータス';
+          const timeLabel = i18nProvider ? i18nProvider.t('editor_judge_time') : '実行時間';
+          const memoryLabel = i18nProvider ? i18nProvider.t('editor_judge_memory') : 'メモリ';
+          const detailLinkLabel = i18nProvider
+            ? i18nProvider.t('editor_judge_detail_link')
+            : '提出詳細ページを開く';
+
+          const updateConsole = (celebrationHTML = '') => {
+            consoleResults.innerHTML = `
+              <div style="font-size: 12px; color: #333;">
+                <div style="margin-bottom: 8px;">${escapeHtml(statusLabel)}: <span class="case-status status-${e.data.status.toLowerCase()}">${escapeHtml(e.data.status)}</span></div>
+                <div style="margin-bottom: 4px;">${escapeHtml(timeLabel)}: ${escapeHtml(e.data.time)}</div>
+                <div style="margin-bottom: 8px;">${escapeHtml(memoryLabel)}: ${escapeHtml(e.data.memory)}</div>
+                <div>
+                  <a href="https://atcoder.jp/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">${escapeHtml(detailLinkLabel)} (ID: ${e.data.submissionId})</a>
+                </div>
+                ${celebrationHTML}
               </div>
-            </div>
-          `;
-          consoleResults.scrollTop = consoleResults.scrollHeight;
+            `;
+            consoleResults.scrollTop = consoleResults.scrollHeight;
+          };
+
+          if (isAC) {
+            handleACStats(contestId, problemId, (acCount) => {
+              const selectedOption = langSelect.options[langSelect.selectedIndex];
+              const langText = selectedOption ? selectedOption.textContent.trim() : '';
+              const celebrationHTML = generateACCelebrationHTML(
+                contestId,
+                problemId,
+                e.data.isContestActive,
+                acCount,
+                langText,
+                e.data.time
+              );
+              updateConsole(celebrationHTML);
+            });
+          } else {
+            updateConsole();
+          }
+        }
+        break;
+      }
+
+      case 'latest-submission-loaded': {
+        const selectedOption = langSelect.options[langSelect.selectedIndex];
+        const langText = selectedOption ? selectedOption.textContent : '';
+        const mode = getLanguageMode(langText);
+        console.log('[AtCoder Workspace] Editor: latest-submission-loaded event triggered', {
+          receivedMode: e.data.mode,
+          currentMode: mode,
+          hasCode: !!e.data.code,
+        });
+
+        if (e.data.mode === mode && editor) {
+          const code = e.data.code;
+          if (code) {
+            console.log('[AtCoder Workspace] Editor: Applying loaded past submission code');
+            const oldModel = editor.getModel();
+            const newModel = monaco.editor.createModel(code, mode);
+            editor.setModel(newModel);
+            if (oldModel) oldModel.dispose();
+            saveCodeSync();
+          } else {
+            console.log(
+              '[AtCoder Workspace] Editor: No past submission found, saving current code (template)'
+            );
+            saveCodeSync();
+          }
         }
         break;
       }
@@ -654,7 +1154,9 @@
         totalCount = e.data.total;
         caseStatuses = [];
 
-        testSummary.textContent = `実行中... (0/${totalCount})`;
+        testSummary.textContent = i18nProvider
+          ? i18nProvider.t('editor_runner_running_cases', ['0', totalCount])
+          : `実行中... (0/${totalCount})`;
         testSummary.className = 'summary-running';
 
         consoleResults.innerHTML = '';
@@ -663,11 +1165,13 @@
           const row = document.createElement('div');
           row.className = 'case-row';
           row.id = `case-row-${i}`;
+          const caseLabel = i18nProvider ? i18nProvider.t('editor_runner_case') : 'ケース';
+          const caseRunningText = i18nProvider ? i18nProvider.t('editor_runner_running') : '実行中';
           row.innerHTML = `
             <div class="case-row-header">
               <span class="case-icon">▶</span>
-              <span class="case-label">ケース ${i + 1}:</span>
-              <span class="case-status status-running">実行中</span>
+              <span class="case-label">${escapeHtml(caseLabel)} ${i + 1}:</span>
+              <span class="case-status status-running">${escapeHtml(caseRunningText)}</span>
             </div>
             <div class="case-row-body" style="display: none;"></div>
           `;
@@ -709,14 +1213,20 @@
           if (status === 'AC' || status === 'WA') {
             body.style.display = status === 'AC' ? 'none' : 'block';
             icon.textContent = status === 'AC' ? '▶' : '▼';
+            const expectedLabel = i18nProvider
+              ? i18nProvider.t('editor_runner_expected')
+              : '期待される出力';
+            const actualLabel = i18nProvider
+              ? i18nProvider.t('editor_runner_actual')
+              : '実際の出力';
             bodyHtml = `
               <div class="case-io-grid">
                 <div class="case-io-block">
-                  <div class="case-io-label">期待される出力:</div>
+                  <div class="case-io-label">${escapeHtml(expectedLabel)}:</div>
                   <pre class="case-io-content">${escapeHtml(e.data.expected)}</pre>
                 </div>
                 <div class="case-io-block">
-                  <div class="case-io-label">実際の出力:</div>
+                  <div class="case-io-label">${escapeHtml(actualLabel)}:</div>
                   <pre class="case-io-content">${escapeHtml(e.data.output)}</pre>
                 </div>
               </div>
@@ -726,18 +1236,30 @@
             icon.textContent = '▼';
             const labelText =
               status === 'TLE'
-                ? 'タイムアウト検出 (TLE):'
+                ? i18nProvider
+                  ? i18nProvider.t('editor_runner_timeout')
+                  : 'タイムアウト検出 (TLE):'
                 : status === 'MLE'
-                  ? 'メモリ制限超過 (MLE):'
-                  : 'エラー詳細 (stderr):';
+                  ? i18nProvider
+                    ? i18nProvider.t('editor_runner_mle')
+                    : 'メモリ制限超過 (MLE):'
+                  : i18nProvider
+                    ? i18nProvider.t('editor_runner_stderr')
+                    : 'エラー詳細 (stderr):';
             const errMsg =
               e.data.stderr ||
               e.data.message ||
               (status === 'TLE'
-                ? '実行制限時間（TLE）を超過しました。'
+                ? i18nProvider
+                  ? i18nProvider.t('editor_runner_timeout_desc')
+                  : '実行制限時間（TLE）を超過しました。'
                 : status === 'MLE'
-                  ? 'メモリ制限（MLE）を超過しました。'
-                  : 'エラーが発生しました。');
+                  ? i18nProvider
+                    ? i18nProvider.t('editor_runner_mle_desc')
+                    : 'メモリ制限（MLE）を超過しました。'
+                  : i18nProvider
+                    ? i18nProvider.t('editor_runner_error_desc')
+                    : 'エラーが発生しました。');
             bodyHtml = `
               <div class="case-error-block">
                 <div class="case-io-label">${escapeHtml(labelText)}</div>
@@ -756,7 +1278,9 @@
           };
         }
 
-        testSummary.textContent = `実行中... (${resultsCount}/${totalCount})`;
+        testSummary.textContent = i18nProvider
+          ? i18nProvider.t('editor_runner_running_cases', [resultsCount, totalCount])
+          : `実行中... (${resultsCount}/${totalCount})`;
 
         // Auto-scroll to the bottom of the console results
         consoleResults.scrollTop = consoleResults.scrollHeight;
@@ -768,7 +1292,9 @@
         setButtonsDisabled(false);
 
         if (acCount === totalCount) {
-          testSummary.textContent = `すべてAC (${acCount}/${totalCount})`;
+          testSummary.textContent = i18nProvider
+            ? i18nProvider.t('editor_runner_all_ac', [acCount, totalCount])
+            : `すべてAC (${acCount}/${totalCount})`;
           testSummary.className = 'summary-ac';
         } else {
           // Priority of statuses to display in the overall summary
@@ -788,21 +1314,24 @@
             displayStatus = uniqueNonAcStatuses[0];
           }
 
-          testSummary.textContent = `${displayStatus}あり (${acCount}/${totalCount} AC)`;
+          testSummary.textContent = i18nProvider
+            ? i18nProvider.t('editor_runner_non_ac', [displayStatus, acCount, totalCount])
+            : `${displayStatus}あり (${acCount}/${totalCount} AC)`;
           testSummary.className = 'summary-wa';
         }
         break;
 
-      case 'test-error':
+      case 'test-error': {
         isTesting = false;
         setButtonsDisabled(false);
 
-        testSummary.textContent = `エラー: ${e.data.message}`;
+        const errorText = i18nProvider ? i18nProvider.t('editor_label_error') : 'エラー';
+        testSummary.textContent = `${errorText}: ${e.data.message}`;
         testSummary.className = 'summary-wa';
 
         consoleResults.innerHTML = `
           <div class="case-error-block">
-            <div class="case-io-label">エラー:</div>
+            <div class="case-io-label">${escapeHtml(errorText)}:</div>
             <pre class="case-error-content">${escapeHtml(e.data.message)}</pre>
           </div>
         `;
@@ -810,6 +1339,7 @@
         // Auto-scroll to the bottom of the console results
         consoleResults.scrollTop = consoleResults.scrollHeight;
         break;
+      }
     }
   });
 
@@ -818,9 +1348,10 @@
       prevBtn.disabled = isSubmitPhase1 || isTesting ? true : false;
       prevBtn.onclick = () => {
         if (isTesting) {
-          if (
-            !confirm('テスト実行中にページ遷移すると、テスト結果が失われます。本当に遷移しますか？')
-          ) {
+          const navWarnText = i18nProvider
+            ? i18nProvider.t('editor_runner_nav_warn')
+            : 'テスト実行中にページ遷移すると、テスト結果が失われます。本当に遷移しますか？';
+          if (!confirm(navWarnText)) {
             return;
           }
         }
@@ -835,9 +1366,10 @@
       nextBtn.disabled = isSubmitPhase1 || isTesting ? true : false;
       nextBtn.onclick = () => {
         if (isTesting) {
-          if (
-            !confirm('テスト実行中にページ遷移すると、テスト結果が失われます。本当に遷移しますか？')
-          ) {
+          const navWarnText = i18nProvider
+            ? i18nProvider.t('editor_runner_nav_warn')
+            : 'テスト実行中にページ遷移すると、テスト結果が失われます。本当に遷移しますか？';
+          if (!confirm(navWarnText)) {
             return;
           }
         }
@@ -854,7 +1386,7 @@
     if (!languages || languages.length === 0) {
       const opt = document.createElement('option');
       opt.value = '';
-      opt.textContent = '言語情報なし';
+      opt.textContent = i18nProvider ? i18nProvider.t('editor_language_no_info') : '言語情報なし';
       langSelect.appendChild(opt);
       return;
     }
@@ -903,7 +1435,7 @@
       if (editor) {
         editor.updateOptions({ readOnly: true });
       }
-      saveStatus.textContent = '言語未選択';
+      setSaveStatus('no-lang');
     } else {
       if (languageWarning) {
         languageWarning.style.display = 'none';
@@ -945,69 +1477,188 @@
       };
 
       getInitialCode((initialCode) => {
-        // Create Monaco instance
-        editor = monaco.editor.create(document.getElementById('editor-container'), {
-          value: initialCode,
-          language: mode,
-          theme: isDark ? 'vs-dark' : 'vs',
-          readOnly: !currentLanguageId, // Read-only if no language selected
-          automaticLayout: false, // We control it via message events
+        // Helper: Create Monaco Editor and initialize it
+        const createEditorWithCode = (codeValue) => {
+          editor = monaco.editor.create(document.getElementById('editor-container'), {
+            value: codeValue,
+            language: mode,
+            theme: isDark ? 'vs-dark' : 'vs',
+            readOnly: !currentLanguageId, // Read-only if no language selected
+            automaticLayout: false, // We control it via message events
 
-          // F-2 requirements: Disable AI & Intellisense / Auto-suggestions
-          quickSuggestions: false,
-          parameterHints: { enabled: false },
-          suggestOnTriggerCharacters: false,
-          snippetSuggestions: 'none',
-          wordBasedSuggestions: false,
-          minimap: { enabled: false }, // Keep interface clean
+            // F-2 requirements: Disable AI & Intellisense / Auto-suggestions
+            quickSuggestions: false,
+            parameterHints: { enabled: false },
+            suggestOnTriggerCharacters: false,
+            snippetSuggestions: 'none',
+            wordBasedSuggestions: false,
+            minimap: { enabled: false }, // Keep interface clean
 
-          // Coding assist features (still enabled)
-          tabSize: 4,
-          insertSpaces: true,
-          autoIndent: 'brackets',
-          autoClosingBrackets: 'always',
-          autoClosingQuotes: 'always',
-          formatOnType: true,
-          formatOnPaste: true,
-          fontSize: 14,
-          lineHeight: 20,
+            // Coding assist features (still enabled)
+            tabSize: 4,
+            insertSpaces: true,
+            autoIndent: 'brackets',
+            autoClosingBrackets: 'always',
+            autoClosingQuotes: 'always',
+            formatOnType: true,
+            formatOnPaste: true,
+            fontSize: 14,
+            lineHeight: 20,
 
-          // Scrolling configuration
-          scrollbar: {
-            vertical: 'visible',
-            horizontal: 'visible',
-            useShadows: false,
-            verticalScrollbarSize: 10,
-            horizontalScrollbarSize: 10,
-          },
-          scrollBeyondLastLine: false,
-          padding: {
-            bottom: 100, // Adds a 100px padding (approx. 5 lines) at the bottom
-          },
+            // Scrolling configuration
+            scrollbar: {
+              vertical: 'visible',
+              horizontal: 'visible',
+              useShadows: false,
+              verticalScrollbarSize: 10,
+              horizontalScrollbarSize: 10,
+            },
+            scrollBeyondLastLine: false,
+            padding: {
+              bottom: 100, // Adds a 100px padding (approx. 5 lines) at the bottom
+            },
+          });
+
+          // Add Monaco shortcut key for toggling console (Ctrl+J)
+          editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyJ, () => {
+            toggleConsole();
+          });
+
+          // Trigger layout asynchronously to ensure correct size on load
+          setTimeout(() => {
+            if (editor) editor.layout();
+          }, 100);
+
+          setSaveStatus('saved');
+
+          // Set up change listener for Auto-Save (F-3)
+          editor.onDidChangeModelContent(() => {
+            setSaveStatus('saving');
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+              saveCode();
+            }, 1500);
+          });
+        };
+
+        // Apply Template if empty
+        console.log('[AtCoder Workspace] Editor: initMonaco - checking initialCode', {
+          hasInitialCode: !!initialCode,
+          currentLanguageId,
+          mode,
         });
-
-        // Add Monaco shortcut key for toggling console (Ctrl+J)
-        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyJ, () => {
-          toggleConsole();
-        });
-
-        // Trigger layout asynchronously to ensure correct size on load
-        setTimeout(() => {
-          if (editor) editor.layout();
-        }, 100);
-
-        saveStatus.textContent = '保存済';
-
-        // Set up change listener for Auto-Save (F-3)
-        editor.onDidChangeModelContent(() => {
-          saveStatus.textContent = '変更中...';
-          clearTimeout(saveTimeout);
-          saveTimeout = setTimeout(() => {
-            saveCode();
-          }, 1500);
-        });
+        if (!initialCode && currentLanguageId) {
+          const templateKey = `settings:template:${mode}`;
+          chrome.storage.local.get([templateKey], (tplRes) => {
+            const templateCode =
+              tplRes[templateKey] !== undefined
+                ? tplRes[templateKey]
+                : DEFAULT_TEMPLATES[mode] || '';
+            console.log('[AtCoder Workspace] Editor: initMonaco - applying template', {
+              templateKey,
+              hasTemplateCode: !!templateCode,
+            });
+            createEditorWithCode(templateCode);
+            // Request latest submission from AtCoder (instead of saving template immediately)
+            window.parent.postMessage(
+              {
+                type: 'fetch-latest-submission',
+                languageId: currentLanguageId,
+                mode: mode,
+              },
+              '*'
+            );
+          });
+        } else {
+          console.log('[AtCoder Workspace] Editor: initMonaco - applying initialCode');
+          createEditorWithCode(initialCode);
+        }
       });
     });
+  }
+
+  /**
+   * Records Accepted problems and tracks stats to trigger review prompt.
+   * @param {string} contestId
+   * @param {string} problemId
+   * @param {function} callback
+   */
+  function handleACStats(contestId, problemId, callback) {
+    if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.local) {
+      callback(0);
+      return;
+    }
+    chrome.storage.local.get(['stats:ac_problems'], (res) => {
+      const acProblems = res['stats:ac_problems'] || [];
+      const problemKey = `${contestId}:${problemId}`;
+      if (!acProblems.includes(problemKey)) {
+        acProblems.push(problemKey);
+        chrome.storage.local.set({ 'stats:ac_problems': acProblems }, () => {
+          callback(acProblems.length);
+        });
+      } else {
+        callback(acProblems.length);
+      }
+    });
+  }
+
+  /**
+   * Generates celebration HTML with social sharing and review prompt.
+   * @param {string} contestId
+   * @param {string} problemId
+   * @param {boolean} isContestActive
+   * @param {number} acCount
+   * @param {string} langText
+   * @param {string} time
+   * @returns {string}
+   */
+  function generateACCelebrationHTML(
+    contestId,
+    problemId,
+    isContestActive,
+    acCount,
+    langText,
+    time
+  ) {
+    const formattedProblem = problemId.toUpperCase().replace(contestId.toUpperCase() + '_', '');
+    const titleText = i18nProvider ? i18nProvider.t('editor_ac_title') : 'AtCoderでACしました！ 🎉';
+    const taskText = i18nProvider
+      ? i18nProvider.t('editor_ac_task', [`${contestId.toUpperCase()} - ${formattedProblem}`])
+      : `問題: ${contestId.toUpperCase()} - ${formattedProblem}`;
+    const langLabel = i18nProvider
+      ? i18nProvider.t('editor_ac_lang', [langText])
+      : `言語: ${langText}`;
+    const timeLabel = time
+      ? '\n' + (i18nProvider ? i18nProvider.t('editor_ac_time', [time]) : `実行時間: ${time}`)
+      : '';
+    const tweetText = `${titleText}\n${taskText}\n${langLabel}${timeLabel}\n\n#AtCoder #AtCoderWorkspace`;
+    const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent('https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh?hl=ja')}`;
+    const showReviewButton = acCount >= 5 && !isContestActive;
+    const reviewUrl =
+      'https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh/reviews?hl=ja';
+    const reviewBtnText = i18nProvider
+      ? i18nProvider.t('editor_ac_btn_review')
+      : 'Chrome Web Store で評価する';
+    const shareBtnText = i18nProvider
+      ? i18nProvider.t('editor_ac_btn_share')
+      : '結果をX (Twitter) でシェア';
+
+    return `
+      <div class="ac-action-buttons" style="margin-top: 8px;">
+        ${
+          showReviewButton
+            ? `
+        <a href="${reviewUrl}" target="_blank" class="ac-btn ac-btn-review" title="${escapeHtml(reviewBtnText)}">
+           ${escapeHtml(reviewBtnText)}
+        </a>
+        `
+            : ''
+        }
+        <a href="${shareUrl}" target="_blank" class="ac-btn-share-x-icon" title="${escapeHtml(shareBtnText)}">
+          <svg class="ac-icon-x-only" viewBox="0 0 24 24"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </a>
+      </div>
+    `;
   }
 
   function onLanguageChanged() {
@@ -1025,14 +1676,10 @@
       return;
     }
 
-    // Load new code
-    const storageKey = `code:${contestId}:${problemId}:${currentLanguageId}`;
-    chrome.storage.local.get([storageKey], (res) => {
-      const code = res[storageKey] || '';
-
-      // Update Monaco Editor model
+    // Helper: Set model with code value and bind listener
+    const applyModelWithCode = (codeValue) => {
       const oldModel = editor.getModel();
-      const newModel = monaco.editor.createModel(code, mode);
+      const newModel = monaco.editor.createModel(codeValue, mode);
       editor.setModel(newModel);
       if (oldModel) oldModel.dispose();
 
@@ -1041,11 +1688,11 @@
         if (editor) editor.layout();
       }, 50);
 
-      saveStatus.textContent = '保存済';
+      setSaveStatus('saved');
 
       // Re-setup change listener for new model
       editor.onDidChangeModelContent(() => {
-        saveStatus.textContent = '変更中...';
+        setSaveStatus('saving');
         clearTimeout(saveTimeout);
         saveTimeout = setTimeout(() => {
           saveCode();
@@ -1053,6 +1700,38 @@
       });
 
       updateEditorLanguageState();
+
+      // Update snippets list if drawer is open
+      if (snippetsDrawer && snippetsDrawer.style.display !== 'none') {
+        renderSnippets();
+      }
+    };
+
+    // Load new code
+    const storageKey = `code:${contestId}:${problemId}:${currentLanguageId}`;
+    chrome.storage.local.get([storageKey], (res) => {
+      const code = res[storageKey] || '';
+
+      if (!code) {
+        // Apply Template if empty
+        const templateKey = `settings:template:${mode}`;
+        chrome.storage.local.get([templateKey], (tplRes) => {
+          const templateCode =
+            tplRes[templateKey] !== undefined ? tplRes[templateKey] : DEFAULT_TEMPLATES[mode] || '';
+          applyModelWithCode(templateCode);
+          // Request latest submission from AtCoder (instead of saving template immediately)
+          window.parent.postMessage(
+            {
+              type: 'fetch-latest-submission',
+              languageId: currentLanguageId,
+              mode: mode,
+            },
+            '*'
+          );
+        });
+      } else {
+        applyModelWithCode(code);
+      }
     });
   }
 
@@ -1067,7 +1746,7 @@
     const storageKey = `code:${contestId}:${problemId}:${currentLanguageId}`;
 
     chrome.storage.local.set({ [storageKey]: code }, () => {
-      saveStatus.textContent = '保存済';
+      setSaveStatus('saved');
     });
   }
 
@@ -1079,7 +1758,7 @@
     const storageKey = `code:${contestId}:${problemId}:${currentLanguageId}`;
 
     chrome.storage.local.set({ [storageKey]: code });
-    saveStatus.textContent = '保存済';
+    setSaveStatus('saved');
   }
 
   // Handle auto-save on tab close / switch / visibility change
@@ -1090,6 +1769,204 @@
       saveCodeSync();
     }
   });
+
+  // --- Snippets Drawer Logic ---
+
+  function toggleDrawer(forceState) {
+    if (!snippetsDrawer) return;
+    const isVisible = snippetsDrawer.style.display !== 'none';
+    const nextState = forceState !== undefined ? forceState : !isVisible;
+
+    if (nextState) {
+      snippetsDrawer.style.display = 'flex';
+      if (snippetsBtn) snippetsBtn.classList.add('active');
+      renderSnippets();
+    } else {
+      snippetsDrawer.style.display = 'none';
+      if (snippetsBtn) snippetsBtn.classList.remove('active');
+    }
+
+    // Force editor layout refresh to adjust size to the drawer
+    setTimeout(() => {
+      if (editor) {
+        editor.layout();
+      }
+    }, 0);
+  }
+
+  function insertSnippet(snippetText) {
+    if (!editor) return;
+    editor.focus();
+
+    // Try using snippetController2 first for placeholder support
+    const contribution = editor.getContribution('snippetController2');
+    if (contribution && typeof contribution.insert === 'function') {
+      contribution.insert(snippetText, 0, 0, false, false);
+    } else {
+      // Fallback to simple edit
+      const selection = editor.getSelection();
+      const range = new monaco.Range(
+        selection.startLineNumber,
+        selection.startColumn,
+        selection.endLineNumber,
+        selection.endColumn
+      );
+      const id = { major: 1, minor: 1 };
+      const textEdit = { identifier: id, range: range, text: snippetText, forceMoveMarkers: true };
+      editor.executeEdits('snippets-drawer', [textEdit]);
+    }
+  }
+
+  function renderSnippets() {
+    if (!snippetList) return;
+    snippetList.innerHTML = '';
+
+    if (!langSelect) return;
+    const selectedOption = langSelect.options[langSelect.selectedIndex];
+    const langText = selectedOption ? selectedOption.textContent : '';
+    const mode = getLanguageMode(langText);
+
+    // Get preset snippets
+    const presets = PRESET_SNIPPETS[mode] || [];
+
+    const getPresetTranslation = (item) => {
+      if (item.isCustom) {
+        return { title: item.title, desc: item.desc };
+      }
+
+      let title = item.title;
+      let desc = item.desc;
+
+      if (i18nProvider) {
+        if (item.title.includes('Union-Find')) {
+          title = i18nProvider.t('editor_presets_uf_title') || item.title;
+          desc = i18nProvider.t('editor_presets_uf_desc') || item.desc;
+        } else if (item.title.includes('Dijkstra')) {
+          title = i18nProvider.t('editor_presets_dijkstra_title') || item.title;
+          desc = i18nProvider.t('editor_presets_dijkstra_desc') || item.desc;
+        } else if (item.title.includes('二分探索') || item.title.includes('Binary Search')) {
+          title = i18nProvider.t('editor_presets_binsearch_title') || item.title;
+          desc = i18nProvider.t('editor_presets_binsearch_desc') || item.desc;
+        }
+      }
+      return { title, desc };
+    };
+
+    // Helper to draw snippets list
+    const drawSnippets = (list) => {
+      const query = snippetSearch ? snippetSearch.value.toLowerCase().trim() : '';
+
+      const filtered = list.filter((item) => {
+        if (!query) return true;
+        const { title, desc } = getPresetTranslation(item);
+        const titleMatch = title.toLowerCase().includes(query);
+        const descMatch = desc.toLowerCase().includes(query);
+        const tagMatch = item.tags.some((tag) => tag.toLowerCase().includes(query));
+        return titleMatch || descMatch || tagMatch;
+      });
+
+      if (filtered.length === 0) {
+        const emptyText = i18nProvider
+          ? i18nProvider.t('editor_drawer_empty')
+          : 'スニペットが見つかりません';
+        snippetList.innerHTML = `<div style="text-align: center; color: #888; font-size: 11px; padding: 20px 0;">${escapeHtml(emptyText)}</div>`;
+        return;
+      }
+
+      filtered.forEach((item, index) => {
+        const { title, desc } = getPresetTranslation(item);
+        const card = document.createElement('div');
+        card.className = 'snippet-card';
+        const customBadgeText = i18nProvider
+          ? i18nProvider.t('editor_drawer_badge_custom')
+          : '自作';
+        const insertBtnText = i18nProvider ? i18nProvider.t('editor_drawer_insert_btn') : '挿入';
+
+        card.innerHTML = `
+          <div class="snippet-card-header" data-index="${index}">
+            <div class="snippet-header-left">
+              <span>${escapeHtml(title)}</span>
+              <div class="snippet-tags">
+                ${item.isCustom ? `<span class="snippet-tag snippet-tag-custom">${escapeHtml(customBadgeText)}</span>` : ''}
+                ${item.tags.map((t) => `<span class="snippet-tag">${escapeHtml(t)}</span>`).join('')}
+              </div>
+            </div>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="snippet-card-body" style="display: none;">
+            <div class="snippet-desc">${escapeHtml(desc)}</div>
+            <pre class="snippet-preview">${escapeHtml(item.code)}</pre>
+            <div class="snippet-actions">
+              <button class="btn-insert" data-index="${index}">${escapeHtml(insertBtnText)}</button>
+            </div>
+          </div>
+        `;
+
+        const header = card.querySelector('.snippet-card-header');
+        const body = card.querySelector('.snippet-card-body');
+        const chevron = card.querySelector('.chevron');
+        const insertBtn = card.querySelector('.btn-insert');
+
+        header.onclick = () => {
+          const isVisible = body.style.display !== 'none';
+          body.style.display = isVisible ? 'none' : 'flex';
+          chevron.textContent = isVisible ? '▼' : '▲';
+        };
+
+        insertBtn.onclick = (e) => {
+          e.stopPropagation();
+          insertSnippet(item.code);
+        };
+
+        snippetList.appendChild(card);
+      });
+    };
+
+    // Load custom snippets and merge
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get(['settings:custom_snippets'], (res) => {
+        const custom = res['settings:custom_snippets'] || [];
+        const customFiltered = custom.filter((s) => s.lang === mode);
+
+        const mergedList = [
+          ...customFiltered.map((s) => ({ ...s, isCustom: true })),
+          ...presets.map((s) => ({ ...s, isCustom: false })),
+        ];
+        drawSnippets(mergedList);
+      });
+    } else {
+      // Mock / Offline fallback
+      const mergedList = presets.map((s) => ({ ...s, isCustom: false }));
+      drawSnippets(mergedList);
+    }
+  }
+
+  // Setup Event Listeners for snippets drawer
+  if (snippetsBtn) {
+    snippetsBtn.onclick = () => toggleDrawer();
+  }
+
+  if (closeDrawerBtn) {
+    closeDrawerBtn.onclick = () => toggleDrawer(false);
+  }
+
+  if (snippetSearch) {
+    snippetSearch.oninput = () => renderSnippets();
+  }
+
+  if (manageSnippetsBtn) {
+    manageSnippetsBtn.onclick = () => {
+      if (typeof chrome !== 'undefined' && chrome.runtime) {
+        const url = chrome.runtime.getURL('src/options/options.html#custom-snippets-section');
+        window.open(url);
+      } else {
+        const alertText = i18nProvider
+          ? i18nProvider.t('editor_alert_settings_unavailable')
+          : '設定画面は拡張機能として実行されている場合のみ利用可能です。';
+        alert(alertText);
+      }
+    };
+  }
 
   // Global keyboard shortcut for the editor iframe itself (Ctrl+J)
   window.addEventListener('keydown', (e) => {

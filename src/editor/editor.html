@@ -11,10 +11,10 @@
     <div id="login-warning" class="login-warning" style="display: none;">
       <div class="warning-content">
         <span class="warning-icon">🔒</span>
-        <h3>AtCoderへのログインが必要です</h3>
-        <p>エディタでの実装、ローカルテスト、および提出機能を利用するには、AtCoderへのログインが必要です。</p>
-        <a href="https://atcoder.jp/login" target="_blank" class="btn btn-primary">ログイン画面を開く / Open Login</a>
-        <p class="warning-sub">※ログイン完了後、このページをリロード（再読み込み）してください。</p>
+        <h3 data-i18n="editor_login_warning_title">AtCoderへのログインが必要です</h3>
+        <p data-i18n="editor_login_warning_desc">エディタでの実装、ローカルテスト、および提出機能を利用するには、AtCoderへのログインが必要です。</p>
+        <a href="https://atcoder.jp/login" target="_blank" class="btn btn-primary" data-i18n="editor_login_warning_btn">ログイン画面を開く / Open Login</a>
+        <p class="warning-sub" data-i18n="editor_login_warning_sub">※ログイン完了後、このページをリロード（再読み込み）してください。</p>
       </div>
     </div>
 
@@ -22,32 +22,52 @@
     <div id="language-warning" class="login-warning" style="display: none;">
       <div class="warning-content">
         <span class="warning-icon">🌐</span>
-        <h3>プログラミング言語を選択してください</h3>
-        <p>実装を開始するには、右上のメニューからプログラミング言語を選択してください。<br>Please select a programming language from the top-right menu to start coding.</p>
+        <h3 data-i18n="editor_lang_warning_title">プログラミング言語を選択してください</h3>
+        <p data-i18n="editor_lang_warning_desc">実装を開始するには、右上のメニューからプログラミング言語を選択してください。<br>Please select a programming language from the top-right menu to start coding.</p>
       </div>
     </div>
 
     <div id="toolbar">
       <div class="toolbar-left">
-        <button id="prev-btn" class="btn btn-default" title="前の問題へ">« 前</button>
-        <button id="next-btn" class="btn btn-default" title="次の問題へ">次 »</button>
-        <button id="test-btn" class="btn btn-success" title="テスト実行">テスト実行</button>
-        <button id="submit-btn" class="btn btn-primary" title="提出">提出</button>
+        <button id="prev-btn" class="btn btn-default" data-i18n-title="editor_toolbar_prev_title" data-i18n="editor_toolbar_prev">« 前</button>
+        <button id="next-btn" class="btn btn-default" data-i18n-title="editor_toolbar_next_title" data-i18n="editor_toolbar_next">次 »</button>
+        <button id="test-btn" class="btn btn-success" data-i18n-title="editor_toolbar_test_title" data-i18n="editor_toolbar_test">テスト実行</button>
+        <button id="submit-btn" class="btn btn-primary" data-i18n-title="editor_toolbar_submit_title" data-i18n="editor_toolbar_submit">提出</button>
+        <button id="snippets-btn" class="btn btn-default" data-i18n-title="editor_toolbar_snippets_title" data-i18n="editor_toolbar_snippets">📝 スニペット</button>
         <span id="test-summary"></span>
       </div>
       <div class="toolbar-right">
         <select id="language-select" class="form-control">
           <!-- Dynamically populated from AtCoder options -->
         </select>
-        <span id="save-status">読み込み中...</span>
-        <button id="settings-btn" class="btn btn-default btn-icon" title="設定を開く / Open Settings">⚙️</button>
+        <span id="save-status" data-i18n="editor_save_status_loading">読み込み中...</span>
+        <button id="settings-btn" class="btn btn-default btn-icon" data-i18n-title="editor_toolbar_settings_title">⚙️</button>
       </div>
     </div>
-    <div id="editor-container"></div>
-    <div id="console-slider-btn" title="コンソール表示切り替え (Ctrl+J)">▲</div>
+    <div id="editor-main-section">
+      <div id="editor-container"></div>
+      <div id="snippets-drawer" class="snippets-drawer" style="display: none;">
+        <div class="drawer-header">
+          <span class="drawer-title" data-i18n="editor_toolbar_snippets">📝 スニペット</span>
+          <div class="drawer-header-actions">
+            <button id="manage-snippets-btn" class="btn btn-default btn-xs btn-add-snippet" data-i18n-title="editor_drawer_manage_title" data-i18n="editor_drawer_manage_btn">➕ 追加</button>
+            <button id="close-drawer-btn" class="close-btn" data-i18n-title="editor_drawer_close_title">&times;</button>
+          </div>
+        </div>
+        <div class="drawer-body">
+          <div class="search-container">
+            <input type="text" id="snippet-search" class="form-control snippet-search" data-i18n-placeholder="editor_drawer_search_placeholder" placeholder="スニペットを検索...">
+          </div>
+          <div id="snippet-list" class="snippet-list">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="console-slider-btn" data-i18n-title="editor_console_slider_title">▲</div>
     <div id="console-panel" style="display: none;">
       <div class="console-header">
-        <span class="console-title">テスト結果</span>
+        <span class="console-title" data-i18n="editor_console_title">テスト結果</span>
       </div>
       <div class="console-body" id="console-results"></div>
     </div>
@@ -55,6 +75,7 @@
 
   <!-- Monaco AMD Loader -->
   <script src="../../lib/monaco/vs/loader.js"></script>
+  <script src="../lib/i18n.js"></script>
   <script src="editor.js"></script>
 </body>
 </html>

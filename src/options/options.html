@@ -11,14 +11,14 @@
     <!-- Header -->
     <header class="settings-header">
       <div class="header-top">
-        <button id="back-btn" class="btn btn-secondary btn-sm back-btn">← 戻る / Back</button>
+        <button id="back-btn" class="btn btn-secondary btn-sm back-btn" data-i18n="settings_back">← 戻る / Back</button>
       </div>
       <div class="brand-title">
         <span class="dot"></span>
         <h1>AtCoder Workspace</h1>
-        <span class="badge">設定</span>
+        <span class="badge" data-i18n="settings_badge">設定</span>
       </div>
-      <p class="brand-subtitle">Competitive Programming Workspace for AtCoder</p>
+      <p class="brand-subtitle" data-i18n="settings_subtitle">Competitive Programming Workspace for AtCoder</p>
     </header>
 
     <div class="settings-grid">
@@ -27,29 +27,44 @@
         <!-- Card 1: Workspace Settings -->
         <section class="settings-card">
           <div class="card-header">
-            <h2>一般設定 / General Settings</h2>
+            <h2 data-i18n="settings_general_title">一般設定 / General Settings</h2>
           </div>
           <div class="card-body">
+            <!-- Language Setting -->
+            <div class="setting-item">
+              <div class="setting-info">
+                <label for="display-language" data-i18n="settings_general_lang_label">表示言語 / Display Language</label>
+                <p class="setting-description" data-i18n="settings_general_lang_desc">設定画面の表示言語を切り替えます。 / Change display language.</p>
+              </div>
+              <div class="setting-control">
+                <select id="display-language" class="form-control">
+                  <option value="auto" data-i18n="settings_general_lang_auto">自動 (システム設定) / Auto</option>
+                  <option value="ja" data-i18n="settings_general_lang_ja">日本語</option>
+                  <option value="en" data-i18n="settings_general_lang_en">English</option>
+                </select>
+              </div>
+            </div>
+
             <!-- Split Ratio Setting -->
             <div class="setting-item">
               <div class="setting-info">
-                <label for="split-ratio">分割比率のデフォルト値</label>
-                <p class="setting-description">問題ページを開いた際のエディタと問題文の初期幅比率です。</p>
+                <label for="split-ratio" data-i18n="settings_general_ratio_label">分割比率のデフォルト値</label>
+                <p class="setting-description" data-i18n="settings_general_ratio_desc">問題ページを開いた際のエディタと問題文の初期幅比率です。</p>
               </div>
               <div class="setting-control-vertical">
                 <div class="slider-container">
                   <input type="range" id="split-ratio" min="0.2" max="0.8" step="0.05" value="0.5">
                   <span id="split-ratio-value">50%</span>
                 </div>
-                <button id="reset-ratio-btn" class="btn btn-secondary btn-sm">デフォルトに戻す</button>
+                <button id="reset-ratio-btn" class="btn btn-secondary btn-sm" data-i18n="settings_general_ratio_reset">デフォルトに戻す</button>
               </div>
             </div>
 
             <!-- Panel Default State -->
             <div class="setting-item">
               <div class="setting-info">
-                <label for="panel-open">エディタをデフォルトで開く</label>
-                <p class="setting-description">問題ページに遷移した際、自動的にエディタを開いた状態にします。</p>
+                <label for="panel-open" data-i18n="settings_general_panelOpen_label">エディタをデフォルトで開く</label>
+                <p class="setting-description" data-i18n="settings_general_panelOpen_desc">問題ページに遷移した際、自動的にエディタを開いた状態にします。</p>
               </div>
               <div class="setting-control">
                 <label class="switch">
@@ -64,20 +79,132 @@
         <!-- Card 2: Storage Management -->
         <section class="settings-card">
           <div class="card-header">
-            <h2>データとストレージ / Data & Storage</h2>
+            <h2 data-i18n="settings_storage_title">データとストレージ / Data & Storage</h2>
           </div>
           <div class="card-body">
             <div class="setting-item">
               <div class="setting-info">
-                <label>自動保存されたコードの履歴</label>
-                <p class="setting-description">ブラウザのローカル領域に保存されている提出コードや一時保存データの情報です。</p>
+                <label data-i18n="settings_storage_cache_label">自動保存されたコードの履歴</label>
+                <p class="setting-description" data-i18n="settings_storage_cache_desc">ブラウザのローカル領域に保存されている提出コードや一時保存データの情報です。</p>
               </div>
               <div class="setting-control-vertical">
                 <div class="storage-stats">
-                  <span class="stat-label">キャッシュ件数:</span>
+                  <span class="stat-label" data-i18n="settings_storage_cache_count">キャッシュ件数:</span>
                   <span id="cache-count" class="stat-value">0 件</span>
                 </div>
-                <button id="clear-cache-btn" class="btn btn-danger btn-sm">すべてのキャッシュデータを消去</button>
+                <button id="clear-cache-btn" class="btn btn-danger btn-sm" data-i18n="settings_storage_cache_clear">すべてのキャッシュデータを消去</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Card 3: Template Settings -->
+        <section class="settings-card">
+          <div class="card-header">
+            <h2 data-i18n="settings_template_title">テンプレート設定 / Template Settings</h2>
+          </div>
+          <div class="card-body">
+            <div class="setting-item-vertical">
+              <div class="setting-info">
+                <label for="template-lang-select" data-i18n="settings_template_lang_label">対象言語を選択</label>
+                <p class="setting-description" data-i18n="settings_template_lang_desc">テンプレートを設定するプログラミング言語を切り替えます。</p>
+              </div>
+              <div class="setting-control-row">
+                <select id="template-lang-select" class="form-control select-lang">
+                  <option value="cpp">C++ (GCC/Clang)</option>
+                  <option value="python">Python3 / PyPy3</option>
+                  <option value="rust">Rust</option>
+                  <option value="java">Java</option>
+                  <option value="go">Go</option>
+                </select>
+                <button id="reset-template-btn" class="btn btn-secondary btn-sm" data-i18n="settings_template_reset">デフォルトに戻す</button>
+              </div>
+            </div>
+
+            <div class="setting-item-vertical no-border-top no-padding-top">
+              <div class="setting-info margin-bottom-sm">
+                <label for="template-code-area" data-i18n="settings_template_code_label">初期コードテンプレート</label>
+                <p class="setting-description" data-i18n="settings_template_code_desc">コードが未記述の問題ページを開いた際、自動的に挿入される初期コードです。</p>
+              </div>
+              <div class="setting-control-vertical-full">
+                <textarea id="template-code-area" class="form-control code-editor-textarea" rows="12" data-i18n-placeholder="settings_template_code_placeholder" placeholder="// ここにテンプレートコードを入力してください..."></textarea>
+              </div>
+            </div>
+            
+            <div class="setting-item-vertical no-border-top padding-top-md align-right">
+              <button id="save-template-btn" class="btn btn-primary" data-i18n="settings_template_save">テンプレートを保存</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Card 4: Custom Snippets Management -->
+        <section id="custom-snippets-section" class="settings-card">
+          <div class="card-header">
+            <h2 data-i18n="settings_snippets_title">自作スニペット管理 / Custom Snippets</h2>
+          </div>
+          <div class="card-body">
+            <div class="setting-item-vertical">
+              <div class="setting-info-row">
+                <div class="setting-info">
+                  <label data-i18n="settings_snippets_label">登録済みのスニペット</label>
+                  <p class="setting-description" data-i18n="settings_snippets_desc">エディタから呼び出せるオリジナルのコードスニペットです。</p>
+                </div>
+                <button id="add-snippet-btn" class="btn btn-success btn-sm" data-i18n="settings_snippets_add">+ 新規追加</button>
+              </div>
+
+              <!-- スニペット登録フォーム (初期非表示) -->
+              <div id="snippet-form-container" class="snippet-form-container" style="display: none;">
+                <h3 id="form-title" data-i18n="settings_snippets_form_addTitle">新規スニペット追加</h3>
+                <div class="form-group">
+                  <label for="snippet-title-input" data-i18n="settings_snippets_form_label_title">タイトル</label>
+                  <input type="text" id="snippet-title-input" class="form-control" data-i18n-placeholder="settings_snippets_form_placeholder_title" placeholder="例: Segment Tree">
+                </div>
+                <div class="form-group">
+                  <label for="snippet-lang-select" data-i18n="settings_snippets_form_label_lang">対象言語</label>
+                  <select id="snippet-lang-select" class="form-control">
+                    <option value="cpp">C++</option>
+                    <option value="python">Python</option>
+                    <option value="rust">Rust</option>
+                    <option value="java">Java</option>
+                    <option value="go">Go</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="snippet-desc-input" data-i18n="settings_snippets_form_label_desc">説明</label>
+                  <input type="text" id="snippet-desc-input" class="form-control" data-i18n-placeholder="settings_snippets_form_placeholder_desc" placeholder="例: 1点更新・区間クエリ">
+                </div>
+                <div class="form-group">
+                  <label for="snippet-tags-input" data-i18n="settings_snippets_form_label_tags">タグ (カンマ区切り)</label>
+                  <input type="text" id="snippet-tags-input" class="form-control" data-i18n-placeholder="settings_snippets_form_placeholder_tags" placeholder="例: segtree, data-structure">
+                </div>
+                <div class="form-group">
+                  <label for="snippet-code-input" data-i18n="settings_snippets_form_label_code">ソースコード (プレースホルダー $1, $2 等を使用可能)</label>
+                  <textarea id="snippet-code-input" class="form-control code-editor-textarea" rows="8" data-i18n-placeholder="settings_snippets_form_placeholder_code" placeholder="// スニペットコードを入力してください..."></textarea>
+                </div>
+                <div class="form-actions">
+                  <button id="cancel-snippet-btn" class="btn btn-secondary btn-sm" data-i18n="settings_snippets_form_cancel">キャンセル</button>
+                  <button id="save-snippet-btn" class="btn btn-primary btn-sm" data-i18n="settings_snippets_form_save">保存</button>
+                </div>
+              </div>
+
+              <!-- スニペット一覧表示エリア -->
+              <div id="snippets-list-container" class="snippets-list-container">
+                <table class="snippets-table">
+                  <thead>
+                    <tr>
+                      <th data-i18n="settings_snippets_table_title">タイトル</th>
+                      <th class="col-lang" data-i18n="settings_snippets_table_lang">言語</th>
+                      <th data-i18n="settings_snippets_table_tags">タグ</th>
+                      <th class="col-actions" data-i18n="settings_snippets_table_actions">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="snippets-table-body">
+                    <!-- JavaScriptで動的生成 -->
+                  </tbody>
+                </table>
+                <div id="no-snippets-message" class="no-snippets-message" data-i18n="settings_snippets_table_empty">
+                  登録されている自作スニペットはありません。
+                </div>
               </div>
             </div>
           </div>
@@ -86,49 +213,82 @@
 
       <!-- Right Column: Info & Links -->
       <aside class="settings-sidebar">
+        <!-- Support & Feedback Card -->
+        <section class="support-card">
+          <div class="support-header">
+            <h3 data-i18n="settings_support_title">❤️ 開発者を応援する / Support</h3>
+            <div class="github-badge-container">
+              <a href="https://github.com/rikutoyamada01/atcoder-workspace" target="_blank">
+                <img src="https://img.shields.io/github/stars/rikutoyamada01/atcoder-workspace?style=social" alt="GitHub stars">
+              </a>
+            </div>
+          </div>
+          <p class="support-intro" data-i18n="settings_support_intro">
+            AtCoder Workspace は個人でオープンソース開発しています。もし気に入っていただけましたら、応援いただけますと幸いです！
+          </p>
+          <div class="user-stats-box">
+            <span class="stats-label" data-i18n="settings_support_acCount">🏆 あなたの累計AC数:</span>
+            <span id="support-ac-count" class="stats-val">0</span>
+            <span class="stats-unit" data-i18n="settings_support_acUnit">問</span>
+          </div>
+          <div class="support-actions">
+            <a href="https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh/reviews?hl=ja" target="_blank" class="btn btn-primary btn-support-cws" data-i18n="settings_support_storeReview">
+              🌟 ストアで星5評価を送る
+            </a>
+          </div>
+          <div class="feedback-links">
+            <a href="https://github.com/rikutoyamada01/atcoder-workspace/issues/new?template=bug_report.md" target="_blank" class="feedback-link-item" data-i18n="settings_support_feedback_bug">
+              🐛 不具合を報告
+            </a>
+            <a href="https://github.com/rikutoyamada01/atcoder-workspace/issues/new?template=feature_request.md" target="_blank" class="feedback-link-item" data-i18n="settings_support_feedback_feature">
+              💡 機能の提案
+            </a>
+          </div>
+        </section>
+
         <!-- Version Card -->
         <section class="info-card">
-          <h3>この拡張機能について</h3>
+          <h3 data-i18n="settings_info_title">この拡張機能について</h3>
           <div class="info-item">
-            <span class="info-label">バージョン:</span>
+            <span class="info-label" data-i18n="settings_info_version">バージョン:</span>
             <span id="extension-version" class="info-value">1.4.0</span>
           </div>
           <div class="info-item">
-            <span class="info-label">ライセンス:</span>
+            <span class="info-label" data-i18n="settings_info_license">ライセンス:</span>
             <span class="info-value">MIT License</span>
           </div>
           <div class="info-item">
-            <span class="info-label">データ送信:</span>
-            <span class="info-value text-success">送信なし (完全ローカル動作)</span>
+            <span class="info-label" data-i18n="settings_info_dataTransmission">データ送信:</span>
+            <span class="info-value text-success" data-i18n="settings_info_dataTransmissionValue">送信なし (完全ローカル動作)</span>
           </div>
         </section>
 
         <!-- Document Links -->
         <section class="links-card">
-          <h3>関連リンク / Resources</h3>
+          <h3 data-i18n="settings_links_title">関連リンク / Resources</h3>
           <ul class="resource-links">
             <li>
               <a href="https://rikutoyamada01.github.io/atcoder-workspace/presentation.html" target="_blank" class="resource-link">
                 <span class="icon">💡</span>
-                <span class="link-text">コンセプトプレゼンテーション</span>
+                <span class="link-text" data-i18n="settings_links_presentation">コンセプトプレゼンテーション</span>
               </a>
             </li>
             <li>
               <a href="https://rikutoyamada01.github.io/atcoder-workspace/roadmap.html" target="_blank" class="resource-link">
                 <span class="icon">🗺️</span>
-                <span class="link-text">開発ロードマップ</span>
+                <span class="link-text" data-i18n="settings_links_roadmap">開発ロードマップ</span>
               </a>
             </li>
             <li>
               <a href="https://rikutoyamada01.github.io/atcoder-workspace/privacy.html" target="_blank" class="resource-link">
                 <span class="icon">🛡️</span>
-                <span class="link-text">プライバシーポリシー</span>
+                <span class="link-text" data-i18n="settings_links_privacy">プライバシーポリシー</span>
               </a>
             </li>
             <li>
               <a href="https://github.com/rikutoyamada01/atcoder-workspace" target="_blank" class="resource-link">
                 <span class="icon">🐱</span>
-                <span class="link-text">GitHub リポジトリ</span>
+                <span class="link-text" data-i18n="settings_links_github">GitHub リポジトリ</span>
               </a>
             </li>
           </ul>
@@ -140,6 +300,7 @@
     <div id="toast" class="toast">設定を保存しました</div>
   </div>
 
+  <script src="../lib/i18n.js"></script>
   <script src="options.js"></script>
 </body>
 </html>

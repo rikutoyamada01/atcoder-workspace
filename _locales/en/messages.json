@@ -1,0 +1,502 @@
+{
+  "extName": {
+    "message": "AtCoder Workspace"
+  },
+  "extDesc": {
+    "message": "Workspace extension that embeds an editor on AtCoder problem pages, allowing you to code, test, and submit in a single tab."
+  },
+  "settings_title": {
+    "message": "AtCoder Workspace"
+  },
+  "settings_subtitle": {
+    "message": "Competitive Programming Workspace for AtCoder"
+  },
+  "settings_back": {
+    "message": "← Back"
+  },
+  "settings_badge": {
+    "message": "Settings"
+  },
+  "settings_general_title": {
+    "message": "General Settings"
+  },
+  "settings_general_lang_label": {
+    "message": "Display Language"
+  },
+  "settings_general_lang_desc": {
+    "message": "Change the display language for the settings screen."
+  },
+  "settings_general_lang_auto": {
+    "message": "Auto (System Settings)"
+  },
+  "settings_general_lang_ja": {
+    "message": "日本語"
+  },
+  "settings_general_lang_en": {
+    "message": "English"
+  },
+  "settings_general_ratio_label": {
+    "message": "Default Split Ratio"
+  },
+  "settings_general_ratio_desc": {
+    "message": "Initial width ratio of the editor and the problem statement when opening a problem page."
+  },
+  "settings_general_ratio_reset": {
+    "message": "Reset to Default"
+  },
+  "settings_general_panelOpen_label": {
+    "message": "Open Editor by Default"
+  },
+  "settings_general_panelOpen_desc": {
+    "message": "Automatically open the editor when navigating to a problem page."
+  },
+  "settings_storage_title": {
+    "message": "Data & Storage"
+  },
+  "settings_storage_cache_label": {
+    "message": "Saved Code History"
+  },
+  "settings_storage_cache_desc": {
+    "message": "Information on submitted code and temporary data saved in the browser's local storage."
+  },
+  "settings_storage_cache_count": {
+    "message": "Cache count:"
+  },
+  "settings_storage_cache_clear": {
+    "message": "Clear All Cache Data"
+  },
+  "settings_storage_cache_confirm": {
+    "message": "All saved source code history will be cleared. Are you sure?\n(This action cannot be undone)"
+  },
+  "settings_storage_cache_empty": {
+    "message": "No cache data to delete"
+  },
+  "settings_storage_cache_success": {
+    "message": "Successfully cleared all cache data"
+  },
+  "settings_template_title": {
+    "message": "Template Settings"
+  },
+  "settings_template_lang_label": {
+    "message": "Select Language"
+  },
+  "settings_template_lang_desc": {
+    "message": "Switch the programming language to configure the template."
+  },
+  "settings_template_code_label": {
+    "message": "Initial Code Template"
+  },
+  "settings_template_code_desc": {
+    "message": "Initial code automatically inserted when opening a problem page without any written code."
+  },
+  "settings_template_code_placeholder": {
+    "message": "// Enter template code here..."
+  },
+  "settings_template_reset": {
+    "message": "Reset to Default"
+  },
+  "settings_template_save": {
+    "message": "Save Template"
+  },
+  "settings_template_toast_saved": {
+    "message": "Template saved"
+  },
+  "settings_template_toast_reset": {
+    "message": "Loaded default (press Save to confirm)"
+  },
+  "settings_snippets_title": {
+    "message": "Custom Snippets"
+  },
+  "settings_snippets_label": {
+    "message": "Registered Snippets"
+  },
+  "settings_snippets_desc": {
+    "message": "Original code snippets that can be called from the editor."
+  },
+  "settings_snippets_add": {
+    "message": "+ Add New"
+  },
+  "settings_snippets_table_title": {
+    "message": "Title"
+  },
+  "settings_snippets_table_lang": {
+    "message": "Language"
+  },
+  "settings_snippets_table_tags": {
+    "message": "Tags"
+  },
+  "settings_snippets_table_actions": {
+    "message": "Actions"
+  },
+  "settings_snippets_table_edit": {
+    "message": "Edit"
+  },
+  "settings_snippets_table_delete": {
+    "message": "Delete"
+  },
+  "settings_snippets_table_empty": {
+    "message": "No custom snippets registered."
+  },
+  "settings_snippets_form_addTitle": {
+    "message": "Add New Snippet"
+  },
+  "settings_snippets_form_editTitle": {
+    "message": "Edit Snippet"
+  },
+  "settings_snippets_form_label_title": {
+    "message": "Title"
+  },
+  "settings_snippets_form_label_lang": {
+    "message": "Target Language"
+  },
+  "settings_snippets_form_label_desc": {
+    "message": "Description"
+  },
+  "settings_snippets_form_label_tags": {
+    "message": "Tags (comma-separated)"
+  },
+  "settings_snippets_form_label_code": {
+    "message": "Source Code (Placeholders like $1, $2 can be used)"
+  },
+  "settings_snippets_form_placeholder_title": {
+    "message": "e.g., Segment Tree"
+  },
+  "settings_snippets_form_placeholder_desc": {
+    "message": "e.g., Point Update Range Query"
+  },
+  "settings_snippets_form_placeholder_tags": {
+    "message": "e.g., segtree, data-structure"
+  },
+  "settings_snippets_form_placeholder_code": {
+    "message": "// Enter snippet code here..."
+  },
+  "settings_snippets_form_cancel": {
+    "message": "Cancel"
+  },
+  "settings_snippets_form_save": {
+    "message": "Save"
+  },
+  "settings_snippets_form_toast_required": {
+    "message": "Title and source code are required fields"
+  },
+  "settings_snippets_form_toast_added": {
+    "message": "Snippet added"
+  },
+  "settings_snippets_form_toast_updated": {
+    "message": "Snippet updated"
+  },
+  "settings_snippets_form_toast_deleted": {
+    "message": "Snippet deleted"
+  },
+  "settings_snippets_form_confirmDelete": {
+    "message": "Are you sure you want to delete snippet \"$1\"?"
+  },
+  "settings_support_title": {
+    "message": "❤️ Support the Developer"
+  },
+  "settings_support_intro": {
+    "message": "AtCoder Workspace is developed as open source by an individual. If you like it, your support would be highly appreciated!"
+  },
+  "settings_support_acCount": {
+    "message": "🏆 Your Total AC Count:"
+  },
+  "settings_support_acUnit": {
+    "message": " problems"
+  },
+  "settings_support_storeReview": {
+    "message": "🌟 Rate 5 Stars on Web Store"
+  },
+  "settings_support_feedback_bug": {
+    "message": "🐛 Report a Bug"
+  },
+  "settings_support_feedback_feature": {
+    "message": "💡 Suggest a Feature"
+  },
+  "settings_info_title": {
+    "message": "About this extension"
+  },
+  "settings_info_version": {
+    "message": "Version:"
+  },
+  "settings_info_license": {
+    "message": "License:"
+  },
+  "settings_info_dataTransmission": {
+    "message": "Data Transmission:"
+  },
+  "settings_info_dataTransmissionValue": {
+    "message": "None (Fully runs locally)"
+  },
+  "settings_links_title": {
+    "message": "Resources"
+  },
+  "settings_links_presentation": {
+    "message": "Concept Presentation"
+  },
+  "settings_links_roadmap": {
+    "message": "Development Roadmap"
+  },
+  "settings_links_privacy": {
+    "message": "Privacy Policy"
+  },
+  "settings_links_github": {
+    "message": "GitHub Repository"
+  },
+  "settings_toast_ratioSaved": {
+    "message": "Split ratio saved"
+  },
+  "settings_toast_ratioReset": {
+    "message": "Split ratio reset"
+  },
+  "settings_toast_panelState": {
+    "message": "Updated initial side panel state"
+  },
+  "editor_login_warning_title": {
+    "message": "AtCoder Login Required"
+  },
+  "editor_login_warning_desc": {
+    "message": "You must be logged in to AtCoder to implement, test locally, and submit code."
+  },
+  "editor_login_warning_btn": {
+    "message": "Open Login Page"
+  },
+  "editor_login_warning_sub": {
+    "message": "*Please reload this page after logging in."
+  },
+  "editor_lang_warning_title": {
+    "message": "Please Select a Programming Language"
+  },
+  "editor_lang_warning_desc": {
+    "message": "Please select a programming language from the top-right menu to start coding."
+  },
+  "editor_toolbar_prev": {
+    "message": "« Prev"
+  },
+  "editor_toolbar_next": {
+    "message": "Next »"
+  },
+  "editor_toolbar_test": {
+    "message": "Run Tests"
+  },
+  "editor_toolbar_submit": {
+    "message": "Submit"
+  },
+  "editor_toolbar_snippets": {
+    "message": "📝 Snippets"
+  },
+  "editor_toolbar_settings_title": {
+    "message": "Open Settings"
+  },
+  "editor_save_status_loading": {
+    "message": "Loading..."
+  },
+  "editor_save_status_saving": {
+    "message": "Saving..."
+  },
+  "editor_save_status_autosaved": {
+    "message": "Saved"
+  },
+  "editor_save_status_error": {
+    "message": "Save Error"
+  },
+  "editor_console_title": {
+    "message": "Test Results"
+  },
+  "editor_console_slider_title": {
+    "message": "Toggle Console (Ctrl+J)"
+  },
+  "editor_judge_not_logged_in": {
+    "message": "Not logged in"
+  },
+  "editor_judge_submitting": {
+    "message": "Submitting..."
+  },
+  "editor_judge_submitted": {
+    "message": "Submission process started..."
+  },
+  "editor_judge_waiting_bot": {
+    "message": "Waiting for bot verification..."
+  },
+  "editor_judge_running": {
+    "message": "Judging... ($1)"
+  },
+  "editor_judge_complete": {
+    "message": "Judging complete: $1"
+  },
+  "editor_judge_result_summary": {
+    "message": "Result: $1 | Time: $2 | Memory: $3"
+  },
+  "editor_runner_running_cases": {
+    "message": "Running... ($1/$2)"
+  },
+  "editor_runner_all_ac": {
+    "message": "All cases AC ($1/$2)"
+  },
+  "editor_runner_non_ac": {
+    "message": "$1 detected ($2/$3 AC)"
+  },
+  "editor_runner_timeout": {
+    "message": "Timeout Detected (TLE):"
+  },
+  "editor_runner_mle": {
+    "message": "Memory Limit Exceeded (MLE):"
+  },
+  "editor_runner_stderr": {
+    "message": "Error Details (stderr):"
+  },
+  "editor_runner_timeout_desc": {
+    "message": "Execution time limit exceeded (TLE)."
+  },
+  "editor_runner_mle_desc": {
+    "message": "Memory limit exceeded (MLE)."
+  },
+  "editor_runner_error_desc": {
+    "message": "An error occurred."
+  },
+  "editor_runner_nav_warn": {
+    "message": "If you navigate away while running sample tests, results will be lost. Do you really want to proceed?"
+  },
+  "editor_presets_uf_desc": {
+    "message": "Disjoint Set Union (DSU) / Union-Find data structure. Merges groups and queries relations in near-constant time."
+  },
+  "editor_presets_dijkstra_desc": {
+    "message": "Single-source shortest path algorithm for graphs without negative edge weights. Runs in O(E log V)."
+  },
+  "editor_presets_binsearch_desc": {
+    "message": "Finds boundary values satisfying a predicate in O(log N)."
+  },
+  "editor_ac_title": {
+    "message": "AC on AtCoder! 🎉"
+  },
+  "editor_ac_task": {
+    "message": "Task: $1"
+  },
+  "editor_ac_lang": {
+    "message": "Language: $1"
+  },
+  "editor_ac_time": {
+    "message": "Time: $1"
+  },
+  "editor_ac_btn_review": {
+    "message": "Rate on Chrome Web Store"
+  },
+  "editor_ac_btn_share": {
+    "message": "Share on X (Twitter)"
+  },
+  "editor_drawer_manage_title": {
+    "message": "Add & manage custom snippets"
+  },
+  "editor_drawer_manage_btn": {
+    "message": "➕ Add"
+  },
+  "editor_drawer_close_title": {
+    "message": "Close"
+  },
+  "editor_drawer_search_placeholder": {
+    "message": "Search snippets..."
+  },
+  "editor_drawer_empty": {
+    "message": "No snippets found"
+  },
+  "editor_drawer_badge_custom": {
+    "message": "Custom"
+  },
+  "editor_toolbar_prev_title": {
+    "message": "Previous problem"
+  },
+  "editor_toolbar_next_title": {
+    "message": "Next problem"
+  },
+  "editor_toolbar_test_title": {
+    "message": "Run tests"
+  },
+  "editor_toolbar_submit_title": {
+    "message": "Submit"
+  },
+  "editor_toolbar_snippets_title": {
+    "message": "Snippets"
+  },
+  "editor_save_status_saved": {
+    "message": "Saved"
+  },
+  "editor_save_status_no_lang": {
+    "message": "No language selected"
+  },
+  "editor_presets_uf_title": {
+    "message": "Union-Find (Disjoint Set Union)"
+  },
+  "editor_presets_dijkstra_title": {
+    "message": "Dijkstra (Single-Source Shortest Path)"
+  },
+  "editor_presets_binsearch_title": {
+    "message": "Binary Search"
+  },
+  "editor_console_preparing": {
+    "message": "Preparing..."
+  },
+  "editor_console_preparing_submit": {
+    "message": "Preparing submission..."
+  },
+  "editor_alert_settings_unavailable": {
+    "message": "The settings screen is only available when running as an extension."
+  },
+  "editor_turnstile_force_rendered": {
+    "message": "Force Rendered"
+  },
+  "editor_turnstile_auto_rendered": {
+    "message": "Auto Rendered"
+  },
+  "editor_turnstile_token_present": {
+    "message": "Token Already Present"
+  },
+  "editor_turnstile_no_container": {
+    "message": "No Container (No Verification Required)"
+  },
+  "editor_turnstile_implicit": {
+    "message": "Implicit Load"
+  },
+  "editor_turnstile_unknown": {
+    "message": "Unknown"
+  },
+  "editor_judge_status": {
+    "message": "Status"
+  },
+  "editor_judge_time": {
+    "message": "Time"
+  },
+  "editor_judge_memory": {
+    "message": "Memory"
+  },
+  "editor_judge_detail_link": {
+    "message": "Open submission details page"
+  },
+  "editor_notification_complete_title": {
+    "message": "Judging Complete"
+  },
+  "editor_label_error": {
+    "message": "Error"
+  },
+  "editor_runner_case": {
+    "message": "Case"
+  },
+  "editor_runner_running": {
+    "message": "Running"
+  },
+  "editor_runner_expected": {
+    "message": "Expected Output"
+  },
+  "editor_runner_actual": {
+    "message": "Actual Output"
+  },
+  "editor_language_no_info": {
+    "message": "No language information"
+  },
+  "editor_drawer_insert_btn": {
+    "message": "Insert"
+  },
+  "editor_judge_captcha_desc": {
+    "message": "Waiting for bot verification (Cloudflare Turnstile) to complete.<br>Please manually click the checkbox (I am human) displayed at the bottom-left of the screen to complete verification.<br>(The submission process will resume automatically after verification.)"
+  }
+}
+
+
