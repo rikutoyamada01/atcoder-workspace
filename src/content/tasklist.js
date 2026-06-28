@@ -25,8 +25,8 @@
 
       if (editorialProblems.length === 0) return;
 
-      // Find all links to problems in the tasks table
-      const links = document.querySelectorAll('table tbody a');
+      // Find all links to problems in the second column (problem names) of the tasks table
+      const links = document.querySelectorAll('table tbody tr td:nth-child(2) a');
       links.forEach((link) => {
         const href = link.getAttribute('href');
         if (!href) return;
@@ -36,17 +36,19 @@
         if (match) {
           const problemId = match[1];
           if (editorialProblems.includes(problemId)) {
-            // Avoid duplicate icons if script runs multiple times
+            // Avoid duplicate badges if script runs multiple times
             const parent = link.parentNode;
             if (parent.querySelector('.ac-editorial-badge')) return;
 
-            // Inject 🔄 mark next to the link
+            // Inject simple yellow dot next to the link
             const badge = document.createElement('span');
             badge.className = 'ac-editorial-badge';
-            badge.textContent = '🔄';
-            badge.style.marginLeft = '6px';
-            badge.style.fontSize = '0.95em';
             badge.style.display = 'inline-block';
+            badge.style.width = '8px';
+            badge.style.height = '8px';
+            badge.style.borderRadius = '50%';
+            badge.style.backgroundColor = '#f59e0b';
+            badge.style.marginLeft = '8px';
             badge.style.verticalAlign = 'middle';
 
             // Insert after the link element

@@ -242,6 +242,7 @@
                   const select = document.getElementById('ac-status-select');
                   if (select) {
                     select.value = 'self_ac';
+                    select.dispatchEvent(new Event('change'));
                   }
                 }
               } else {
@@ -589,6 +590,7 @@
             const select = document.getElementById('ac-status-select');
             if (select) {
               select.value = 'self_ac';
+              select.dispatchEvent(new Event('change'));
             }
           }
         } else {

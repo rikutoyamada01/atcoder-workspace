@@ -111,6 +111,23 @@
       // Insert into title element
       titleSpan.appendChild(select);
 
+      // Style helper to colorize selector based on status
+      const updateSelectStyle = (val) => {
+        if (val === 'self_ac') {
+          select.style.backgroundColor = '#e8f5e9';
+          select.style.color = '#2e7d32';
+          select.style.borderColor = '#a5d6a7';
+        } else if (val === 'editorial_ac') {
+          select.style.backgroundColor = '#fff8e1';
+          select.style.color = '#b78103';
+          select.style.borderColor = '#ffe082';
+        } else {
+          select.style.backgroundColor = '#f5f5f5';
+          select.style.color = '#616161';
+          select.style.borderColor = '#e0e0e0';
+        }
+      };
+
       // Load initial state
       if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
         chrome.storage.local.get([statusKey, 'stats:ac_problems'], (res) => {
@@ -129,12 +146,16 @@
               select.value = 'unsolved';
             }
           }
+          updateSelectStyle(select.value);
         });
+      } else {
+        updateSelectStyle(select.value);
       }
 
       // Handle status change
       select.onchange = () => {
         const val = select.value;
+        updateSelectStyle(val);
         if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
           chrome.storage.local.set({ [statusKey]: val });
         }
