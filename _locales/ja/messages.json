@@ -547,6 +547,30 @@
   },
   "options_pagination_next": {
     "message": "次へ"
+  },
+  "options_backup_title": {
+    "message": "バックアップと復元 / Backup & Restore"
+  },
+  "options_backup_desc": {
+    "message": "拡張機能のすべての設定と解答ステータスをファイルに保存、またはファイルから復元できます。"
+  },
+  "options_backup_btn_export": {
+    "message": "バックアップをエクスポート"
+  },
+  "options_backup_btn_import": {
+    "message": "バックアップから復元"
+  },
+  "options_backup_toast_exported": {
+    "message": "バックアップをエクスポートしました"
+  },
+  "options_backup_toast_imported": {
+    "message": "バックアップを復元しました"
+  },
+  "options_backup_confirm_import": {
+    "message": "本当に復元しますか？現在の解答ステータスやスニペット等の設定は上書きされます。"
+  },
+  "options_backup_error_invalid": {
+    "message": "エラー: 無効なバックアップファイルです"
   }
 }
 

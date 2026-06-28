@@ -547,6 +547,30 @@
   },
   "options_pagination_next": {
     "message": "Next"
+  },
+  "options_backup_title": {
+    "message": "Backup & Restore"
+  },
+  "options_backup_desc": {
+    "message": "Export or import all extension settings, snippets and problem statuses as a file."
+  },
+  "options_backup_btn_export": {
+    "message": "Export Backup"
+  },
+  "options_backup_btn_import": {
+    "message": "Restore from Backup"
+  },
+  "options_backup_toast_exported": {
+    "message": "Backup exported successfully"
+  },
+  "options_backup_toast_imported": {
+    "message": "Backup restored successfully"
+  },
+  "options_backup_confirm_import": {
+    "message": "Are you sure you want to restore? Current settings, snippets, and problem statuses will be overwritten."
+  },
+  "options_backup_error_invalid": {
+    "message": "Error: Invalid backup file"
   }
 }
 

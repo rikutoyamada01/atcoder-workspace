@@ -144,6 +144,25 @@
           </div>
         </section>
 
+        <!-- Card: Backup & Restore -->
+        <section class="settings-card">
+          <div class="card-header">
+            <h2 data-i18n="options_backup_title">バックアップと復元 / Backup & Restore</h2>
+          </div>
+          <div class="card-body">
+            <div class="setting-item-vertical">
+              <div class="setting-info">
+                <p class="setting-description" data-i18n="options_backup_desc">拡張機能のすべての設定と解答ステータスをファイルに保存、またはファイルから復元できます。</p>
+              </div>
+              <div style="display: flex; gap: 12px; margin-top: 15px; flex-wrap: wrap;">
+                <button type="button" id="btn-export-backup" class="btn btn-primary" data-i18n="options_backup_btn_export">バックアップをエクスポート</button>
+                <button type="button" id="btn-import-backup" class="btn btn-secondary" data-i18n="options_backup_btn_import">バックアップから復元</button>
+                <input type="file" id="import-file-input" accept=".json" style="display: none;">
+              </div>
+            </div>
+          </div>
+        </section>
+
         <!-- Card 3: Template Settings -->
         <section class="settings-card">
           <div class="card-header">

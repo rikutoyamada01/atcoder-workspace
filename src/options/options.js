@@ -868,6 +868,85 @@ func main() {
     });
   }
 
+  // Backup and Restore handlers
+  const btnExportBackup = document.getElementById('btn-export-backup');
+  const btnImportBackup = document.getElementById('btn-import-backup');
+  const importFileInput = document.getElementById('import-file-input');
+
+  if (btnExportBackup) {
+    btnExportBackup.addEventListener('click', () => {
+      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.get(null, (data) => {
+          const jsonString = JSON.stringify(data || {}, null, 2);
+          const blob = new Blob([jsonString], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+
+          const date = new Date();
+          const yyyy = date.getFullYear();
+          const mm = String(date.getMonth() + 1).padStart(2, '0');
+          const dd = String(date.getDate()).padStart(2, '0');
+          const filename = `atcoder-workspace-backup-${yyyy}${mm}${dd}.json`;
+
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+
+          showToast(i18nProvider.t('options_backup_toast_exported'));
+        });
+      }
+    });
+  }
+
+  if (btnImportBackup && importFileInput) {
+    btnImportBackup.addEventListener('click', () => {
+      importFileInput.click();
+    });
+
+    importFileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const parsedData = JSON.parse(event.target.result);
+
+          if (typeof parsedData !== 'object' || parsedData === null || Array.isArray(parsedData)) {
+            throw new Error('Invalid JSON format');
+          }
+
+          const confirmMsg =
+            i18nProvider.t('options_backup_confirm_import') || 'Are you sure you want to restore?';
+          if (confirm(confirmMsg)) {
+            if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+              chrome.storage.local.clear(() => {
+                chrome.storage.local.set(parsedData, () => {
+                  showToast(i18nProvider.t('options_backup_toast_imported'));
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 1000);
+                });
+              });
+            } else {
+              showToast(i18nProvider.t('options_backup_toast_imported'));
+            }
+          }
+        } catch (err) {
+          console.error('[AtCoder Workspace] Backup import error:', err);
+          const errorMsg =
+            i18nProvider.t('options_backup_error_invalid') || 'Error: Invalid backup file';
+          showToast(errorMsg, 4000);
+        }
+        importFileInput.value = '';
+      };
+      reader.readAsText(file);
+    });
+  }
+
   // Init
   loadSettings();
   loadProblemStatuses();
