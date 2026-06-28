@@ -40,15 +40,13 @@
             const parent = link.parentNode;
             if (parent.querySelector('.ac-editorial-badge')) return;
 
-            // Inject simple yellow dot next to the link
+            // Inject 🔄 mark next to the link
             const badge = document.createElement('span');
             badge.className = 'ac-editorial-badge';
+            badge.textContent = '🔄';
+            badge.style.marginLeft = '6px';
+            badge.style.fontSize = '0.95em';
             badge.style.display = 'inline-block';
-            badge.style.width = '8px';
-            badge.style.height = '8px';
-            badge.style.borderRadius = '50%';
-            badge.style.backgroundColor = '#f59e0b';
-            badge.style.marginLeft = '8px';
             badge.style.verticalAlign = 'middle';
 
             // Insert after the link element

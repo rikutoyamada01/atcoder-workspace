@@ -111,6 +111,27 @@
       // Insert into title element
       titleSpan.appendChild(select);
 
+      // Prevent/Destroy Select2 customization on this select box to keep it simple without search box
+      const preventSelect2 = () => {
+        const script = document.createElement('script');
+        script.textContent = `
+          (function() {
+            const run = () => {
+              const $ = window.jQuery;
+              if ($ && $.fn && $.fn.select2) {
+                $('#ac-status-select').select2('destroy');
+              }
+            };
+            run();
+            setTimeout(run, 100);
+            setTimeout(run, 500);
+          })();
+        `;
+        document.body.appendChild(script);
+        script.remove();
+      };
+      preventSelect2();
+
       // Style helper to colorize selector based on status
       const updateSelectStyle = (val) => {
         if (val === 'self_ac') {
