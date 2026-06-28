@@ -532,6 +532,9 @@
   },
   "options_status_toast_saved": {
     "message": "Saved problem status"
+  },
+  "options_status_search_placeholder": {
+    "message": "Search/Add by Contest ID (e.g., abc300)"
   }
 }
 

@@ -515,67 +515,110 @@ func main() {
   // --- Problem Statuses Logic ---
   const statusTableBody = document.getElementById('status-table-body');
   const noStatusMessage = document.getElementById('no-status-message');
+  const statusSearchInput = document.getElementById('status-search-input');
 
   const loadProblemStatuses = () => {
     if (!statusTableBody) return;
 
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-      chrome.storage.local.get(['stats:ac_problems'], (res) => {
-        const acProblems = (res && res['stats:ac_problems']) || [];
+      chrome.storage.local.get(null, (items) => {
+        const data = items || {};
+        const acProblems = data['stats:ac_problems'] || [];
 
-        if (acProblems.length === 0) {
-          noStatusMessage.style.display = 'block';
-          statusTableBody.parentElement.style.display = 'none';
-          return;
-        }
-
-        // Get status keys for all AC problems
-        const statusKeys = acProblems.map((p) => {
-          const parts = p.split(':');
-          return `status:${parts[0]}:${parts[1]}`;
+        // Extract all problems that have manually configured status keys
+        const configuredProblems = [];
+        Object.keys(data).forEach((key) => {
+          if (key.startsWith('status:')) {
+            const parts = key.split(':');
+            if (parts.length === 3) {
+              configuredProblems.push(`${parts[1]}:${parts[2]}`);
+            }
+          }
         });
 
-        chrome.storage.local.get(statusKeys, (statusRes) => {
-          renderProblemStatuses(acProblems, statusRes || {});
-        });
+        // Merge them and remove duplicates
+        const allProblems = Array.from(new Set([...acProblems, ...configuredProblems]));
+        renderProblemStatuses(allProblems, data);
       });
     } else {
       // Mock data for local testing
       const mockAc = ['abc300:abc300_a', 'abc300:abc300_b', 'abc301:abc301_a'];
       const mockStatuses = {
+        'stats:ac_problems': mockAc,
         'status:abc300:abc300_a': 'self_ac',
         'status:abc300:abc300_b': 'editorial_ac',
       };
-      renderProblemStatuses(mockAc, mockStatuses);
+      const allProblems = Array.from(new Set([...mockAc, 'abc300:abc300_a', 'abc300:abc300_b']));
+      renderProblemStatuses(allProblems, mockStatuses);
     }
   };
 
-  const renderProblemStatuses = (acProblems, statuses) => {
+  const renderProblemStatuses = (allProblems, statuses) => {
+    if (!statusTableBody) return;
+
+    const query = statusSearchInput ? statusSearchInput.value.trim().toLowerCase() : '';
+    let filteredProblems = [...allProblems];
+
+    // If query is an alphanumeric string of at least 3 chars (e.g., "abc300"),
+    // dynamically generate unsolved problems (A-H) for it to allow pre-configuration.
+    if (query.match(/^[a-z0-9_-]{3,}$/)) {
+      const suffix = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+      suffix.forEach((s) => {
+        const tempKey = `${query}:${query}_${s}`;
+        if (!filteredProblems.includes(tempKey)) {
+          filteredProblems.push(tempKey);
+        }
+      });
+    }
+
+    // Apply filter query
+    if (query) {
+      filteredProblems = filteredProblems.filter((p) => p.toLowerCase().includes(query));
+    }
+
+    if (filteredProblems.length === 0) {
+      noStatusMessage.style.display = 'block';
+      statusTableBody.parentElement.style.display = 'none';
+      return;
+    }
+
     statusTableBody.innerHTML = '';
     noStatusMessage.style.display = 'none';
     statusTableBody.parentElement.style.display = 'table';
 
     // Sort by contest ID, then problem ID
-    acProblems.sort();
+    filteredProblems.sort();
 
-    acProblems.forEach((problemKey) => {
+    filteredProblems.forEach((problemKey) => {
       const parts = problemKey.split(':');
       if (parts.length < 2) return;
       const contestId = parts[0];
       const problemId = parts[1];
 
       const statusKey = `status:${contestId}:${problemId}`;
-      // Default to 'self_ac' if solved but no status key is set yet
-      const currentStatus = statuses[statusKey] || 'self_ac';
+
+      // Resolve status:
+      // 1. Explicitly saved status key
+      // 2. 'self_ac' if solved (present in stats:ac_problems) but no key saved
+      // 3. 'unsolved' if not solved and no key saved
+      let currentStatus = 'unsolved';
+      if (statuses[statusKey]) {
+        currentStatus = statuses[statusKey];
+      } else {
+        const acProblems = statuses['stats:ac_problems'] || [];
+        if (acProblems.includes(problemKey)) {
+          currentStatus = 'self_ac';
+        }
+      }
 
       const formattedProblem = problemId.toUpperCase().replace(contestId.toUpperCase() + '_', '');
       const formattedContest = contestId.toUpperCase();
 
       const row = document.createElement('tr');
 
-      let dotClass = 'dot-self';
+      let dotClass = 'dot-unsolved';
+      if (currentStatus === 'self_ac') dotClass = 'dot-self';
       if (currentStatus === 'editorial_ac') dotClass = 'dot-editorial';
-      if (currentStatus === 'unsolved') dotClass = 'dot-unsolved';
 
       row.innerHTML = `
         <td style="font-weight: 600;">${escapeHtml(formattedContest)}</td>
@@ -598,20 +641,36 @@ func main() {
         const cId = e.target.getAttribute('data-contest');
         const pId = e.target.getAttribute('data-problem');
         const pKey = e.target.getAttribute('data-key');
+        const targetStatusKey = `status:${cId}:${pId}`;
 
-        saveSetting(
-          `status:${cId}:${pId}`,
-          newStatus,
-          i18nProvider.t('options_status_toast_saved')
-        );
+        if (newStatus === 'unsolved') {
+          // Remove status key for unsolved state to save storage
+          if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+            chrome.storage.local.remove(targetStatusKey, () => {
+              showToast(i18nProvider.t('options_status_toast_saved'));
+              // Update badge dot color
+              const dot = document.getElementById(`dot-${pKey.replace(':', '-')}`);
+              if (dot) {
+                dot.className = 'status-badge-dot dot-unsolved';
+              }
+            });
+          } else {
+            showToast(i18nProvider.t('options_status_toast_saved'));
+            const dot = document.getElementById(`dot-${pKey.replace(':', '-')}`);
+            if (dot) {
+              dot.className = 'status-badge-dot dot-unsolved';
+            }
+          }
+        } else {
+          saveSetting(targetStatusKey, newStatus, i18nProvider.t('options_status_toast_saved'));
 
-        // Update badge dot color
-        const dot = document.getElementById(`dot-${pKey.replace(':', '-')}`);
-        if (dot) {
-          dot.className = 'status-badge-dot';
-          if (newStatus === 'self_ac') dot.classList.add('dot-self');
-          if (newStatus === 'editorial_ac') dot.classList.add('dot-editorial');
-          if (newStatus === 'unsolved') dot.classList.add('dot-unsolved');
+          // Update badge dot color
+          const dot = document.getElementById(`dot-${pKey.replace(':', '-')}`);
+          if (dot) {
+            dot.className = 'status-badge-dot';
+            if (newStatus === 'self_ac') dot.classList.add('dot-self');
+            if (newStatus === 'editorial_ac') dot.classList.add('dot-editorial');
+          }
         }
       });
 
@@ -641,6 +700,12 @@ func main() {
 
   if (saveSnippetBtn) {
     saveSnippetBtn.addEventListener('click', saveSnippet);
+  }
+
+  if (statusSearchInput) {
+    statusSearchInput.addEventListener('input', () => {
+      loadProblemStatuses();
+    });
   }
 
   // Init

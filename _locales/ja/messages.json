@@ -532,6 +532,9 @@
   },
   "options_status_toast_saved": {
     "message": "解答ステータスを保存しました"
+  },
+  "options_status_search_placeholder": {
+    "message": "コンテストIDで検索・追加 (例: abc300)"
   }
 }
 
