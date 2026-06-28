@@ -85,19 +85,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
       chrome.storage.local.get(['settings:split_ratio', 'settings:panel_open'], (res) => {
         // Load split ratio (default 0.5)
-        const ratio = res['settings:split_ratio'] !== undefined ? res['settings:split_ratio'] : 0.5;
+        const ratio =
+          res && res['settings:split_ratio'] !== undefined ? res['settings:split_ratio'] : 0.5;
         splitRatioInput.value = ratio;
         updateRatioText(ratio);
 
         // Load default panel state (default true)
         const panelOpen =
-          res['settings:panel_open'] !== undefined ? res['settings:panel_open'] : true;
+          res && res['settings:panel_open'] !== undefined ? res['settings:panel_open'] : true;
         panelOpenInput.checked = panelOpen;
       });
 
       // Load AC statistics
       chrome.storage.local.get(['stats:ac_problems'], (res) => {
-        const acProblems = res['stats:ac_problems'] || [];
+        const acProblems = (res && res['stats:ac_problems']) || [];
         const supportAcCountEl = document.getElementById('support-ac-count');
         if (supportAcCountEl) {
           supportAcCountEl.textContent = acProblems.length;
@@ -136,7 +137,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const calculateCacheStats = () => {
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
       chrome.storage.local.get(null, (items) => {
-        const keys = Object.keys(items);
+        const keys = items ? Object.keys(items) : [];
         // Saved codes starts with "code:"
         const codeKeys = keys.filter((key) => key.startsWith('code:'));
         const countUnit = i18nProvider.locale === 'ja' ? ' 件' : ' items';
@@ -205,7 +206,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (confirm(i18nProvider.t('settings_storage_cache_confirm'))) {
       if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
         chrome.storage.local.get(null, (items) => {
-          const keys = Object.keys(items);
+          const keys = items ? Object.keys(items) : [];
           const codeKeys = keys.filter((key) => key.startsWith('code:'));
 
           if (codeKeys.length === 0) {
@@ -282,7 +283,8 @@ func main() {
     const key = `settings:template:${lang}`;
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
       chrome.storage.local.get([key], (res) => {
-        templateCodeArea.value = res[key] !== undefined ? res[key] : DEFAULT_TEMPLATES[lang] || '';
+        templateCodeArea.value =
+          res && res[key] !== undefined ? res[key] : DEFAULT_TEMPLATES[lang] || '';
       });
     } else {
       templateCodeArea.value = DEFAULT_TEMPLATES[lang] || '';
@@ -317,7 +319,7 @@ func main() {
   const loadCustomSnippets = () => {
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
       chrome.storage.local.get(['settings:custom_snippets'], (res) => {
-        customSnippets = res['settings:custom_snippets'] || [];
+        customSnippets = (res && res['settings:custom_snippets']) || [];
         renderCustomSnippets();
       });
     } else {
@@ -519,7 +521,7 @@ func main() {
 
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
       chrome.storage.local.get(['stats:ac_problems'], (res) => {
-        const acProblems = res['stats:ac_problems'] || [];
+        const acProblems = (res && res['stats:ac_problems']) || [];
 
         if (acProblems.length === 0) {
           noStatusMessage.style.display = 'block';
@@ -534,7 +536,7 @@ func main() {
         });
 
         chrome.storage.local.get(statusKeys, (statusRes) => {
-          renderProblemStatuses(acProblems, statusRes);
+          renderProblemStatuses(acProblems, statusRes || {});
         });
       });
     } else {

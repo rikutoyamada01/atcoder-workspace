@@ -12,11 +12,12 @@
 
     // Get all status keys for this contest
     chrome.storage.local.get(null, (allData) => {
+      const data = allData || {};
       const editorialProblems = [];
       const prefix = `status:${contestId}:`;
 
-      Object.keys(allData).forEach((key) => {
-        if (key.startsWith(prefix) && allData[key] === 'editorial_ac') {
+      Object.keys(data).forEach((key) => {
+        if (key.startsWith(prefix) && data[key] === 'editorial_ac') {
           const problemId = key.substring(prefix.length);
           editorialProblems.push(problemId);
         }
