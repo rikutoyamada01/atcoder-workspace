@@ -538,6 +538,9 @@
   },
   "options_status_search_btn": {
     "message": "検索"
+  },
+  "options_status_fetch_error": {
+    "message": "コンテストが見つからないか、取得に失敗しました"
   }
 }
 

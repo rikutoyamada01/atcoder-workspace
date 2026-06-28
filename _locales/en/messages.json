@@ -538,6 +538,9 @@
   },
   "options_status_search_btn": {
     "message": "Search"
+  },
+  "options_status_fetch_error": {
+    "message": "Contest not found or fetch failed"
   }
 }
 

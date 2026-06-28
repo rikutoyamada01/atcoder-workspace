@@ -756,7 +756,12 @@ func main() {
         })
         .catch((err) => {
           console.error('[AtCoder Workspace] Auto-fetch error:', err);
-          // Silently fail, just load statuses normally
+          const errMsg =
+            typeof chrome !== 'undefined' && chrome.i18n
+              ? chrome.i18n.getMessage('options_status_fetch_error') ||
+                'Contest not found or fetch failed'
+              : 'Contest not found or fetch failed';
+          showToast(errMsg, 3000);
           loadProblemStatuses();
         });
     } else {
