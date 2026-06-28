@@ -567,11 +567,11 @@ func main() {
     const query = statusSearchInput ? statusSearchInput.value.trim().toLowerCase() : '';
     let filteredProblems = [...allProblems];
 
-    // Apply normalized filter query (ignores underscores for smooth abc300a match on abc300_a)
+    // Apply normalized filter query (ignores spaces and underscores for smooth "abc 300 a" match on abc300_a)
     if (query) {
       filteredProblems = filteredProblems.filter((p) => {
-        const cleanP = p.toLowerCase().replace(/_/g, '');
-        const cleanQuery = query.toLowerCase().replace(/_/g, '');
+        const cleanP = p.toLowerCase().replace(/[\s_]/g, '');
+        const cleanQuery = query.toLowerCase().replace(/[\s_]/g, '');
         return cleanP.includes(cleanQuery);
       });
     }
@@ -679,12 +679,15 @@ func main() {
   };
 
   const triggerContestSearch = () => {
-    const query = statusSearchInput ? statusSearchInput.value.trim().toLowerCase() : '';
-    if (!query) {
+    const rawQuery = statusSearchInput ? statusSearchInput.value.trim().toLowerCase() : '';
+    if (!rawQuery) {
       temporaryProblems = [];
       loadProblemStatuses();
       return;
     }
+
+    // Strip all spaces for contest ID extraction and fetch matching
+    const query = rawQuery.replace(/\s/g, '');
 
     // Extract contestId in case user typed problem ID like "abc300a" or "typical90a"
     let contestId = query;
