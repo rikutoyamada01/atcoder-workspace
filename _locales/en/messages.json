@@ -541,6 +541,12 @@
   },
   "options_status_fetch_error": {
     "message": "Contest not found or fetch failed"
+  },
+  "options_pagination_prev": {
+    "message": "Prev"
+  },
+  "options_pagination_next": {
+    "message": "Next"
   }
 }
 

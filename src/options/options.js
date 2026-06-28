@@ -521,6 +521,16 @@ func main() {
   // Memory cache for fetched contest problems
   let temporaryProblems = [];
 
+  // Pagination states
+  let currentPage = 1;
+  const itemsPerPage = 10;
+  let totalPages = 1;
+
+  const btnPrevPage = document.getElementById('btn-prev-page');
+  const btnNextPage = document.getElementById('btn-next-page');
+  const pageInfo = document.getElementById('page-info');
+  const statusPagination = document.getElementById('status-pagination');
+
   const loadProblemStatuses = () => {
     if (!statusTableBody) return;
 
@@ -579,6 +589,7 @@ func main() {
     if (filteredProblems.length === 0) {
       noStatusMessage.style.display = 'block';
       statusTableBody.parentElement.style.display = 'none';
+      if (statusPagination) statusPagination.style.display = 'none';
       return;
     }
 
@@ -586,10 +597,26 @@ func main() {
     noStatusMessage.style.display = 'none';
     statusTableBody.parentElement.style.display = 'table';
 
-    // Sort by contest ID, then problem ID
-    filteredProblems.sort();
+    // Recalculate pagination
+    totalPages = Math.ceil(filteredProblems.length / itemsPerPage) || 1;
+    if (currentPage > totalPages) {
+      currentPage = totalPages;
+    }
 
-    filteredProblems.forEach((problemKey) => {
+    // Toggle pagination UI visibility
+    if (statusPagination) {
+      statusPagination.style.display = totalPages > 1 ? 'flex' : 'none';
+      if (pageInfo) pageInfo.textContent = `${currentPage} / ${totalPages}`;
+      if (btnPrevPage) btnPrevPage.disabled = currentPage === 1;
+      if (btnNextPage) btnNextPage.disabled = currentPage === totalPages;
+    }
+
+    // Sort and slice current page items
+    filteredProblems.sort();
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const pageProblems = filteredProblems.slice(startIndex, startIndex + itemsPerPage);
+
+    pageProblems.forEach((problemKey) => {
       const parts = problemKey.split(':');
       if (parts.length < 2) return;
       const contestId = parts[0];
@@ -795,6 +822,8 @@ func main() {
 
   if (statusSearchInput) {
     statusSearchInput.addEventListener('input', () => {
+      // Reset to page 1 on input
+      currentPage = 1;
       // If cleared, reset temporary memory
       if (!statusSearchInput.value.trim()) {
         temporaryProblems = [];
@@ -805,6 +834,8 @@ func main() {
     statusSearchInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
+        // Reset to page 1 on new search trigger
+        currentPage = 1;
         triggerContestSearch();
       }
     });
@@ -812,7 +843,28 @@ func main() {
 
   if (statusSearchBtn) {
     statusSearchBtn.addEventListener('click', () => {
+      // Reset to page 1 on new search trigger
+      currentPage = 1;
       triggerContestSearch();
+    });
+  }
+
+  // Pagination click handlers
+  if (btnPrevPage) {
+    btnPrevPage.addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        loadProblemStatuses();
+      }
+    });
+  }
+
+  if (btnNextPage) {
+    btnNextPage.addEventListener('click', () => {
+      if (currentPage < totalPages) {
+        currentPage++;
+        loadProblemStatuses();
+      }
     });
   }
 
