@@ -41,10 +41,104 @@
             this.panelOpen = res['settings:panel_open'];
           }
           this.setupLayout();
+          this.setupStatusSelector();
         });
       } else {
         this.setupLayout();
+        this.setupStatusSelector();
       }
+    }
+
+    /**
+     * Injects the self/editorial AC status select dropdown next to the problem title.
+     */
+    setupStatusSelector() {
+      // Find problem title element
+      const titleSpan = document.querySelector('.col-sm-12 span.h2');
+      if (!titleSpan) return;
+
+      // Extract contestId and problemId from URL
+      const match = window.location.pathname.match(/\/contests\/([^/]+)\/tasks\/([^/]+)/);
+      if (!match) return;
+
+      const contestId = match[1];
+      const problemId = match[2];
+      const statusKey = `status:${contestId}:${problemId}`;
+
+      // Create select element
+      const select = document.createElement('select');
+      select.className = 'ac-status-select';
+      select.id = 'ac-status-select';
+      select.style.display = 'inline-block';
+      select.style.width = 'auto';
+      select.style.marginLeft = '12px';
+      select.style.padding = '4px 8px';
+      select.style.fontSize = '12px';
+      select.style.height = '28px';
+      select.style.borderRadius = '4px';
+      select.style.verticalAlign = 'middle';
+      select.style.border = '1px solid #ccc';
+      select.style.backgroundColor = '#fff';
+      select.style.color = '#333';
+
+      // Load translations using chrome.i18n
+      const tUnsolved =
+        typeof chrome !== 'undefined' && chrome.i18n
+          ? chrome.i18n.getMessage('options_status_option_unsolved')
+          : '未学習';
+      const tSelf =
+        typeof chrome !== 'undefined' && chrome.i18n
+          ? chrome.i18n.getMessage('options_status_option_self')
+          : '自力AC';
+      const tEditorial =
+        typeof chrome !== 'undefined' && chrome.i18n
+          ? chrome.i18n.getMessage('options_status_option_editorial')
+          : '解説AC';
+
+      const options = [
+        { value: 'unsolved', text: tUnsolved },
+        { value: 'self_ac', text: tSelf },
+        { value: 'editorial_ac', text: tEditorial },
+      ];
+
+      options.forEach((opt) => {
+        const o = document.createElement('option');
+        o.value = opt.value;
+        o.textContent = opt.text;
+        select.appendChild(o);
+      });
+
+      // Insert into title element
+      titleSpan.appendChild(select);
+
+      // Load initial state
+      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.get([statusKey, 'stats:ac_problems'], (res) => {
+          const status = res && res[statusKey];
+          if (status) {
+            select.value = status;
+          } else {
+            // Default to self_ac if already solved, else unsolved
+            const acProblems = (res && res['stats:ac_problems']) || [];
+            const problemKey = `${contestId}:${problemId}`;
+            if (acProblems.includes(problemKey)) {
+              select.value = 'self_ac';
+              // Backport default solved status to storage
+              chrome.storage.local.set({ [statusKey]: 'self_ac' });
+            } else {
+              select.value = 'unsolved';
+            }
+          }
+        });
+      }
+
+      // Handle status change
+      select.onchange = () => {
+        const val = select.value;
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+          chrome.storage.local.set({ [statusKey]: val });
+        }
+      };
     }
 
     /**

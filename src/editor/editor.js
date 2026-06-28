@@ -921,11 +921,9 @@ impl UnionFind {
                 e.data.isContestActive,
                 acCount,
                 langText,
-                e.data.time,
-                'self_ac'
+                e.data.time
               );
               updateConsole(celebrationHTML);
-              bindEditorialMarkEvent(contestId, problemId);
             });
           });
         } else {
@@ -1109,11 +1107,9 @@ impl UnionFind {
                   e.data.isContestActive,
                   acCount,
                   langText,
-                  e.data.time,
-                  'self_ac'
+                  e.data.time
                 );
                 updateConsole(celebrationHTML);
-                bindEditorialMarkEvent(contestId, problemId);
               });
             });
           } else {
@@ -1625,24 +1621,6 @@ impl UnionFind {
   }
 
   /**
-   * 解答ステータスを解説ACにマークするイベントをバインドする
-   */
-  function bindEditorialMarkEvent(targetContestId, targetProblemId) {
-    const btn = document.getElementById('editorial-mark-btn');
-    if (!btn) return;
-    btn.onclick = () => {
-      saveProblemStatus(targetContestId, targetProblemId, 'editorial_ac', () => {
-        btn.className = 'ac-btn ac-btn-editorial-marked';
-        const markedText = i18nProvider
-          ? i18nProvider.t('editor_ac_btn_marked_editorial')
-          : '解説ACとして記録済';
-        btn.textContent = markedText;
-        btn.disabled = true;
-      });
-    };
-  }
-
-  /**
    * Generates celebration HTML with social sharing and review prompt.
    * @param {string} contestId
    * @param {string} problemId
@@ -1650,7 +1628,6 @@ impl UnionFind {
    * @param {number} acCount
    * @param {string} langText
    * @param {string} time
-   * @param {string} currentStatus
    * @returns {string}
    */
   function generateACCelebrationHTML(
@@ -1659,8 +1636,7 @@ impl UnionFind {
     isContestActive,
     acCount,
     langText,
-    time,
-    currentStatus
+    time
   ) {
     const formattedProblem = problemId.toUpperCase().replace(contestId.toUpperCase() + '_', '');
     const titleText = i18nProvider ? i18nProvider.t('editor_ac_title') : 'AtCoderでACしました！ 🎉';
@@ -1685,20 +1661,8 @@ impl UnionFind {
       ? i18nProvider.t('editor_ac_btn_share')
       : '結果をX (Twitter) でシェア';
 
-    const isEditorial = currentStatus === 'editorial_ac';
-    const btnClass = isEditorial ? 'ac-btn-editorial-marked' : 'ac-btn-editorial-mark';
-    const btnText = isEditorial
-      ? i18nProvider
-        ? i18nProvider.t('editor_ac_btn_marked_editorial')
-        : '解説ACとして記録済'
-      : i18nProvider
-        ? i18nProvider.t('editor_ac_btn_mark_editorial')
-        : '解説ACとしてマーク';
-    const disabledAttr = isEditorial ? 'disabled' : '';
-
     return `
       <div class="ac-action-buttons" style="margin-top: 8px;">
-        <button id="editorial-mark-btn" class="ac-btn ${btnClass}" ${disabledAttr}>${escapeHtml(btnText)}</button>
         ${
           showReviewButton
             ? `

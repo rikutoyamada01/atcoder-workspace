@@ -237,6 +237,13 @@
                   turnstileDebug: res.turnstileDebug,
                   isContestActive: isContestActive(),
                 });
+
+                if (res.status === 'AC') {
+                  const select = document.getElementById('ac-status-select');
+                  if (select) {
+                    select.value = 'self_ac';
+                  }
+                }
               } else {
                 notifyEditor({
                   type: 'submit-status',
@@ -577,6 +584,13 @@
             memory: pollRes.memory,
             isContestActive: isContestActive(),
           });
+
+          if (pollRes.status === 'AC') {
+            const select = document.getElementById('ac-status-select');
+            if (select) {
+              select.value = 'self_ac';
+            }
+          }
         } else {
           notifyEditor({
             type: 'pending-submit-status',
