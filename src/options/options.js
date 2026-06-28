@@ -516,6 +516,10 @@ func main() {
   const statusTableBody = document.getElementById('status-table-body');
   const noStatusMessage = document.getElementById('no-status-message');
   const statusSearchInput = document.getElementById('status-search-input');
+  const statusSearchBtn = document.getElementById('status-search-btn');
+
+  // Memory cache for fetched contest problems
+  let temporaryProblems = [];
 
   const loadProblemStatuses = () => {
     if (!statusTableBody) return;
@@ -536,8 +540,10 @@ func main() {
           }
         });
 
-        // Merge them and remove duplicates
-        const allProblems = Array.from(new Set([...acProblems, ...configuredProblems]));
+        // Merge AC problems, configured problems, and memory temporary problems
+        const allProblems = Array.from(
+          new Set([...acProblems, ...configuredProblems, ...temporaryProblems])
+        );
         renderProblemStatuses(allProblems, data);
       });
     } else {
@@ -548,7 +554,9 @@ func main() {
         'status:abc300:abc300_a': 'self_ac',
         'status:abc300:abc300_b': 'editorial_ac',
       };
-      const allProblems = Array.from(new Set([...mockAc, 'abc300:abc300_a', 'abc300:abc300_b']));
+      const allProblems = Array.from(
+        new Set([...mockAc, 'abc300:abc300_a', 'abc300:abc300_b', ...temporaryProblems])
+      );
       renderProblemStatuses(allProblems, mockStatuses);
     }
   };
@@ -558,18 +566,6 @@ func main() {
 
     const query = statusSearchInput ? statusSearchInput.value.trim().toLowerCase() : '';
     let filteredProblems = [...allProblems];
-
-    // If query is an alphanumeric string of at least 3 chars (e.g., "abc300"),
-    // dynamically generate unsolved problems (A-H) for it to allow pre-configuration.
-    if (query.match(/^[a-z0-9_-]{3,}$/)) {
-      const suffix = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-      suffix.forEach((s) => {
-        const tempKey = `${query}:${query}_${s}`;
-        if (!filteredProblems.includes(tempKey)) {
-          filteredProblems.push(tempKey);
-        }
-      });
-    }
 
     // Apply filter query
     if (query) {
@@ -678,6 +674,74 @@ func main() {
     });
   };
 
+  const triggerContestSearch = () => {
+    const query = statusSearchInput ? statusSearchInput.value.trim().toLowerCase() : '';
+    if (!query) {
+      temporaryProblems = [];
+      loadProblemStatuses();
+      return;
+    }
+
+    // Only attempt live fetch if it matches standard contest ID pattern
+    if (query.match(/^[a-z0-9_-]{3,}$/)) {
+      // Check if we already have loaded temporary problems for this query to avoid double fetching
+      const alreadyHas = temporaryProblems.some((p) => p.startsWith(`${query}:`));
+      if (alreadyHas) {
+        loadProblemStatuses();
+        return;
+      }
+
+      showToast(
+        typeof chrome !== 'undefined' && chrome.i18n
+          ? chrome.i18n.getMessage('editor_loading') || 'Loading...'
+          : 'Loading...',
+        2000
+      );
+
+      const url = `https://atcoder.jp/contests/${query}/tasks`;
+      fetch(url)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error('Contest tasks page not found');
+          }
+          return response.text();
+        })
+        .then((html) => {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          const links = doc.querySelectorAll('table tbody tr td:first-child a');
+          const fetchedKeys = [];
+
+          links.forEach((link) => {
+            const href = link.getAttribute('href');
+            if (!href) return;
+            const match = href.match(new RegExp(`^\\/contests\\/${query}\\/tasks\\/([^/?#]+)$`));
+            if (match) {
+              const problemId = match[1];
+              fetchedKeys.push(`${query}:${problemId}`);
+            }
+          });
+
+          if (fetchedKeys.length > 0) {
+            // Merge into memory temporaryProblems
+            fetchedKeys.forEach((key) => {
+              if (!temporaryProblems.includes(key)) {
+                temporaryProblems.push(key);
+              }
+            });
+            loadProblemStatuses();
+          }
+        })
+        .catch((err) => {
+          console.error('[AtCoder Workspace] Auto-fetch error:', err);
+          // Silently fail, just load statuses normally
+          loadProblemStatuses();
+        });
+    } else {
+      loadProblemStatuses();
+    }
+  };
+
   // HTML Escape helper
   function escapeHtml(str) {
     if (!str) return '';
@@ -704,7 +768,24 @@ func main() {
 
   if (statusSearchInput) {
     statusSearchInput.addEventListener('input', () => {
+      // If cleared, reset temporary memory
+      if (!statusSearchInput.value.trim()) {
+        temporaryProblems = [];
+      }
       loadProblemStatuses();
+    });
+
+    statusSearchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        triggerContestSearch();
+      }
+    });
+  }
+
+  if (statusSearchBtn) {
+    statusSearchBtn.addEventListener('click', () => {
+      triggerContestSearch();
     });
   }
 
