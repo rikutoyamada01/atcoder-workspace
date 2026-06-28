@@ -567,9 +567,13 @@ func main() {
     const query = statusSearchInput ? statusSearchInput.value.trim().toLowerCase() : '';
     let filteredProblems = [...allProblems];
 
-    // Apply filter query
+    // Apply normalized filter query (ignores underscores for smooth abc300a match on abc300_a)
     if (query) {
-      filteredProblems = filteredProblems.filter((p) => p.toLowerCase().includes(query));
+      filteredProblems = filteredProblems.filter((p) => {
+        const cleanP = p.toLowerCase().replace(/_/g, '');
+        const cleanQuery = query.toLowerCase().replace(/_/g, '');
+        return cleanP.includes(cleanQuery);
+      });
     }
 
     if (filteredProblems.length === 0) {
@@ -682,10 +686,23 @@ func main() {
       return;
     }
 
-    // Only attempt live fetch if it matches standard contest ID pattern
-    if (query.match(/^[a-z0-9_-]{3,}$/)) {
-      // Check if we already have loaded temporary problems for this query to avoid double fetching
-      const alreadyHas = temporaryProblems.some((p) => p.startsWith(`${query}:`));
+    // Extract contestId in case user typed problem ID like "abc300a" or "typical90a"
+    let contestId = query;
+    const abcMatch = query.match(/^(abc[0-9]{3}|arc[0-9]{3}|agc[0-9]{3}|ahc[0-9]{3})([a-h]|ex)$/);
+    if (abcMatch) {
+      contestId = abcMatch[1];
+    } else {
+      const generalMatch = query.match(/^([a-z0-9_-]{3,})([a-h])$/);
+      // Avoid splitting year numbers like keyence2020
+      if (generalMatch && !generalMatch[1].match(/^[a-z0-9-]+20[1-2]$/)) {
+        contestId = generalMatch[1];
+      }
+    }
+
+    // Only attempt live fetch if contestId matches standard contest ID pattern
+    if (contestId.match(/^[a-z0-9_-]{3,}$/)) {
+      // Check if we already have some loaded temporary problems for this contestId to avoid double fetching
+      const alreadyHas = temporaryProblems.some((p) => p.startsWith(`${contestId}:`));
       if (alreadyHas) {
         loadProblemStatuses();
         return;
@@ -698,7 +715,7 @@ func main() {
         2000
       );
 
-      const url = `https://atcoder.jp/contests/${query}/tasks`;
+      const url = `https://atcoder.jp/contests/${contestId}/tasks`;
       fetch(url)
         .then((response) => {
           if (!response.ok) {
@@ -715,10 +732,12 @@ func main() {
           links.forEach((link) => {
             const href = link.getAttribute('href');
             if (!href) return;
-            const match = href.match(new RegExp(`^\\/contests\\/${query}\\/tasks\\/([^/?#]+)$`));
+            const match = href.match(
+              new RegExp(`^\\/contests\\/${contestId}\\/tasks\\/([^/?#]+)$`)
+            );
             if (match) {
               const problemId = match[1];
-              fetchedKeys.push(`${query}:${problemId}`);
+              fetchedKeys.push(`${contestId}:${problemId}`);
             }
           });
 
