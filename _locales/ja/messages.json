@@ -571,6 +571,9 @@
   },
   "options_backup_error_invalid": {
     "message": "エラー: 無効なバックアップファイルです"
+  },
+  "editor_console_warning_note": {
+    "message": "※ 浮動小数点数を出力する問題や、解が複数存在する問題（スペシャルジャッジ）では、実際の提出結果（AC/WA）と異なる場合があります。"
   }
 }
 

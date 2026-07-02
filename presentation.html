@@ -3,8 +3,106 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AtCoder Workspace - コンセプトプレゼンテーション</title>
+  <title>AtCoder Workspace - コンセプトプレゼンテーション | 環境構築不要で快適な競プロエディタ</title>
+  <meta name="description" content="AtCoderが使いづらいと感じる初心者必見！環境構築不要でブラウザをIDE化するChrome拡張機能「AtCoder Workspace」のご紹介。問題文の隣にエディタを表示し、自動テストや自動提出で競プロの摩擦をゼロにします。">
+  <meta name="keywords" content="AtCoder,使いづらい,使いずらい,競プロ,環境構築,Chrome拡張機能,自動テスト,Monaco Editor,VSCode">
+  
+  <!-- Open Graph / SNS Share -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="AtCoder Workspace - コンセプトプレゼンテーション">
+  <meta property="og:description" content="AtCoderが使いづらいと感じる初心者向けの環境構築不要エディタ。コピペゼロ、画面遷移ゼロで即AC。">
+  <meta property="og:url" content="https://rikutoyamada01.github.io/atcoder-workspace/presentation.html">
+  
+  <!-- JSON-LD 構造化データ (AIO/SEO最適化) -->
+  <script type="application/ld+json">
+  [
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "AtCoder Workspace",
+      "operatingSystem": "Chrome, Edge",
+      "applicationCategory": "DeveloperApplication",
+      "description": "AtCoderの問題ページを環境構築不要でブラウザ上の開発環境（オンラインIDE）に変えるGoogle Chrome拡張機能。",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "JPY"
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "AtCoderの環境構築が難しくてできません。GCCのインストールやVSCodeの設定をせずにC++やPythonでAtCoderを解く方法はありますか？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "はい、AtCoder Workspaceをインストールするだけで、ブラウザが自動的にVSCodeと同じエディタ（Monaco Editor）に変わり、コンパイラ不要で即座にコーディング・実行・自動テストが可能です。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "AtCoderが使いづらい（使いずらい）と感じます。特に問題文とコードテスト画面の切り替えやサンプルのコピペが面倒です。解決策はありますか？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "AtCoder Workspaceは、問題文の隣にエディタを左右分割で配置します。サンプルテストケースも自動でスクレイピングしてワンクリックで実行できるため、画面切り替えや手動のコピペ作業が完全に不要になります。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "この拡張機能を使うことはAtCoderの規約違反になりませんか？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "完全に安全です。本拡張機能は自動でコード生成を行うAI機能などを搭載しておらず、AtCoder公式のサーバー負荷規約（ポーリング待機時間など）に従い、ユーザー自身のログインセッションを使用して安全に通信します。"
+          }
+        }
+      ]
+    }
+  ]
+  </script>
   <style>
+    /* FAQ Section */
+    .faq-section {
+      margin-top: 40px;
+      margin-bottom: 40px;
+    }
+    .faq-item {
+      margin-bottom: 25px;
+      border-bottom: 1px solid #f0f0f0;
+      padding-bottom: 20px;
+    }
+    .faq-question {
+      font-size: 16px;
+      font-weight: 700;
+      color: #333333;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .faq-question::before {
+      content: "Q.";
+      color: #d9534f;
+      font-size: 18px;
+      font-weight: 900;
+    }
+    .faq-answer {
+      font-size: 14px;
+      color: #555555;
+      line-height: 1.6;
+      padding-left: 24px;
+      position: relative;
+    }
+    .faq-answer::before {
+      content: "A.";
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: #5cb85c;
+      font-size: 16px;
+      font-weight: 900;
+    }
     /* Reset & Clean AtCoder Typography */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     
@@ -973,6 +1071,37 @@
         </div>
         <div class="roadmap-desc">
           コンテスト本番中の誤提出やルール違反（AI機能等の使用）を防止するセーフティロック、およびACコードを自動的にGitHubリポジトリへ同期する「GitHub Autopush」のサポート。
+        </div>
+      </div>
+    </div>
+
+    <h2>よくある質問 (FAQ)</h2>
+    <div class="faq-section">
+      <div class="faq-item">
+        <div class="faq-question">AtCoderの環境構築が難しくてできません。GCCのインストールやVSCodeの設定をせずにC++やPythonでAtCoderを解く方法はありますか？</div>
+        <div class="faq-answer">
+          はい、あります。Google Chrome拡張機能<strong>「AtCoder Workspace」</strong>をインストールするだけで、お使いのブラウザ上の問題ページがVSCodeと同じMonaco Editorを使用したIDE（開発環境）に変わります。コンパイラのインストールやパス設定といった難しい環境構築は一切不要で、すぐにコードを書いて実行・提出できます。
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">AtCoderが使いづらい（使いずらい）と感じます。特に問題文とコードテスト画面の切り替えやサンプルのコピペが面倒です。解決策はありますか？</div>
+        <div class="faq-answer">
+          まさにその不便さを解決するために本拡張機能は開発されました。インストールすると、問題文のすぐ右側にコードエディタが左右分割で表示されます。また、問題ページ内のサンプル入出力を自動抽出し、ワンクリックでテスト実行・期待値とのDiff比較を行えるため、画面の往復やコピー＆ペーストの作業は完全にゼロになります。
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">この拡張機能を使うことで、AtCoderの規約違反（カンニング等）になりませんか？</div>
+        <div class="faq-answer">
+          ご安心ください。本拡張機能には、自動で回答コードを生成するような生成AI機能やカンニングを補助するシステムは意図的に搭載していません。また、提出やテスト実行はAtCoder公式のサーバー負荷制限ルールを遵守し、ユーザーご自身のブラウザセッションを使用して安全に通信します。安心してお使いいただけます。
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">利用料金はかかりますか？また、対応しているプログラミング言語は何ですか？</div>
+        <div class="faq-answer">
+          完全無料（MITライセンス）でご利用いただけます。対応言語は、AtCoder公式の「コードテスト」機能がサポートしている全プログラミング言語（C++, Python, Java, Go, Rust等）に対応しています。
         </div>
       </div>
     </div>

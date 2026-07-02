@@ -571,6 +571,9 @@
   },
   "options_backup_error_invalid": {
     "message": "Error: Invalid backup file"
+  },
+  "editor_console_warning_note": {
+    "message": "* For problems involving floating-point outputs or multiple valid solutions (special judge), local test results may differ from the actual submission results (AC/WA)."
   }
 }
 
