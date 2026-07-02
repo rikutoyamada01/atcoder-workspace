@@ -574,6 +574,27 @@
   },
   "editor_console_warning_note": {
     "message": "* For problems involving floating-point outputs or multiple valid solutions (special judge), local test results may differ from the actual submission results (AC/WA)."
+  },
+  "options_backup_mode_merge": {
+    "message": "Merge (keep existing data)"
+  },
+  "options_backup_mode_overwrite": {
+    "message": "Overwrite (clear existing data)"
+  },
+  "settings_storage_cache_details_toggle": {
+    "message": "Show cache details"
+  },
+  "settings_storage_cache_col_problem": {
+    "message": "Problem ID"
+  },
+  "settings_storage_cache_col_action": {
+    "message": "Action"
+  },
+  "settings_storage_cache_btn_delete": {
+    "message": "Delete"
+  },
+  "options_backup_confirm_merge": {
+    "message": "Are you sure you want to restore by merging (adding/updating) the backup into your current data?"
   }
 }
 

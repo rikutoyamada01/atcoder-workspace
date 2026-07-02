@@ -16,6 +16,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const panelOpenInput = document.getElementById('panel-open');
   const cacheCountEl = document.getElementById('cache-count');
   const clearCacheBtn = document.getElementById('clear-cache-btn');
+  const cacheListBody = document.getElementById('cache-list-body');
+  const importModeSelect = document.getElementById('import-mode-select');
   const extensionVersionEl = document.getElementById('extension-version');
   const toast = document.getElementById('toast');
   const backBtn = document.getElementById('back-btn');
@@ -142,7 +144,83 @@ document.addEventListener('DOMContentLoaded', async () => {
         const codeKeys = keys.filter((key) => key.startsWith('code:'));
         const countUnit = i18nProvider.locale === 'ja' ? ' 件' : ' items';
         cacheCountEl.textContent = `${codeKeys.length}${countUnit}`;
+
+        // Render granular cache details
+        if (cacheListBody) {
+          cacheListBody.innerHTML = '';
+          if (codeKeys.length === 0) {
+            const emptyRow = document.createElement('tr');
+            emptyRow.innerHTML = `
+              <td colspan="2" style="text-align: center; color: #999; padding: 12px;">
+                ${escapeHtml(i18nProvider.t('settings_storage_cache_empty') || '保存された履歴はありません。')}
+              </td>
+            `;
+            cacheListBody.appendChild(emptyRow);
+          } else {
+            // Sort codeKeys for user convenience
+            codeKeys.sort();
+            codeKeys.forEach((key) => {
+              // Parse display name (e.g. code:abc300:abc300_a -> abc300_a)
+              const parts = key.split(':');
+              const displayId = parts.length >= 3 ? parts[2] : (parts.length >= 2 ? parts[1] : key);
+              const formattedProblemId = displayId.toUpperCase();
+
+              const row = document.createElement('tr');
+              row.innerHTML = `
+                <td style="font-family: monospace; font-weight: 600;">${escapeHtml(formattedProblemId)}</td>
+                <td style="text-align: center;">
+                  <button type="button" class="btn btn-danger btn-xs btn-delete-cache" data-key="${escapeHtml(key)}" style="padding: 2px 8px; font-size: 11px;">
+                    ${escapeHtml(i18nProvider.t('settings_storage_cache_btn_delete') || '削除')}
+                  </button>
+                </td>
+              `;
+
+              const deleteBtn = row.querySelector('.btn-delete-cache');
+              deleteBtn.addEventListener('click', () => {
+                const targetKey = deleteBtn.getAttribute('data-key');
+                const confirmText = i18nProvider.locale === 'ja' 
+                  ? `${formattedProblemId} の保存コード履歴を削除しますか？`
+                  : `Are you sure you want to delete the saved code for ${formattedProblemId}?`;
+                if (confirm(confirmText)) {
+                  chrome.storage.local.remove(targetKey, () => {
+                    calculateCacheStats();
+                    showToast(i18nProvider.t('settings_storage_cache_success') || '削除しました');
+                  });
+                }
+              });
+
+              cacheListBody.appendChild(row);
+            });
+          }
+        }
       });
+    } else {
+      // Mock data for local testing
+      const mockCodeKeys = ['code:abc300:abc300_a', 'code:abc300:abc300_b'];
+      const countUnit = i18nProvider.locale === 'ja' ? ' 件' : ' items';
+      cacheCountEl.textContent = `${mockCodeKeys.length}${countUnit}`;
+      if (cacheListBody) {
+        cacheListBody.innerHTML = '';
+        mockCodeKeys.forEach((key) => {
+          const parts = key.split(':');
+          const displayId = parts.length >= 3 ? parts[2] : key;
+          const formattedProblemId = displayId.toUpperCase();
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td style="font-family: monospace; font-weight: 600;">${escapeHtml(formattedProblemId)}</td>
+            <td style="text-align: center;">
+              <button type="button" class="btn btn-danger btn-xs btn-delete-cache" data-key="${escapeHtml(key)}" style="padding: 2px 8px; font-size: 11px;">
+                ${escapeHtml(i18nProvider.t('settings_storage_cache_btn_delete') || '削除')}
+              </button>
+            </td>
+          `;
+          const deleteBtn = row.querySelector('.btn-delete-cache');
+          deleteBtn.addEventListener('click', () => {
+            showToast(`[Mock] Deleted ${formattedProblemId}`);
+          });
+          cacheListBody.appendChild(row);
+        });
+      }
     }
   };
 
@@ -919,18 +997,31 @@ func main() {
             throw new Error('Invalid JSON format');
           }
 
+          const importMode = importModeSelect ? importModeSelect.value : 'merge';
           const confirmMsg =
-            i18nProvider.t('options_backup_confirm_import') || 'Are you sure you want to restore?';
+            importMode === 'overwrite'
+              ? (i18nProvider.t('options_backup_confirm_import') || 'Are you sure you want to restore? Current settings, snippets, and problem statuses will be overwritten.')
+              : (i18nProvider.t('options_backup_confirm_merge') || 'Are you sure you want to restore by merging the backup into your current data?');
           if (confirm(confirmMsg)) {
             if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-              chrome.storage.local.clear(() => {
+              if (importMode === 'overwrite') {
+                chrome.storage.local.clear(() => {
+                  chrome.storage.local.set(parsedData, () => {
+                    showToast(i18nProvider.t('options_backup_toast_imported'));
+                    setTimeout(() => {
+                      window.location.reload();
+                    }, 1000);
+                  });
+                });
+              } else {
+                // Merge mode: set data directly without clearing current storage
                 chrome.storage.local.set(parsedData, () => {
                   showToast(i18nProvider.t('options_backup_toast_imported'));
                   setTimeout(() => {
                     window.location.reload();
                   }, 1000);
                 });
-              });
+              }
             } else {
               showToast(i18nProvider.t('options_backup_toast_imported'));
             }

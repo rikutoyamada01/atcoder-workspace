@@ -574,6 +574,27 @@
   },
   "editor_console_warning_note": {
     "message": "※ 浮動小数点数を出力する問題や、解が複数存在する問題（スペシャルジャッジ）では、実際の提出結果（AC/WA）と異なる場合があります。"
+  },
+  "options_backup_mode_merge": {
+    "message": "マージ（既存データを保持）"
+  },
+  "options_backup_mode_overwrite": {
+    "message": "完全に上書き（既存データを消去）"
+  },
+  "settings_storage_cache_details_toggle": {
+    "message": "キャッシュの内訳を表示"
+  },
+  "settings_storage_cache_col_problem": {
+    "message": "問題 ID"
+  },
+  "settings_storage_cache_col_action": {
+    "message": "操作"
+  },
+  "settings_storage_cache_btn_delete": {
+    "message": "削除"
+  },
+  "options_backup_confirm_merge": {
+    "message": "バックアップを現在のデータにマージ（追加・更新）して復元しますか？"
   }
 }
 

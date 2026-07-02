@@ -82,18 +82,36 @@
             <h2 data-i18n="settings_storage_title">データとストレージ / Data & Storage</h2>
           </div>
           <div class="card-body">
-            <div class="setting-item">
-              <div class="setting-info">
-                <label data-i18n="settings_storage_cache_label">自動保存されたコードの履歴</label>
-                <p class="setting-description" data-i18n="settings_storage_cache_desc">ブラウザのローカル領域に保存されている提出コードや一時保存データの情報です。</p>
-              </div>
-              <div class="setting-control-vertical">
-                <div class="storage-stats">
-                  <span class="stat-label" data-i18n="settings_storage_cache_count">キャッシュ件数:</span>
-                  <span id="cache-count" class="stat-value">0 件</span>
+            <div class="setting-item" style="flex-direction: column; align-items: flex-start; gap: 15px;">
+              <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; flex-wrap: wrap; gap: 10px; border: none; padding: 0;">
+                <div class="setting-info" style="flex: 1; min-width: 250px;">
+                  <label data-i18n="settings_storage_cache_label">自動保存されたコードの履歴</label>
+                  <p class="setting-description" data-i18n="settings_storage_cache_desc">ブラウザのローカル領域に保存されている提出コードや一時保存データの情報です。</p>
                 </div>
-                <button id="clear-cache-btn" class="btn btn-danger btn-sm" data-i18n="settings_storage_cache_clear">すべてのキャッシュデータを消去</button>
+                <div class="setting-control-vertical" style="align-items: flex-end;">
+                  <div class="storage-stats">
+                    <span class="stat-label" data-i18n="settings_storage_cache_count">キャッシュ件数:</span>
+                    <span id="cache-count" class="stat-value">0 件</span>
+                  </div>
+                  <button id="clear-cache-btn" class="btn btn-danger btn-sm" data-i18n="settings_storage_cache_clear">すべてのキャッシュデータを消去</button>
+                </div>
               </div>
+              <details id="cache-details" style="width: 100%;">
+                <summary style="cursor: pointer; color: #337ab7; font-size: 13px; user-select: none;" data-i18n="settings_storage_cache_details_toggle">キャッシュの内訳を表示</summary>
+                <div class="cache-list-container" style="max-height: 200px; overflow-y: auto; margin-top: 8px; border: 1px solid #ddd; border-radius: 4px; padding: 8px; background-color: #fafafa; width: 100%;">
+                  <table class="status-table" style="font-size: 12px; margin-bottom: 0; width: 100%;">
+                    <thead>
+                      <tr>
+                        <th data-i18n="settings_storage_cache_col_problem">問題 ID</th>
+                        <th data-i18n="settings_storage_cache_col_action" style="text-align: center; width: 80px;">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody id="cache-list-body">
+                      <!-- JSで動的に生成 -->
+                    </tbody>
+                  </table>
+                </div>
+              </details>
             </div>
           </div>
         </section>
@@ -154,9 +172,15 @@
               <div class="setting-info">
                 <p class="setting-description" data-i18n="options_backup_desc">拡張機能のすべての設定と解答ステータスをファイルに保存、またはファイルから復元できます。</p>
               </div>
-              <div style="display: flex; gap: 12px; margin-top: 15px; flex-wrap: wrap;">
+              <div style="display: flex; gap: 12px; margin-top: 15px; flex-wrap: wrap; align-items: center;">
                 <button type="button" id="btn-export-backup" class="btn btn-primary" data-i18n="options_backup_btn_export">バックアップをエクスポート</button>
-                <button type="button" id="btn-import-backup" class="btn btn-secondary" data-i18n="options_backup_btn_import">バックアップから復元</button>
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <button type="button" id="btn-import-backup" class="btn btn-secondary" data-i18n="options_backup_btn_import">バックアップから復元</button>
+                  <select id="import-mode-select" class="form-control" style="width: auto; height: 34px; padding: 4px 8px; font-size: 13px; margin-top: 0;">
+                    <option value="merge" selected data-i18n="options_backup_mode_merge">マージ（既存データを保持）</option>
+                    <option value="overwrite" data-i18n="options_backup_mode_overwrite">完全に上書き（既存データを消去）</option>
+                  </select>
+                </div>
                 <input type="file" id="import-file-input" accept=".json" style="display: none;">
               </div>
             </div>
