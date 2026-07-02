@@ -167,8 +167,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
               const row = document.createElement('tr');
               row.innerHTML = `
-                <td style="font-family: monospace; font-weight: 600;">${escapeHtml(formattedProblemId)}</td>
-                <td style="text-align: center;">
+                <td style="font-family: monospace; font-weight: 600; padding: 8px 12px;">${escapeHtml(formattedProblemId)}</td>
+                <td style="text-align: center; padding: 8px 12px;">
                   <button type="button" class="btn btn-danger btn-xs btn-delete-cache" data-key="${escapeHtml(key)}" style="padding: 2px 8px; font-size: 11px;">
                     ${escapeHtml(i18nProvider.t('settings_storage_cache_btn_delete') || '削除')}
                   </button>
@@ -207,8 +207,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           const formattedProblemId = displayId.toUpperCase();
           const row = document.createElement('tr');
           row.innerHTML = `
-            <td style="font-family: monospace; font-weight: 600;">${escapeHtml(formattedProblemId)}</td>
-            <td style="text-align: center;">
+            <td style="font-family: monospace; font-weight: 600; padding: 8px 12px;">${escapeHtml(formattedProblemId)}</td>
+            <td style="text-align: center; padding: 8px 12px;">
               <button type="button" class="btn btn-danger btn-xs btn-delete-cache" data-key="${escapeHtml(key)}" style="padding: 2px 8px; font-size: 11px;">
                 ${escapeHtml(i18nProvider.t('settings_storage_cache_btn_delete') || '削除')}
               </button>
