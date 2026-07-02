@@ -796,3 +796,83 @@ input:checked + .slider:before {
   background-color: var(--secondary-color);
   color: var(--text-color);
 }
+
+/* Problem Status Management Styles */
+.status-table-container {
+  overflow-x: auto;
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background-color: var(--bg-color);
+}
+
+.status-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+}
+
+.status-table th,
+.status-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-color);
+}
+
+.status-table th {
+  background-color: var(--secondary-color);
+  font-weight: 700;
+  color: var(--text-muted);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.status-table tr:hover {
+  background-color: var(--secondary-color);
+}
+
+.status-select-cell {
+  width: 150px;
+}
+
+.status-select-cell select {
+  font-size: 12.5px;
+  padding: 6px 10px;
+  height: auto;
+  border-radius: var(--border-radius);
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  width: 100%;
+}
+
+.status-select-cell select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+/* Badge dot style (CSS only, no raw emojis) */
+.status-badge-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.dot-self {
+  background-color: var(--success-color); /* green */
+}
+
+.dot-editorial {
+  background-color: #f59e0b; /* yellow/orange */
+}
+
+.dot-unsolved {
+  background-color: var(--text-muted); /* gray */
+}

@@ -67,15 +67,18 @@
     <div id="console-slider-btn" data-i18n-title="editor_console_slider_title">▲</div>
     <div id="console-panel" style="display: none;">
       <div class="console-header">
-        <span class="console-title" data-i18n="editor_console_title">テスト結果</span>
+        <div class="console-header-left">
+          <span class="console-title" data-i18n="editor_console_title">テスト結果</span>
+          <span class="console-info-icon" id="console-info-icon" data-i18n-title="editor_console_warning_note">?</span>
+        </div>
       </div>
       <div class="console-body" id="console-results"></div>
     </div>
   </div>
 
+  <script src="../lib/i18n.js"></script>
   <!-- Monaco AMD Loader -->
   <script src="../../lib/monaco/vs/loader.js"></script>
-  <script src="../lib/i18n.js"></script>
   <script src="editor.js"></script>
 </body>
 </html>

@@ -21,6 +21,7 @@ This is the privacy policy for the "AtCoder Workspace" Chrome extension.
 ### 2. 使用する権限とその必要性
 本拡張機能は、動作に必要な最低限の権限のみを要求します。
 - `storage` (ストレージ): 記述中のコードの自動保存およびエディタ設定の保存に利用します。
+- `unlimitedStorage` (無制限ストレージ): ソースコード、学習メモ、提出結果の履歴データの保存容量制限を解除するために利用します。
 - `notifications` (通知): コードのテスト実行が完了した際や、提出結果の更新をデスクトップ通知でお知らせする際に利用します。
 - `https://atcoder.jp/*` (ホスト許可): AtCoderの問題ページ上にコードエディタ、テスト環境、および提出ボタンを正しく埋め込み動作させるために必要となります。
 
@@ -45,6 +46,7 @@ This extension does not transmit or gather your source code, configuration detai
 ### 2. Permissions Required & Justifications
 This extension requests only the minimum set of permissions necessary for its features:
 - `storage`: Used to auto-save code drafts and persist editor layouts.
+- `unlimitedStorage`: Used to remove storage quota limits for saving user source codes, learning notes, and submission history.
 - `notifications`: Used to show desktop alerts when code testing completes or submission status updates.
 - `https://atcoder.jp/*`: Required to inject the code editor pane, testing module, and submit buttons directly into AtCoder contest task pages.
 

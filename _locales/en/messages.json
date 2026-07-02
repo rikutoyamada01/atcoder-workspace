@@ -496,6 +496,105 @@
   },
   "editor_judge_captcha_desc": {
     "message": "Waiting for bot verification (Cloudflare Turnstile) to complete.<br>Please manually click the checkbox (I am human) displayed at the bottom-left of the screen to complete verification.<br>(The submission process will resume automatically after verification.)"
+  },
+  "editor_ac_btn_mark_editorial": {
+    "message": "Mark as Editorial AC"
+  },
+  "editor_ac_btn_marked_editorial": {
+    "message": "Marked as Editorial AC"
+  },
+  "options_status_title": {
+    "message": "解答ステータス管理 / Problem Statuses"
+  },
+  "options_status_desc": {
+    "message": "Manage and edit your self/editorial AC statuses for solved problems individually."
+  },
+  "options_status_col_contest": {
+    "message": "Contest"
+  },
+  "options_status_col_problem": {
+    "message": "Problem"
+  },
+  "options_status_col_status": {
+    "message": "Status"
+  },
+  "options_status_option_unsolved": {
+    "message": "Unsolved"
+  },
+  "options_status_option_self": {
+    "message": "Self AC"
+  },
+  "options_status_option_editorial": {
+    "message": "Editorial AC"
+  },
+  "options_status_empty": {
+    "message": "No problem statuses recorded yet."
+  },
+  "options_status_toast_saved": {
+    "message": "Saved problem status"
+  },
+  "options_status_search_placeholder": {
+    "message": "Search/Add by Contest ID (e.g., abc300)"
+  },
+  "options_status_search_btn": {
+    "message": "Search"
+  },
+  "options_status_fetch_error": {
+    "message": "Contest not found or fetch failed"
+  },
+  "options_pagination_prev": {
+    "message": "Prev"
+  },
+  "options_pagination_next": {
+    "message": "Next"
+  },
+  "options_backup_title": {
+    "message": "Backup & Restore"
+  },
+  "options_backup_desc": {
+    "message": "Export or import all extension settings, snippets and problem statuses as a file."
+  },
+  "options_backup_btn_export": {
+    "message": "Export Backup"
+  },
+  "options_backup_btn_import": {
+    "message": "Restore from Backup"
+  },
+  "options_backup_toast_exported": {
+    "message": "Backup exported successfully"
+  },
+  "options_backup_toast_imported": {
+    "message": "Backup restored successfully"
+  },
+  "options_backup_confirm_import": {
+    "message": "Are you sure you want to restore? Current settings, snippets, and problem statuses will be overwritten."
+  },
+  "options_backup_error_invalid": {
+    "message": "Error: Invalid backup file"
+  },
+  "editor_console_warning_note": {
+    "message": "* For problems involving floating-point outputs or multiple valid solutions (special judge), local test results may differ from the actual submission results (AC/WA)."
+  },
+  "options_backup_mode_merge": {
+    "message": "Merge (keep existing data)"
+  },
+  "options_backup_mode_overwrite": {
+    "message": "Overwrite (clear existing data)"
+  },
+  "settings_storage_cache_details_toggle": {
+    "message": "Show cache details"
+  },
+  "settings_storage_cache_col_problem": {
+    "message": "Problem ID"
+  },
+  "settings_storage_cache_col_action": {
+    "message": "Action"
+  },
+  "settings_storage_cache_btn_delete": {
+    "message": "Delete"
+  },
+  "options_backup_confirm_merge": {
+    "message": "Are you sure you want to restore by merging (adding/updating) the backup into your current data?"
   }
 }
 

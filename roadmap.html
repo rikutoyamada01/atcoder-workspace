@@ -3,7 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AtCoder Workspace - 開発ロードマップ</title>
+  <title>AtCoder Workspace - 開発ロードマップ | 環境構築不要で快適な競プロエディタ</title>
+  <meta name="description" content="AtCoderが使いづらいと感じる初心者向けのChrome拡張機能「AtCoder Workspace」の開発ロードマップ。環境構築不要、左右分割エディタ、自動テスト、自動保存など、快適に競技プログラミングを始めるための実装状況を紹介します。">
+  <meta name="keywords" content="AtCoder,使いづらい,使いずらい,競プロ,環境構築,Chrome拡張機能,自動テスト,Monaco Editor">
+  
+  <!-- Open Graph / SNS Share -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="AtCoder Workspace - 開発ロードマップ">
+  <meta property="og:description" content="AtCoderが使いづらいと感じる初心者向けの環境構築不要エディタ。機能の実装状況と今後の開発計画。">
+  <meta property="og:url" content="https://rikutoyamada01.github.io/atcoder-workspace/roadmap.html">
+  
+  <!-- JSON-LD 構造化データ (AIO/SEO最適化) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "AtCoder Workspace - 開発ロードマップ",
+    "description": "AtCoderが使いづらいと感じる初心者向けのChrome拡張機能「AtCoder Workspace」の開発ロードマップ。",
+    "relatedLink": "https://rikutoyamada01.github.io/atcoder-workspace/presentation.html"
+  }
+  </script>
   <style>
     /* Reset & Clean AtCoder Typography */
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -510,6 +529,16 @@
           <div class="skill-node locked" id="node-dashboard" onclick="openPeek('dashboard')">
             <div class="node-phase">Phase 2</div>
             <div class="node-title">学習ダッシュボード＆エラー</div>
+            <div class="node-footer">
+              <span class="node-pts">100 pts</span>
+              <span class="node-status status-locked">未実装</span>
+            </div>
+          </div>
+
+          <!-- Node 14: AC Distinction -->
+          <div class="skill-node locked" id="node-ac_distinction" onclick="openPeek('ac_distinction')">
+            <div class="node-phase">Phase 2</div>
+            <div class="node-title">自力・解説AC分類</div>
             <div class="node-footer">
               <span class="node-pts">100 pts</span>
               <span class="node-status status-locked">未実装</span>

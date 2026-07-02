@@ -76,23 +76,47 @@
           </div>
         </section>
 
-        <!-- Card 2: Storage Management -->
+        <!-- Card 2: Problem Status Management -->
         <section class="settings-card">
           <div class="card-header">
-            <h2 data-i18n="settings_storage_title">データとストレージ / Data & Storage</h2>
+            <h2 data-i18n="options_status_title">解答ステータス管理 / Problem Statuses</h2>
           </div>
           <div class="card-body">
-            <div class="setting-item">
+            <div class="setting-item-vertical">
               <div class="setting-info">
-                <label data-i18n="settings_storage_cache_label">自動保存されたコードの履歴</label>
-                <p class="setting-description" data-i18n="settings_storage_cache_desc">ブラウザのローカル領域に保存されている提出コードや一時保存データの情報です。</p>
+                <p class="setting-description" data-i18n="options_status_desc">これまでACした問題の自力・解説ステータスを個別に管理・編集できます。</p>
               </div>
-              <div class="setting-control-vertical">
-                <div class="storage-stats">
-                  <span class="stat-label" data-i18n="settings_storage_cache_count">キャッシュ件数:</span>
-                  <span id="cache-count" class="stat-value">0 件</span>
+              
+              <div class="setting-item-vertical" style="border: none; padding: 0; margin-bottom: 10px; width: 100%;">
+                <div style="display: flex; gap: 8px; width: 100%; max-width: 400px; align-items: center;">
+                  <input type="text" id="status-search-input" class="form-control" placeholder="コンテストIDで検索・追加 (例: abc300)" data-i18n-placeholder="options_status_search_placeholder" style="flex: 1;">
+                  <button type="button" id="status-search-btn" class="settings-btn" style="white-space: nowrap; height: 34px; margin-top: 0;" data-i18n="options_status_search_btn">検索</button>
                 </div>
-                <button id="clear-cache-btn" class="btn btn-danger btn-sm" data-i18n="settings_storage_cache_clear">すべてのキャッシュデータを消去</button>
+              </div>
+
+              <div class="status-table-container" style="margin-top: 15px; width: 100%;">
+                <table class="status-table">
+                  <thead>
+                    <tr>
+                      <th data-i18n="options_status_col_contest">コンテスト</th>
+                      <th data-i18n="options_status_col_problem">問題</th>
+                      <th data-i18n="options_status_col_status">ステータス</th>
+                    </tr>
+                  </thead>
+                  <tbody id="status-table-body">
+                    <!-- JSで動的生成 -->
+                  </tbody>
+                </table>
+                <div id="no-status-message" class="no-status-message" data-i18n="options_status_empty" style="text-align: center; padding: 20px; color: #999; display: none;">
+                  記録された解答ステータスはありません。
+                </div>
+              </div>
+              
+              <!-- Pagination Controls -->
+              <div id="status-pagination" style="display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 12px; width: 100%;">
+                <button type="button" id="btn-prev-page" class="settings-btn" style="margin-top: 0; padding: 4px 12px; font-size: 12px; min-width: 70px;" data-i18n="options_pagination_prev">前へ</button>
+                <span id="page-info" style="font-size: 13px; font-weight: 600; min-width: 60px; text-align: center; color: #666;">1 / 1</span>
+                <button type="button" id="btn-next-page" class="settings-btn" style="margin-top: 0; padding: 4px 12px; font-size: 12px; min-width: 70px;" data-i18n="options_pagination_next">次へ</button>
               </div>
             </div>
           </div>
@@ -205,6 +229,71 @@
                 <div id="no-snippets-message" class="no-snippets-message" data-i18n="settings_snippets_table_empty">
                   登録されている自作スニペットはありません。
                 </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Card 5: Storage Management -->
+        <section class="settings-card">
+          <div class="card-header">
+            <h2 data-i18n="settings_storage_title">データとストレージ / Data & Storage</h2>
+          </div>
+          <div class="card-body">
+            <div class="setting-item" style="flex-direction: column; align-items: flex-start; gap: 15px;">
+              <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; flex-wrap: wrap; gap: 10px; border: none; padding: 0;">
+                <div class="setting-info" style="flex: 1; min-width: 250px;">
+                  <label data-i18n="settings_storage_cache_label">自動保存されたコードの履歴</label>
+                  <p class="setting-description" data-i18n="settings_storage_cache_desc">ブラウザのローカル領域に保存されている提出コードや一時保存データの情報です。</p>
+                </div>
+                <div class="setting-control-vertical" style="align-items: flex-end;">
+                  <div class="storage-stats">
+                    <span class="stat-label" data-i18n="settings_storage_cache_count">キャッシュ件数:</span>
+                    <span id="cache-count" class="stat-value">0 件</span>
+                  </div>
+                  <button id="clear-cache-btn" class="btn btn-danger btn-sm" data-i18n="settings_storage_cache_clear">すべてのキャッシュデータを消去</button>
+                </div>
+              </div>
+              <details id="cache-details" style="width: 100%;">
+                <summary style="cursor: pointer; color: #337ab7; font-size: 13px; user-select: none;" data-i18n="settings_storage_cache_details_toggle">キャッシュの内訳を表示</summary>
+                <div class="cache-list-container" style="max-height: 200px; overflow-y: auto; margin-top: 8px; border: 1px solid #ddd; border-radius: 4px; padding: 0; background-color: #fafafa; width: 100%;">
+                  <table class="status-table" style="font-size: 12px; margin-bottom: 0; width: 100%; table-layout: fixed;">
+                    <thead>
+                      <tr>
+                        <th data-i18n="settings_storage_cache_col_problem" style="padding: 8px 12px;">問題 ID</th>
+                        <th data-i18n="settings_storage_cache_col_action" style="text-align: center; width: 100px; padding: 8px 12px;">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody id="cache-list-body">
+                      <!-- JSで動的に生成 -->
+                    </tbody>
+                  </table>
+                </div>
+              </details>
+            </div>
+          </div>
+        </section>
+
+        <!-- Card 6: Backup & Restore -->
+        <section class="settings-card">
+          <div class="card-header">
+            <h2 data-i18n="options_backup_title">バックアップと復元 / Backup & Restore</h2>
+          </div>
+          <div class="card-body">
+            <div class="setting-item-vertical">
+              <div class="setting-info">
+                <p class="setting-description" data-i18n="options_backup_desc">拡張機能のすべての設定と解答ステータスをファイルに保存、またはファイルから復元できます。</p>
+              </div>
+              <div style="display: flex; gap: 12px; margin-top: 15px; flex-wrap: wrap; align-items: center;">
+                <button type="button" id="btn-export-backup" class="btn btn-primary" data-i18n="options_backup_btn_export">バックアップをエクスポート</button>
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <button type="button" id="btn-import-backup" class="btn btn-secondary" data-i18n="options_backup_btn_import">バックアップから復元</button>
+                  <select id="import-mode-select" class="form-control" style="width: auto; height: 34px; padding: 4px 8px; font-size: 13px; margin-top: 0;">
+                    <option value="merge" selected data-i18n="options_backup_mode_merge">マージ（既存データを保持）</option>
+                    <option value="overwrite" data-i18n="options_backup_mode_overwrite">完全に上書き（既存データを消去）</option>
+                  </select>
+                </div>
+                <input type="file" id="import-file-input" accept=".json" style="display: none;">
               </div>
             </div>
           </div>

@@ -911,18 +911,20 @@ impl UnionFind {
         };
 
         if (isAC) {
-          handleACStats(contestId, problemId, (acCount) => {
-            const selectedOption = langSelect.options[langSelect.selectedIndex];
-            const langText = selectedOption ? selectedOption.textContent.trim() : '';
-            const celebrationHTML = generateACCelebrationHTML(
-              contestId,
-              problemId,
-              e.data.isContestActive,
-              acCount,
-              langText,
-              e.data.time
-            );
-            updateConsole(celebrationHTML);
+          saveProblemStatus(contestId, problemId, 'self_ac', () => {
+            handleACStats(contestId, problemId, (acCount) => {
+              const selectedOption = langSelect.options[langSelect.selectedIndex];
+              const langText = selectedOption ? selectedOption.textContent.trim() : '';
+              const celebrationHTML = generateACCelebrationHTML(
+                contestId,
+                problemId,
+                e.data.isContestActive,
+                acCount,
+                langText,
+                e.data.time
+              );
+              updateConsole(celebrationHTML);
+            });
           });
         } else {
           updateConsole();
@@ -1095,18 +1097,20 @@ impl UnionFind {
           };
 
           if (isAC) {
-            handleACStats(contestId, problemId, (acCount) => {
-              const selectedOption = langSelect.options[langSelect.selectedIndex];
-              const langText = selectedOption ? selectedOption.textContent.trim() : '';
-              const celebrationHTML = generateACCelebrationHTML(
-                contestId,
-                problemId,
-                e.data.isContestActive,
-                acCount,
-                langText,
-                e.data.time
-              );
-              updateConsole(celebrationHTML);
+            saveProblemStatus(contestId, problemId, 'self_ac', () => {
+              handleACStats(contestId, problemId, (acCount) => {
+                const selectedOption = langSelect.options[langSelect.selectedIndex];
+                const langText = selectedOption ? selectedOption.textContent.trim() : '';
+                const celebrationHTML = generateACCelebrationHTML(
+                  contestId,
+                  problemId,
+                  e.data.isContestActive,
+                  acCount,
+                  langText,
+                  e.data.time
+                );
+                updateConsole(celebrationHTML);
+              });
             });
           } else {
             updateConsole();
@@ -1472,7 +1476,7 @@ impl UnionFind {
           return;
         }
         chrome.storage.local.get([storageKey], (res) => {
-          callback(res[storageKey] || '');
+          callback((res && res[storageKey]) || '');
         });
       };
 
@@ -1551,7 +1555,7 @@ impl UnionFind {
           const templateKey = `settings:template:${mode}`;
           chrome.storage.local.get([templateKey], (tplRes) => {
             const templateCode =
-              tplRes[templateKey] !== undefined
+              tplRes && tplRes[templateKey] !== undefined
                 ? tplRes[templateKey]
                 : DEFAULT_TEMPLATES[mode] || '';
             console.log('[AtCoder Workspace] Editor: initMonaco - applying template', {
@@ -1589,7 +1593,7 @@ impl UnionFind {
       return;
     }
     chrome.storage.local.get(['stats:ac_problems'], (res) => {
-      const acProblems = res['stats:ac_problems'] || [];
+      const acProblems = (res && res['stats:ac_problems']) || [];
       const problemKey = `${contestId}:${problemId}`;
       if (!acProblems.includes(problemKey)) {
         acProblems.push(problemKey);
@@ -1599,6 +1603,20 @@ impl UnionFind {
       } else {
         callback(acProblems.length);
       }
+    });
+  }
+
+  /**
+   * 保存された解答ステータスを更新するヘルパー関数
+   */
+  function saveProblemStatus(contestId, problemId, status, callback) {
+    if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.local) {
+      if (callback) callback();
+      return;
+    }
+    const key = `status:${contestId}:${problemId}`;
+    chrome.storage.local.set({ [key]: status }, () => {
+      if (callback) callback();
     });
   }
 
@@ -1925,7 +1943,7 @@ impl UnionFind {
     // Load custom snippets and merge
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
       chrome.storage.local.get(['settings:custom_snippets'], (res) => {
-        const custom = res['settings:custom_snippets'] || [];
+        const custom = (res && res['settings:custom_snippets']) || [];
         const customFiltered = custom.filter((s) => s.lang === mode);
 
         const mergedList = [

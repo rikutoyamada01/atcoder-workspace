@@ -41,10 +41,243 @@
             this.panelOpen = res['settings:panel_open'];
           }
           this.setupLayout();
+          this.setupStatusSelector();
         });
       } else {
         this.setupLayout();
+        this.setupStatusSelector();
       }
+    }
+
+    /**
+     * Injects the self/editorial AC status select dropdown next to the problem title.
+     */
+    setupStatusSelector() {
+      // Find problem title element
+      const titleSpan = document.querySelector('.col-sm-12 span.h2');
+      if (!titleSpan) return;
+
+      // Extract contestId and problemId from URL
+      const match = window.location.pathname.match(/\/contests\/([^/]+)\/tasks\/([^/]+)/);
+      if (!match) return;
+
+      const contestId = match[1];
+      const problemId = match[2];
+      const statusKey = `status:${contestId}:${problemId}`;
+
+      // Create a wrapper div (btn-group)
+      const wrapper = document.createElement('div');
+      wrapper.className = 'btn-group';
+      wrapper.style.marginLeft = '12px';
+      wrapper.style.verticalAlign = 'middle';
+
+      // Create the trigger button
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'btn btn-default btn-xs dropdown-toggle';
+      button.style.height = '28px';
+      button.style.fontSize = '12px';
+      button.style.borderRadius = '4px';
+      button.style.padding = '4px 10px';
+      button.style.border = '1px solid #ccc';
+      button.style.backgroundColor = '#fff';
+      button.style.color = '#333';
+      button.style.outline = 'none';
+
+      // Create the left color dot (status icon)
+      const dot = document.createElement('span');
+      dot.className = 'ac-status-dot';
+      dot.style.display = 'inline-block';
+      dot.style.width = '8px';
+      dot.style.height = '8px';
+      dot.style.borderRadius = '50%';
+      dot.style.marginRight = '6px';
+      dot.style.verticalAlign = 'middle';
+      button.appendChild(dot);
+
+      // Create the label text span
+      const textSpan = document.createElement('span');
+      textSpan.className = 'ac-status-text';
+      textSpan.style.verticalAlign = 'middle';
+      button.appendChild(textSpan);
+
+      // Create the caret (down arrow)
+      const caret = document.createElement('span');
+      caret.className = 'caret';
+      caret.style.marginLeft = '6px';
+      caret.style.verticalAlign = 'middle';
+      button.appendChild(caret);
+
+      // Create manually toggled dropdown menu
+      const menu = document.createElement('ul');
+      menu.className = 'dropdown-menu';
+      menu.style.fontSize = '12px';
+      menu.style.minWidth = '100px';
+      menu.style.padding = '5px 0';
+      menu.style.margin = '2px 0 0';
+      menu.style.listStyle = 'none';
+      menu.style.backgroundColor = '#fff';
+      menu.style.border = '1px solid rgba(0,0,0,.15)';
+      menu.style.borderRadius = '4px';
+      menu.style.boxShadow = '0 6px 12px rgba(0,0,0,.175)';
+      menu.style.position = 'absolute';
+      menu.style.display = 'none';
+      menu.style.zIndex = '1000';
+
+      // Create a hidden input to keep API compatibility with content.js
+      const hiddenInput = document.createElement('input');
+      hiddenInput.type = 'hidden';
+      hiddenInput.id = 'ac-status-select';
+      hiddenInput.value = 'unsolved';
+      wrapper.appendChild(hiddenInput);
+
+      // Load translations using chrome.i18n
+      const tUnsolved =
+        typeof chrome !== 'undefined' && chrome.i18n
+          ? chrome.i18n.getMessage('options_status_option_unsolved')
+          : '未学習';
+      const tSelf =
+        typeof chrome !== 'undefined' && chrome.i18n
+          ? chrome.i18n.getMessage('options_status_option_self')
+          : '自力AC';
+      const tEditorial =
+        typeof chrome !== 'undefined' && chrome.i18n
+          ? chrome.i18n.getMessage('options_status_option_editorial')
+          : '解説AC';
+
+      const options = [
+        { value: 'unsolved', text: tUnsolved },
+        { value: 'self_ac', text: tSelf },
+        { value: 'editorial_ac', text: tEditorial },
+      ];
+
+      // Build menu items
+      options.forEach((opt) => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = '#';
+        a.style.display = 'block';
+        a.style.padding = '3px 20px';
+        a.style.clear = 'both';
+        a.style.fontWeight = 'normal';
+        a.style.lineHeight = '1.42857143';
+        a.style.color = '#333';
+        a.style.whiteSpace = 'nowrap';
+        a.style.textDecoration = 'none';
+
+        // Colored dot indicator inside menu item
+        const itemDot = document.createElement('span');
+        itemDot.style.display = 'inline-block';
+        itemDot.style.width = '8px';
+        itemDot.style.height = '8px';
+        itemDot.style.borderRadius = '50%';
+        itemDot.style.marginRight = '8px';
+        itemDot.style.verticalAlign = 'middle';
+
+        if (opt.value === 'self_ac') {
+          itemDot.style.backgroundColor = '#2e7d32';
+        } else if (opt.value === 'editorial_ac') {
+          itemDot.style.backgroundColor = '#f59e0b';
+        } else {
+          itemDot.style.backgroundColor = '#777777';
+        }
+
+        const itemText = document.createElement('span');
+        itemText.textContent = opt.text;
+        itemText.style.verticalAlign = 'middle';
+
+        a.appendChild(itemDot);
+        a.appendChild(itemText);
+
+        // Hover style
+        a.onmouseover = () => {
+          a.style.backgroundColor = '#f5f5f5';
+        };
+        a.onmouseout = () => {
+          a.style.backgroundColor = 'transparent';
+        };
+
+        a.onclick = (e) => {
+          e.preventDefault();
+          hiddenInput.value = opt.value;
+          hiddenInput.dispatchEvent(new Event('change'));
+          menu.style.display = 'none';
+        };
+
+        li.appendChild(a);
+        menu.appendChild(li);
+      });
+
+      // Toggle menu on button click
+      button.onclick = (e) => {
+        e.stopPropagation();
+        const isOpen = menu.style.display === 'block';
+        menu.style.display = isOpen ? 'none' : 'block';
+      };
+
+      // Close menu when clicking outside
+      document.addEventListener('click', () => {
+        menu.style.display = 'none';
+      });
+
+      wrapper.appendChild(button);
+      wrapper.appendChild(menu);
+      titleSpan.appendChild(wrapper);
+
+      // Style helper to colorize button and dot based on status
+      const updateButtonStyle = (val) => {
+        const matched = options.find((o) => o.value === val) || options[0];
+        textSpan.textContent = matched.text;
+
+        if (val === 'self_ac') {
+          dot.style.backgroundColor = '#2e7d32';
+          button.style.backgroundColor = '#e8f5e9';
+          button.style.color = '#2e7d32';
+          button.style.borderColor = '#a5d6a7';
+        } else if (val === 'editorial_ac') {
+          dot.style.backgroundColor = '#f59e0b';
+          button.style.backgroundColor = '#fff8e1';
+          button.style.color = '#b78103';
+          button.style.borderColor = '#ffe082';
+        } else {
+          dot.style.backgroundColor = '#777777';
+          button.style.backgroundColor = '#f5f5f5';
+          button.style.color = '#616161';
+          button.style.borderColor = '#e0e0e0';
+        }
+      };
+
+      // Load initial state
+      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.get([statusKey, 'stats:ac_problems'], (res) => {
+          const status = res && res[statusKey];
+          if (status) {
+            hiddenInput.value = status;
+          } else {
+            // Default to self_ac if already solved, else unsolved
+            const acProblems = (res && res['stats:ac_problems']) || [];
+            const problemKey = `${contestId}:${problemId}`;
+            if (acProblems.includes(problemKey)) {
+              hiddenInput.value = 'self_ac';
+              chrome.storage.local.set({ [statusKey]: 'self_ac' });
+            } else {
+              hiddenInput.value = 'unsolved';
+            }
+          }
+          updateButtonStyle(hiddenInput.value);
+        });
+      } else {
+        updateButtonStyle(hiddenInput.value);
+      }
+
+      // Handle status change
+      hiddenInput.onchange = () => {
+        const val = hiddenInput.value;
+        updateButtonStyle(val);
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+          chrome.storage.local.set({ [statusKey]: val });
+        }
+      };
     }
 
     /**

@@ -262,11 +262,31 @@ const skillsDb = {
     user_impact: "毎回のGit操作の手間を一切無くし、競技プログラミングの努力の成果を美しくGitHubポートフォリオとしてアピールできます。",
     verification: "AtCoderでACを取得した後、自身のGitHubリポジトリに十数秒以内に対象コードがコミットされ、緑の草が反映されることを確認します。",
     pts: 100
+  },
+  ac_distinction: {
+    title: "自力・解説AC分類",
+    phase: 2,
+    prereqs: "前提条件: [Monaco エディタ埋込] の実装完了後",
+    desc: "解いた問題が「自力AC」か「解説AC」かを記録し、エディタ上で区別できるようにします。提出結果やエディタ画面のセレクトボックスからいつでもステータス（自力AC / 解説AC / 未学習）を設定でき、問題一覧ページにもマークが反映されます。",
+    key_features: [
+      "提出がACになった際の、自力AC（デフォルト）の自動ステータス割り当て",
+      "コンソール画面上の「解説ACに変更 🔄」ボタンによる簡単ステータス切り替え",
+      "AtCoderのコンテスト問題一覧（Task List）での解説AC問題の横に 🔄 マークを自動表示",
+      "chrome.storage.localを用いた問題ごとの解答ステータス保存"
+    ],
+    technical_specs: [
+      "chrome.storage.local (ステータス保存)",
+      "Status Switcher UI",
+      "Task List DOM Injection script"
+    ],
+    user_impact: "自分が本当に自力で解けた問題と、解説を参考にした問題を明確に整理して、実力を客観的に把握できます。",
+    verification: "エディタ画面でステータスを切り替えた際に保存されること、問題一覧ページで解説AC問題の横にマークが表示されることを確認します。",
+    pts: 100
   }
 };
 
 // 実装済みの機能IDリスト (開発の進捗に合わせてここへIDを追加するだけで、進捗率やスコアボード、各カードの鍵マークが自動更新されます)
-const completedSkills = ["monaco", "submit", "test", "template"];
+const completedSkills = ["monaco", "submit", "test", "template", "ac_distinction"];
 
 function updateRoadmapProgress() {
   const totalFeatures = Object.keys(skillsDb).length;
@@ -311,6 +331,7 @@ const connections = [
   ['node-test', 'node-submit'],
   ['node-test', 'node-customtest'],
   ['node-submit', 'node-dashboard'],
+  ['node-submit', 'node-ac_distinction'],
   ['node-dashboard', 'node-error'],
   ['node-dashboard', 'node-export'],
   ['node-notes', 'node-library'],
