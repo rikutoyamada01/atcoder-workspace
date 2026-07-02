@@ -10,7 +10,8 @@ chrome.action.onClicked.addListener(() => {
   chrome.runtime.openOptionsPage();
 });
 
-const UNINSTALL_SURVEY_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfj0RgZEhpAUQoHxyZvvq8ylMpbiutusKMN4ak_qOKa-UigAw/viewform';
+const UNINSTALL_SURVEY_URL =
+  'https://docs.google.com/forms/d/e/1FAIpQLSfj0RgZEhpAUQoHxyZvvq8ylMpbiutusKMN4ak_qOKa-UigAw/viewform';
 
 // Set the uninstall survey URL on installation or update
 chrome.runtime.onInstalled.addListener(() => {
@@ -22,4 +23,3 @@ chrome.runtime.onInstalled.addListener(() => {
     }
   });
 });
-

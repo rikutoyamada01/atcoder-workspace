@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             codeKeys.forEach((key) => {
               // Parse display name (e.g. code:abc300:abc300_a -> abc300_a)
               const parts = key.split(':');
-              const displayId = parts.length >= 3 ? parts[2] : (parts.length >= 2 ? parts[1] : key);
+              const displayId = parts.length >= 3 ? parts[2] : parts.length >= 2 ? parts[1] : key;
               const formattedProblemId = displayId.toUpperCase();
 
               const row = document.createElement('tr');
@@ -178,9 +178,10 @@ document.addEventListener('DOMContentLoaded', async () => {
               const deleteBtn = row.querySelector('.btn-delete-cache');
               deleteBtn.addEventListener('click', () => {
                 const targetKey = deleteBtn.getAttribute('data-key');
-                const confirmText = i18nProvider.locale === 'ja' 
-                  ? `${formattedProblemId} の保存コード履歴を削除しますか？`
-                  : `Are you sure you want to delete the saved code for ${formattedProblemId}?`;
+                const confirmText =
+                  i18nProvider.locale === 'ja'
+                    ? `${formattedProblemId} の保存コード履歴を削除しますか？`
+                    : `Are you sure you want to delete the saved code for ${formattedProblemId}?`;
                 if (confirm(confirmText)) {
                   chrome.storage.local.remove(targetKey, () => {
                     calculateCacheStats();
@@ -1000,8 +1001,10 @@ func main() {
           const importMode = importModeSelect ? importModeSelect.value : 'merge';
           const confirmMsg =
             importMode === 'overwrite'
-              ? (i18nProvider.t('options_backup_confirm_import') || 'Are you sure you want to restore? Current settings, snippets, and problem statuses will be overwritten.')
-              : (i18nProvider.t('options_backup_confirm_merge') || 'Are you sure you want to restore by merging the backup into your current data?');
+              ? i18nProvider.t('options_backup_confirm_import') ||
+                'Are you sure you want to restore? Current settings, snippets, and problem statuses will be overwritten.'
+              : i18nProvider.t('options_backup_confirm_merge') ||
+                'Are you sure you want to restore by merging the backup into your current data?';
           if (confirm(confirmMsg)) {
             if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
               if (importMode === 'overwrite') {
