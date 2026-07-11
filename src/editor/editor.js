@@ -410,6 +410,8 @@ impl UnionFind {
         editor.layout();
       }
     }, 0);
+
+    saveConsoleState(contestId, problemId);
   }
 
   // IndexedDB constants and helper functions
@@ -732,6 +734,8 @@ impl UnionFind {
           // Update language warning overlay state
           updateEditorLanguageState();
         }
+        // Load console state for this problem
+        loadConsoleState(contestId, problemId);
         break;
       }
 
@@ -827,6 +831,9 @@ impl UnionFind {
           ? i18nProvider.t('editor_judge_detail_link')
           : '提出詳細ページを開く';
 
+        const targetContestId = e.data.contestId || contestId;
+        const targetProblemId = e.data.problemId || problemId;
+
         // Update Console Results
         consoleResults.innerHTML = `
           <div style="font-size: 12px; color: #333;">
@@ -835,7 +842,7 @@ impl UnionFind {
             <div style="margin-bottom: 4px;">${escapeHtml(memoryLabel)}: ${escapeHtml(e.data.memory)}</div>
             <div style="margin-bottom: 8px; color: #888; font-size: 11px;">[Debug] Turnstile: ${escapeHtml(turnstileText)}</div>
             <div>
-              <a href="https://atcoder.jp/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">${escapeHtml(detailLinkLabel)} (ID: ${e.data.submissionId})</a>
+              <a href="https://atcoder.jp/contests/${targetContestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">${escapeHtml(detailLinkLabel)} (ID: ${e.data.submissionId})</a>
             </div>
           </div>
         `;
@@ -845,6 +852,8 @@ impl UnionFind {
           ? i18nProvider.t('editor_judge_running', [e.data.status])
           : `ジャッジ中... (${e.data.status})`;
         testSummary.className = 'summary-running';
+
+        saveConsoleState(contestId, problemId);
         break;
       }
 
@@ -893,6 +902,9 @@ impl UnionFind {
           ? i18nProvider.t('editor_judge_detail_link')
           : '提出詳細ページを開く';
 
+        const targetContestId = e.data.contestId || contestId;
+        const targetProblemId = e.data.problemId || problemId;
+
         // Update Console Results
         const updateConsole = (celebrationHTML = '') => {
           consoleResults.innerHTML = `
@@ -902,7 +914,7 @@ impl UnionFind {
               <div style="margin-bottom: 4px;">${escapeHtml(memoryLabel)}: ${escapeHtml(e.data.memory)}</div>
               <div style="margin-bottom: 8px; color: #888; font-size: 11px;">[Debug] Turnstile: ${escapeHtml(turnstileText)}</div>
               <div>
-                <a href="https://atcoder.jp/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">${escapeHtml(detailLinkLabel)} (ID: ${e.data.submissionId})</a>
+                <a href="https://atcoder.jp/contests/${targetContestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">${escapeHtml(detailLinkLabel)} (ID: ${e.data.submissionId})</a>
               </div>
               ${celebrationHTML}
             </div>
@@ -911,23 +923,27 @@ impl UnionFind {
         };
 
         if (isAC) {
-          saveProblemStatus(contestId, problemId, 'self_ac', () => {
-            handleACStats(contestId, problemId, (acCount) => {
+          saveProblemStatusIfUnsolved(targetContestId, targetProblemId, 'self_ac', () => {
+            handleACStats(targetContestId, targetProblemId, (acCount, hasReviewed) => {
               const selectedOption = langSelect.options[langSelect.selectedIndex];
               const langText = selectedOption ? selectedOption.textContent.trim() : '';
               const celebrationHTML = generateACCelebrationHTML(
-                contestId,
-                problemId,
+                targetContestId,
+                targetProblemId,
+                e.data.submissionId,
                 e.data.isContestActive,
                 acCount,
                 langText,
-                e.data.time
+                e.data.time,
+                hasReviewed
               );
               updateConsole(celebrationHTML);
+              saveConsoleState(contestId, problemId);
             });
           });
         } else {
           updateConsole();
+          saveConsoleState(contestId, problemId);
         }
 
         // Trigger Notification
@@ -1007,17 +1023,20 @@ impl UnionFind {
             ? i18nProvider.t('editor_judge_detail_link')
             : '提出詳細ページを開く';
 
+          const targetContestId = e.data.contestId || contestId;
+
           consoleResults.innerHTML = `
             <div style="font-size: 12px; color: #333;">
               <div style="margin-bottom: 8px;">${escapeHtml(statusLabel)}: <span class="case-status status-running">${escapeHtml(e.data.status)}</span></div>
               <div style="margin-bottom: 4px;">${escapeHtml(timeLabel)}: ${escapeHtml(e.data.time)}</div>
               <div style="margin-bottom: 8px;">${escapeHtml(memoryLabel)}: ${escapeHtml(e.data.memory)}</div>
               <div>
-                <a href="https://atcoder.jp/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">${escapeHtml(detailLinkLabel)} (ID: ${e.data.submissionId})</a>
+                <a href="https://atcoder.jp/contests/${targetContestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">${escapeHtml(detailLinkLabel)} (ID: ${e.data.submissionId})</a>
               </div>
             </div>
           `;
           consoleResults.scrollTop = consoleResults.scrollHeight;
+          saveConsoleState(contestId, problemId);
         }
         break;
 
@@ -1064,57 +1083,85 @@ impl UnionFind {
           timestamp: Date.now(),
         });
 
-        if (e.data.problemId === problemId) {
-          isSubmitting = false;
-          isSubmitPhase1 = false;
-          setButtonsDisabled(false);
+        const targetContestId = e.data.contestId;
+        const targetProblemId = e.data.problemId;
 
-          testSummary.textContent = i18nProvider
-            ? i18nProvider.t('editor_judge_complete', [e.data.status])
-            : `ジャッジ完了: ${e.data.status}`;
-          testSummary.className = isAC ? 'summary-ac' : 'summary-wa';
+        const summaryText = i18nProvider
+          ? i18nProvider.t('editor_judge_complete', [e.data.status])
+          : `ジャッジ完了: ${e.data.status}`;
+        const summaryClass = isAC ? 'summary-ac' : 'summary-wa';
 
+        const buildConsoleHTML = (celebrationHTML = '') => {
           const statusLabel = i18nProvider ? i18nProvider.t('editor_judge_status') : 'ステータス';
           const timeLabel = i18nProvider ? i18nProvider.t('editor_judge_time') : '実行時間';
           const memoryLabel = i18nProvider ? i18nProvider.t('editor_judge_memory') : 'メモリ';
           const detailLinkLabel = i18nProvider
             ? i18nProvider.t('editor_judge_detail_link')
             : '提出詳細ページを開く';
-
-          const updateConsole = (celebrationHTML = '') => {
-            consoleResults.innerHTML = `
-              <div style="font-size: 12px; color: #333;">
-                <div style="margin-bottom: 8px;">${escapeHtml(statusLabel)}: <span class="case-status status-${e.data.status.toLowerCase()}">${escapeHtml(e.data.status)}</span></div>
-                <div style="margin-bottom: 4px;">${escapeHtml(timeLabel)}: ${escapeHtml(e.data.time)}</div>
-                <div style="margin-bottom: 8px;">${escapeHtml(memoryLabel)}: ${escapeHtml(e.data.memory)}</div>
-                <div>
-                  <a href="https://atcoder.jp/contests/${contestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">${escapeHtml(detailLinkLabel)} (ID: ${e.data.submissionId})</a>
-                </div>
-                ${celebrationHTML}
+          return `
+            <div style="font-size: 12px; color: #333;">
+              <div style="margin-bottom: 8px;">${escapeHtml(statusLabel)}: <span class="case-status status-${e.data.status.toLowerCase()}">${escapeHtml(e.data.status)}</span></div>
+              <div style="margin-bottom: 4px;">${escapeHtml(timeLabel)}: ${escapeHtml(e.data.time)}</div>
+              <div style="margin-bottom: 8px;">${escapeHtml(memoryLabel)}: ${escapeHtml(e.data.memory)}</div>
+              <div>
+                <a href="https://atcoder.jp/contests/${targetContestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">${escapeHtml(detailLinkLabel)} (ID: ${e.data.submissionId})</a>
               </div>
-            `;
-            consoleResults.scrollTop = consoleResults.scrollHeight;
-          };
+              ${celebrationHTML}
+            </div>
+          `;
+        };
 
-          if (isAC) {
-            saveProblemStatus(contestId, problemId, 'self_ac', () => {
-              handleACStats(contestId, problemId, (acCount) => {
-                const selectedOption = langSelect.options[langSelect.selectedIndex];
-                const langText = selectedOption ? selectedOption.textContent.trim() : '';
-                const celebrationHTML = generateACCelebrationHTML(
-                  contestId,
-                  problemId,
-                  e.data.isContestActive,
-                  acCount,
-                  langText,
-                  e.data.time
-                );
-                updateConsole(celebrationHTML);
-              });
+        if (targetProblemId === problemId) {
+          isSubmitting = false;
+          isSubmitPhase1 = false;
+          setButtonsDisabled(false);
+        }
+
+        if (isAC) {
+          saveProblemStatusIfUnsolved(targetContestId, targetProblemId, 'self_ac', () => {
+            handleACStats(targetContestId, targetProblemId, (acCount, hasReviewed) => {
+              const selectedOption = langSelect.options[langSelect.selectedIndex];
+              const langText = selectedOption ? selectedOption.textContent.trim() : '';
+              const celebrationHTML = generateACCelebrationHTML(
+                targetContestId,
+                targetProblemId,
+                e.data.submissionId,
+                e.data.isContestActive,
+                acCount,
+                langText,
+                e.data.time,
+                hasReviewed
+              );
+              const html = buildConsoleHTML(celebrationHTML);
+
+              if (targetProblemId === problemId) {
+                consoleResults.innerHTML = html;
+                consoleResults.scrollTop = consoleResults.scrollHeight;
+                testSummary.textContent = summaryText;
+                testSummary.className = summaryClass;
+              }
+              sessionStorage.setItem(`console:state:${targetContestId}:${targetProblemId}`, JSON.stringify({
+                html: html,
+                summaryText: summaryText,
+                summaryClass: summaryClass,
+                visible: true
+              }));
             });
-          } else {
-            updateConsole();
+          });
+        } else {
+          const html = buildConsoleHTML('');
+          if (targetProblemId === problemId) {
+            consoleResults.innerHTML = html;
+            consoleResults.scrollTop = consoleResults.scrollHeight;
+            testSummary.textContent = summaryText;
+            testSummary.className = summaryClass;
           }
+          sessionStorage.setItem(`console:state:${targetContestId}:${targetProblemId}`, JSON.stringify({
+            html: html,
+            summaryText: summaryText,
+            summaryClass: summaryClass,
+            visible: true
+          }));
         }
         break;
       }
@@ -1181,6 +1228,7 @@ impl UnionFind {
           `;
           consoleResults.appendChild(row);
         }
+        saveConsoleState(contestId, problemId);
         break;
 
       case 'test-case-result': {
@@ -1279,6 +1327,7 @@ impl UnionFind {
             const isVisible = body.style.display === 'block';
             body.style.display = isVisible ? 'none' : 'block';
             icon.textContent = isVisible ? '▶' : '▼';
+            saveConsoleState(contestId, problemId);
           };
         }
 
@@ -1288,6 +1337,7 @@ impl UnionFind {
 
         // Auto-scroll to the bottom of the console results
         consoleResults.scrollTop = consoleResults.scrollHeight;
+        saveConsoleState(contestId, problemId);
         break;
       }
 
@@ -1323,6 +1373,7 @@ impl UnionFind {
             : `${displayStatus}あり (${acCount}/${totalCount} AC)`;
           testSummary.className = 'summary-wa';
         }
+        saveConsoleState(contestId, problemId);
         break;
 
       case 'test-error': {
@@ -1342,6 +1393,7 @@ impl UnionFind {
 
         // Auto-scroll to the bottom of the console results
         consoleResults.scrollTop = consoleResults.scrollHeight;
+        saveConsoleState(contestId, problemId);
         break;
       }
     }
@@ -1589,19 +1641,20 @@ impl UnionFind {
    */
   function handleACStats(contestId, problemId, callback) {
     if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.local) {
-      callback(0);
+      callback(0, false);
       return;
     }
-    chrome.storage.local.get(['stats:ac_problems'], (res) => {
+    chrome.storage.local.get(['stats:ac_problems', 'stats:has_reviewed'], (res) => {
       const acProblems = (res && res['stats:ac_problems']) || [];
+      const hasReviewed = (res && res['stats:has_reviewed']) || false;
       const problemKey = `${contestId}:${problemId}`;
       if (!acProblems.includes(problemKey)) {
         acProblems.push(problemKey);
         chrome.storage.local.set({ 'stats:ac_problems': acProblems }, () => {
-          callback(acProblems.length);
+          callback(acProblems.length, hasReviewed);
         });
       } else {
-        callback(acProblems.length);
+        callback(acProblems.length, hasReviewed);
       }
     });
   }
@@ -1620,6 +1673,64 @@ impl UnionFind {
     });
   }
 
+  function saveProblemStatusIfUnsolved(contestId, problemId, status, callback) {
+    if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.local) {
+      if (callback) callback();
+      return;
+    }
+    const key = `status:${contestId}:${problemId}`;
+    chrome.storage.local.get([key], (res) => {
+      const currentStatus = res && res[key];
+      if (!currentStatus || currentStatus === 'unsolved') {
+        chrome.storage.local.set({ [key]: status }, () => {
+          if (callback) callback();
+        });
+      } else {
+        if (callback) callback();
+      }
+    });
+  }
+
+  function saveConsoleState(cId, pId) {
+    if (!cId || !pId) return;
+    const state = {
+      html: consoleResults.innerHTML,
+      summaryText: testSummary.textContent,
+      summaryClass: testSummary.className,
+      visible: consolePanel.style.display !== 'none'
+    };
+    sessionStorage.setItem(`console:state:${cId}:${pId}`, JSON.stringify(state));
+  }
+
+  function loadConsoleState(cId, pId) {
+    if (!cId || !pId) {
+      clearConsoleState();
+      return;
+    }
+    const stateStr = sessionStorage.getItem(`console:state:${cId}:${pId}`);
+    if (stateStr) {
+      try {
+        const state = JSON.parse(stateStr);
+        consoleResults.innerHTML = state.html;
+        testSummary.textContent = state.summaryText;
+        testSummary.className = state.summaryClass;
+        toggleConsole(state.visible);
+      } catch (e) {
+        console.error('Failed to parse console state', e);
+        clearConsoleState();
+      }
+    } else {
+      clearConsoleState();
+    }
+  }
+
+  function clearConsoleState() {
+    consoleResults.innerHTML = '';
+    testSummary.textContent = '';
+    testSummary.className = '';
+    toggleConsole(false);
+  }
+
   /**
    * Generates celebration HTML with social sharing and review prompt.
    * @param {string} contestId
@@ -1633,10 +1744,12 @@ impl UnionFind {
   function generateACCelebrationHTML(
     contestId,
     problemId,
+    submissionId,
     isContestActive,
     acCount,
     langText,
-    time
+    time,
+    hasReviewed
   ) {
     const formattedProblem = problemId.toUpperCase().replace(contestId.toUpperCase() + '_', '');
     const titleText = i18nProvider ? i18nProvider.t('editor_ac_title') : 'AtCoderでACしました！ 🎉';
@@ -1650,8 +1763,9 @@ impl UnionFind {
       ? '\n' + (i18nProvider ? i18nProvider.t('editor_ac_time', [time]) : `実行時間: ${time}`)
       : '';
     const tweetText = `${titleText}\n${taskText}\n${langLabel}${timeLabel}\n\n#AtCoder #AtCoderWorkspace`;
-    const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent('https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh?hl=ja')}`;
-    const showReviewButton = acCount >= 5 && !isContestActive;
+    const submissionUrl = `https://atcoder.jp/contests/${contestId}/submissions/${submissionId}`;
+    const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(submissionUrl)}`;
+    const showReviewButton = acCount > 0 && acCount % 5 === 0 && !isContestActive && !hasReviewed;
     const reviewUrl =
       'https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh/reviews?hl=ja';
     const reviewBtnText = i18nProvider
@@ -1993,4 +2107,16 @@ impl UnionFind {
       toggleConsole();
     }
   });
+
+  // Handle click on Chrome Web Store review button to hide it in the future
+  if (consoleResults) {
+    consoleResults.addEventListener('click', (e) => {
+      const reviewLink = e.target.closest('.ac-btn-review');
+      if (reviewLink) {
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+          chrome.storage.local.set({ 'stats:has_reviewed': true });
+        }
+      }
+    });
+  }
 })();

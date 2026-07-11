@@ -807,15 +807,22 @@ body.vs-dark-theme {
 }
 
 /* Force editor cursor visibility based on active theme */
-body.vs-theme .monaco-editor .cursor {
+body.vs-theme .monaco-editor .cursors-layer .cursor {
   background-color: #000000 !important;
   border-color: #000000 !important;
-  color: #000000 !important;
 }
-body.vs-dark-theme .monaco-editor .cursor {
+body.vs-dark-theme .monaco-editor .cursors-layer .cursor {
   background-color: #ffffff !important;
   border-color: #ffffff !important;
-  color: #ffffff !important;
+}
+
+@media (forced-colors: active) {
+  body.vs-theme .monaco-editor .cursors-layer .cursor,
+  body.vs-dark-theme .monaco-editor .cursors-layer .cursor {
+    forced-color-adjust: none;
+    background-color: CanvasText !important;
+    border-color: CanvasText !important;
+  }
 }
 
 /* Force Monaco background as fallback */
