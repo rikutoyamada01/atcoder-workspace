@@ -5,6 +5,12 @@ All notable changes to the AtCoder Workspace extension will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.4] - 2026-07-21
+
+### Changed
+- Editor（問題ページ内ワークスペース）から不要な通知バナーおよび What's New ボタンを撤去して UI を本来のシンプルさに還元
+- 拡張機能の設定画面（Options ページ）へ未読通知バナーを統合し、アップデート時に自動で設定画面が開き目立つバナーからリリースノートを確認できる仕様に変更
+
 ## [1.6.3] - 2026-07-21
 
 ### Fixed

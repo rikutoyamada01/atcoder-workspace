@@ -997,3 +997,76 @@ input:checked + .slider:before {
 .changelog-content li {
   margin-bottom: 4px;
 }
+
+/* What's New Banner for Options Page */
+.whats-new-banner {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.banner-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.banner-icon {
+  font-size: 20px;
+}
+
+.banner-text {
+  font-weight: 600;
+}
+
+.btn-banner-action {
+  background-color: #ffffff;
+  color: #1d4ed8;
+  border: none;
+  font-weight: bold;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-banner-action:hover {
+  background-color: #f0f7ff;
+  transform: scale(1.03);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.banner-close-btn {
+  background: none;
+  border: none;
+  color: #93c5fd;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.banner-close-btn:hover {
+  color: #ffffff;
+}
