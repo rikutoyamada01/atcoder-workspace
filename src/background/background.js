@@ -29,5 +29,6 @@ chrome.runtime.onInstalled.addListener((details) => {
       whats_new_unread: true,
       last_updated_version: currentVersion,
     });
+    chrome.runtime.openOptionsPage();
   }
 });

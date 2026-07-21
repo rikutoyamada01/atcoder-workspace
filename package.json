@@ -1,6 +1,6 @@
 {
   "name": "atcoder-workspace",
-  "version": "1.6.3",
+  "version": "1.6.4",
   "description": "Competitive Programming Workspace for AtCoder",
   "private": true,
   "scripts": {
