@@ -658,7 +658,7 @@ impl UnionFind {
   function renderMarkdownSimple(text) {
     if (!text) return '';
     let html = text.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-    html = html.replace(/^\- (.*$)/gim, '<li>$1</li>');
+    html = html.replace(/^- (.*$)/gim, '<li>$1</li>');
     html = html.replace(/(<li>.*<\/li>)/gms, '<ul>$1</ul>');
     html = html.replace(/<\/ul>\s*<ul>/g, '');
     return html;
