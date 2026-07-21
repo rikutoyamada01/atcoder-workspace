@@ -13,8 +13,8 @@ chrome.action.onClicked.addListener(() => {
 const UNINSTALL_SURVEY_URL =
   'https://docs.google.com/forms/d/e/1FAIpQLSfj0RgZEhpAUQoHxyZvvq8ylMpbiutusKMN4ak_qOKa-UigAw/viewform';
 
-// Set the uninstall survey URL on installation or update
-chrome.runtime.onInstalled.addListener(() => {
+// Set uninstall URL and handle update notifications
+chrome.runtime.onInstalled.addListener((details) => {
   chrome.runtime.setUninstallURL(UNINSTALL_SURVEY_URL, () => {
     if (chrome.runtime.lastError) {
       console.error('Failed to set uninstall URL:', chrome.runtime.lastError.message);
@@ -22,4 +22,12 @@ chrome.runtime.onInstalled.addListener(() => {
       console.log('Uninstall URL set successfully:', UNINSTALL_SURVEY_URL);
     }
   });
+
+  if (details.reason === 'update' || details.reason === 'install') {
+    const currentVersion = chrome.runtime.getManifest().version;
+    chrome.storage.local.set({
+      whats_new_unread: true,
+      last_updated_version: currentVersion,
+    });
+  }
 });

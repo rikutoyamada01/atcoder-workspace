@@ -599,7 +599,8 @@ func main() {
         let targetLangDefault = 'cpp';
         const fileName = file.name.toLowerCase();
         if (fileName.includes('cpp') || fileName.includes('c++')) targetLangDefault = 'cpp';
-        else if (fileName.includes('python') || fileName.includes('py')) targetLangDefault = 'python';
+        else if (fileName.includes('python') || fileName.includes('py'))
+          targetLangDefault = 'python';
         else if (fileName.includes('rust') || fileName.includes('rs')) targetLangDefault = 'rust';
         else if (fileName.includes('java')) targetLangDefault = 'java';
         else if (fileName.includes('go')) targetLangDefault = 'go';
@@ -611,16 +612,22 @@ func main() {
           if (!value || typeof value !== 'object') continue;
 
           const title = key;
-          const code = Array.isArray(value.body) ? value.body.join('\n') : (value.body || '');
+          const code = Array.isArray(value.body) ? value.body.join('\n') : value.body || '';
           const desc = value.description || '';
-          const tags = value.prefix ? value.prefix.split(',').map(t => t.trim()).filter(Boolean) : [];
+          const tags = value.prefix
+            ? value.prefix
+                .split(',')
+                .map((t) => t.trim())
+                .filter(Boolean)
+            : [];
 
           // 言語の決定
           let snippetLangs = [];
           if (value.scope) {
-            snippetLangs = value.scope.split(',')
-              .map(s => s.trim().toLowerCase())
-              .map(s => {
+            snippetLangs = value.scope
+              .split(',')
+              .map((s) => s.trim().toLowerCase())
+              .map((s) => {
                 if (s === 'c++') return 'cpp';
                 if (s === 'py') return 'python';
                 if (s === 'rs') return 'rust';
@@ -644,14 +651,14 @@ func main() {
             snippetLangs = [targetLangDefault];
           }
 
-          snippetLangs.forEach(lang => {
+          snippetLangs.forEach((lang) => {
             importedSnippets.push({
               id: 'snippet_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
               title,
               lang,
               desc,
               tags,
-              code
+              code,
             });
           });
         }
@@ -665,7 +672,9 @@ func main() {
 
         if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
           chrome.storage.local.set({ 'settings:custom_snippets': customSnippets }, () => {
-            showToast(i18nProvider.t('settings_snippets_import_success', [importedSnippets.length]));
+            showToast(
+              i18nProvider.t('settings_snippets_import_success', [importedSnippets.length])
+            );
             renderCustomSnippets();
           });
         } else {
@@ -688,7 +697,7 @@ func main() {
     }
 
     const exportObj = {};
-    customSnippets.forEach(item => {
+    customSnippets.forEach((item) => {
       let keyName = item.title;
       if (exportObj[keyName]) {
         keyName = `${item.title} (${item.lang.toUpperCase()})`;
@@ -698,9 +707,12 @@ func main() {
 
       exportObj[keyName] = {
         scope: scope,
-        prefix: item.tags.length > 0 ? item.tags.join(', ') : item.title.toLowerCase().replace(/\s+/g, '-'),
+        prefix:
+          item.tags.length > 0
+            ? item.tags.join(', ')
+            : item.title.toLowerCase().replace(/\s+/g, '-'),
         body: item.code.split('\n'),
-        description: item.desc
+        description: item.desc,
       };
     });
 
@@ -1229,4 +1241,87 @@ func main() {
   // Init
   loadSettings();
   loadProblemStatuses();
+
+  // Release Notes / What's New logic for Options Page
+  const optionsChangelogBtn = document.getElementById('options-changelog-btn');
+  const changelogModal = document.getElementById('changelog-modal');
+  const closeChangelogBtn = document.getElementById('close-changelog-btn');
+  const changelogVersionSelect = document.getElementById('changelog-version-select');
+  const changelogContent = document.getElementById('changelog-content');
+
+  let changelogData = [];
+
+  function renderMarkdownSimple(text) {
+    if (!text) return '';
+    let html = text.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+    html = html.replace(/^\- (.*$)/gim, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>)/gms, '<ul>$1</ul>');
+    html = html.replace(/<\/ul>\s*<ul>/g, '');
+    return html;
+  }
+
+  function initChangelog() {
+    fetch('../changelog.json')
+      .then((res) => res.json())
+      .then((data) => {
+        changelogData = data;
+        if (!Array.isArray(changelogData) || changelogData.length === 0) return;
+
+        if (changelogVersionSelect) {
+          changelogVersionSelect.innerHTML = '';
+          changelogData.forEach((rel) => {
+            const opt = document.createElement('option');
+            opt.value = rel.version;
+            opt.textContent = `v${rel.version}${rel.date ? ' (' + rel.date + ')' : ''}`;
+            changelogVersionSelect.appendChild(opt);
+          });
+        }
+      })
+      .catch((err) => console.warn('Failed to load changelog.json in options:', err));
+  }
+
+  function displayChangelogVersion(ver) {
+    const rel = changelogData.find((r) => r.version === ver) || changelogData[0];
+    if (rel && changelogContent) {
+      changelogContent.innerHTML = renderMarkdownSimple(rel.content);
+    }
+  }
+
+  function openChangelogModal() {
+    if (!changelogModal) return;
+    if (changelogData.length === 0) {
+      initChangelog();
+    }
+    changelogModal.style.display = 'flex';
+    if (changelogVersionSelect && changelogData.length > 0) {
+      changelogVersionSelect.value = changelogData[0].version;
+      displayChangelogVersion(changelogData[0].version);
+    }
+  }
+
+  if (optionsChangelogBtn) {
+    optionsChangelogBtn.onclick = () => openChangelogModal();
+  }
+
+  if (closeChangelogBtn) {
+    closeChangelogBtn.onclick = () => {
+      if (changelogModal) changelogModal.style.display = 'none';
+    };
+  }
+
+  if (changelogModal) {
+    changelogModal.onclick = (e) => {
+      if (e.target === changelogModal) {
+        changelogModal.style.display = 'none';
+      }
+    };
+  }
+
+  if (changelogVersionSelect) {
+    changelogVersionSelect.onchange = () => {
+      displayChangelogVersion(changelogVersionSelect.value);
+    };
+  }
+
+  initChangelog();
 });

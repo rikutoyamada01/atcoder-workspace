@@ -901,5 +901,99 @@ input:checked + .slider:before {
 }
 
 .snippets-footer-actions .btn:hover {
-  opacity: 1.0;
+  opacity: 1;
+}
+
+/* Release Notes Modal Styles for Options */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+
+.modal-dialog {
+  background-color: var(--bg-card, #ffffff);
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 580px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--text-main, #333333);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  background-color: var(--bg-body, #f7fafc);
+}
+
+.modal-title {
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-muted, #a0aec0);
+}
+
+.close-btn:hover {
+  color: var(--text-main, #4a5568);
+}
+
+.modal-body {
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.changelog-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.changelog-content {
+  background-color: var(--bg-body, #f8fafc);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 6px;
+  padding: 12px 16px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.changelog-content h3 {
+  margin-top: 12px;
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: var(--color-primary, #3182ce);
+}
+
+.changelog-content ul {
+  padding-left: 20px;
+  margin: 4px 0 8px 0;
+}
+
+.changelog-content li {
+  margin-bottom: 4px;
 }

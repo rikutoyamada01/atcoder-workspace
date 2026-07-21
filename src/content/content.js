@@ -241,7 +241,9 @@
                 });
 
                 if (res.status === 'AC') {
-                  const currentPathMatch = window.location.pathname.match(/\/contests\/([^/]+)\/tasks\/([^/]+)/);
+                  const currentPathMatch = window.location.pathname.match(
+                    /\/contests\/([^/]+)\/tasks\/([^/]+)/
+                  );
                   const currentProblemId = currentPathMatch ? currentPathMatch[2] : null;
                   if (problemId === currentProblemId) {
                     const select = document.getElementById('ac-status-select');

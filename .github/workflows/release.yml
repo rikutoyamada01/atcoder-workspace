@@ -68,6 +68,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Generate Release Notes
+        if: steps.check_tag.outputs.exists == 'false'
+        run: |
+          echo "## AtCoder Workspace v${{ steps.get_version.outputs.version }}" > release_body.md
+          echo "" >> release_body.md
+          node scripts/get-release-notes.js ${{ steps.get_version.outputs.version }} >> release_body.md || true
+          echo "" >> release_body.md
+          echo "### インストール方法 (手動インストール)" >> release_body.md
+          echo "1. 添付されている \`atcoder-workspace-v${{ steps.get_version.outputs.version }}.zip\` をダウンロードして解凍します。" >> release_body.md
+          echo "2. Google Chrome で \`chrome://extensions/\` を開きます。" >> release_body.md
+          echo "3. 右上の「デベロッパー モード」を有効にします。" >> release_body.md
+          echo "4. 左上の「パッケージ化されていない拡張機能を読み込む」をクリックし、解凍したフォルダを選択します。" >> release_body.md
+          echo "" >> release_body.md
+          echo "### ストアからのインストール (公式公開版)" >> release_body.md
+          echo "※ Chrome Web Store への公開後は、こちらにリンクが配置されます。" >> release_body.md
+
       - name: Create GitHub Release
         if: steps.check_tag.outputs.exists == 'false'
         uses: softprops/action-gh-release@v2
@@ -75,17 +91,7 @@ jobs:
           tag_name: v${{ steps.get_version.outputs.version }}
           files: dist/atcoder-workspace-v${{ steps.get_version.outputs.version }}.zip
           name: Release v${{ steps.get_version.outputs.version }}
-          body: |
-            ## AtCoder Workspace v${{ steps.get_version.outputs.version }}
-
-            ### インストール方法 (手動インストール)
-            1. 添付されている `atcoder-workspace-v${{ steps.get_version.outputs.version }}.zip` をダウンロードして解凍します。
-            2. Google Chrome で `chrome://extensions/` を開きます。
-            3. 右上の「デベロッパー モード」を有効にします。
-            4. 左上の「パッケージ化されていない拡張機能を読み込む」をクリックし、解凍したフォルダを選択します。
-
-            ### ストアからのインストール (公式公開版)
-            ※ Chrome Web Store への公開後は、こちらにリンクが配置されます。
+          body_path: release_body.md
           draft: false
           prerelease: false
         env:

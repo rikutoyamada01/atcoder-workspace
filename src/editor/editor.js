@@ -24,6 +24,12 @@
   const consolePanel = document.getElementById('console-panel');
   const consoleResults = document.getElementById('console-results');
   const settingsBtn = document.getElementById('settings-btn');
+  const whatsNewBtn = document.getElementById('whats-new-btn');
+  const whatsNewBadge = document.getElementById('whats-new-badge');
+  const changelogModal = document.getElementById('changelog-modal');
+  const closeChangelogBtn = document.getElementById('close-changelog-btn');
+  const changelogVersionSelect = document.getElementById('changelog-version-select');
+  const changelogContent = document.getElementById('changelog-content');
 
   // Snippets Drawer Elements
   const snippetsBtn = document.getElementById('snippets-btn');
@@ -646,6 +652,96 @@ impl UnionFind {
     };
   }
 
+  // Release Notes / What's New logic
+  let changelogData = [];
+
+  function renderMarkdownSimple(text) {
+    if (!text) return '';
+    let html = text.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+    html = html.replace(/^\- (.*$)/gim, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>)/gms, '<ul>$1</ul>');
+    html = html.replace(/<\/ul>\s*<ul>/g, '');
+    return html;
+  }
+
+  function initChangelog() {
+    fetch('../changelog.json')
+      .then((res) => res.json())
+      .then((data) => {
+        changelogData = data;
+        if (!Array.isArray(changelogData) || changelogData.length === 0) return;
+
+        // Populate version select
+        changelogVersionSelect.innerHTML = '';
+        changelogData.forEach((rel) => {
+          const opt = document.createElement('option');
+          opt.value = rel.version;
+          opt.textContent = `v${rel.version}${rel.date ? ' (' + rel.date + ')' : ''}`;
+          changelogVersionSelect.appendChild(opt);
+        });
+
+        // Check unread status
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+          chrome.storage.local.get(['whats_new_unread'], (res) => {
+            if (res.whats_new_unread) {
+              if (whatsNewBadge) whatsNewBadge.style.display = 'block';
+            }
+          });
+        }
+      })
+      .catch((err) => console.warn('Failed to load changelog.json:', err));
+  }
+
+  function displayChangelogVersion(ver) {
+    const rel = changelogData.find((r) => r.version === ver) || changelogData[0];
+    if (rel && changelogContent) {
+      changelogContent.innerHTML = renderMarkdownSimple(rel.content);
+    }
+  }
+
+  function openChangelogModal() {
+    if (!changelogModal) return;
+    if (changelogData.length === 0) {
+      initChangelog();
+    }
+    changelogModal.style.display = 'flex';
+    if (changelogVersionSelect && changelogData.length > 0) {
+      changelogVersionSelect.value = changelogData[0].version;
+      displayChangelogVersion(changelogData[0].version);
+    }
+    // Mark as read
+    if (whatsNewBadge) whatsNewBadge.style.display = 'none';
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.set({ whats_new_unread: false });
+    }
+  }
+
+  if (whatsNewBtn) {
+    whatsNewBtn.onclick = () => openChangelogModal();
+  }
+
+  if (closeChangelogBtn) {
+    closeChangelogBtn.onclick = () => {
+      if (changelogModal) changelogModal.style.display = 'none';
+    };
+  }
+
+  if (changelogModal) {
+    changelogModal.onclick = (e) => {
+      if (e.target === changelogModal) {
+        changelogModal.style.display = 'none';
+      }
+    };
+  }
+
+  if (changelogVersionSelect) {
+    changelogVersionSelect.onchange = () => {
+      displayChangelogVersion(changelogVersionSelect.value);
+    };
+  }
+
+  initChangelog();
+
   consoleToggleBtn.onclick = () => {
     toggleConsole();
   };
@@ -1140,12 +1236,15 @@ impl UnionFind {
                 testSummary.textContent = summaryText;
                 testSummary.className = summaryClass;
               }
-              sessionStorage.setItem(`console:state:${targetContestId}:${targetProblemId}`, JSON.stringify({
-                html: html,
-                summaryText: summaryText,
-                summaryClass: summaryClass,
-                visible: true
-              }));
+              sessionStorage.setItem(
+                `console:state:${targetContestId}:${targetProblemId}`,
+                JSON.stringify({
+                  html: html,
+                  summaryText: summaryText,
+                  summaryClass: summaryClass,
+                  visible: true,
+                })
+              );
             });
           });
         } else {
@@ -1156,12 +1255,15 @@ impl UnionFind {
             testSummary.textContent = summaryText;
             testSummary.className = summaryClass;
           }
-          sessionStorage.setItem(`console:state:${targetContestId}:${targetProblemId}`, JSON.stringify({
-            html: html,
-            summaryText: summaryText,
-            summaryClass: summaryClass,
-            visible: true
-          }));
+          sessionStorage.setItem(
+            `console:state:${targetContestId}:${targetProblemId}`,
+            JSON.stringify({
+              html: html,
+              summaryText: summaryText,
+              summaryClass: summaryClass,
+              visible: true,
+            })
+          );
         }
         break;
       }
@@ -1697,7 +1799,7 @@ impl UnionFind {
       html: consoleResults.innerHTML,
       summaryText: testSummary.textContent,
       summaryClass: testSummary.className,
-      visible: consolePanel.style.display !== 'none'
+      visible: consolePanel.style.display !== 'none',
     };
     sessionStorage.setItem(`console:state:${cId}:${pId}`, JSON.stringify(state));
   }

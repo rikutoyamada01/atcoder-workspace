@@ -326,7 +326,7 @@
             AtCoder Workspace は個人でオープンソース開発しています。もし気に入っていただけましたら、応援いただけますと幸いです！
           </p>
           <div class="user-stats-box">
-            <span class="stats-label" data-i18n="settings_support_acCount">🏆 あなたの累計AC数:</span>
+            <span class="stats-label" data-i18n="settings_support_acCount">あなたの累計AC数:</span>
             <span id="support-ac-count" class="stats-val">0</span>
             <span class="stats-unit" data-i18n="settings_support_acUnit">問</span>
           </div>
@@ -350,7 +350,7 @@
           <h3 data-i18n="settings_info_title">この拡張機能について</h3>
           <div class="info-item">
             <span class="info-label" data-i18n="settings_info_version">バージョン:</span>
-            <span id="extension-version" class="info-value">1.4.0</span>
+            <span id="extension-version" class="info-value">1.6.1</span>
           </div>
           <div class="info-item">
             <span class="info-label" data-i18n="settings_info_license">ライセンス:</span>
@@ -359,6 +359,9 @@
           <div class="info-item">
             <span class="info-label" data-i18n="settings_info_dataTransmission">データ送信:</span>
             <span class="info-value text-success" data-i18n="settings_info_dataTransmissionValue">送信なし (完全ローカル動作)</span>
+          </div>
+          <div class="info-item" style="margin-top: 12px;">
+            <button id="options-changelog-btn" class="btn btn-secondary btn-sm" style="width: 100%;">🎉 リリースノート / Release Notes</button>
           </div>
         </section>
 
@@ -397,6 +400,29 @@
 
     <!-- Notification Toast -->
     <div id="toast" class="toast">設定を保存しました</div>
+  </div>
+
+  <!-- Release Notes Modal -->
+  <div id="changelog-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>🎉 Release Notes / 更新履歴</span>
+        </div>
+        <button id="close-changelog-btn" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="changelog-controls">
+          <label for="changelog-version-select">バージョン選択:</label>
+          <select id="changelog-version-select" class="form-control">
+            <!-- Dynamically populated -->
+          </select>
+        </div>
+        <div id="changelog-content" class="changelog-content">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="../lib/i18n.js"></script>

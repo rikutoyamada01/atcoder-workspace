@@ -14,6 +14,13 @@ const zipFilePath = path.join(distDir, zipFileName);
 
 console.log(`Starting release build for version ${version}...`);
 
+// Generate changelog.json from CHANGELOG.md
+try {
+  require('./build-changelog');
+} catch (err) {
+  console.warn('Failed to build changelog.json:', err.message);
+}
+
 // 2. クリーンアップと一時ディレクトリ作成
 if (fs.existsSync(distDir)) {
   fs.rmSync(distDir, { recursive: true, force: true });
