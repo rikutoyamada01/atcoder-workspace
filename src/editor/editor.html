@@ -27,6 +27,16 @@
       </div>
     </div>
 
+    <!-- What's New Notification Banner (Shown on update) -->
+    <div id="whats-new-banner" class="whats-new-banner" style="display: none;">
+      <div class="banner-content">
+        <span class="banner-icon">🎉</span>
+        <span class="banner-text" id="whats-new-banner-text">AtCoder Workspace が新しいバージョンにアップデートされました！</span>
+        <button id="view-release-notes-btn" class="btn btn-sm btn-banner-action">新機能を見る / Release Notes</button>
+      </div>
+      <button id="dismiss-banner-btn" class="banner-close-btn">&times;</button>
+    </div>
+
     <div id="toolbar">
       <div class="toolbar-left">
         <button id="prev-btn" class="btn btn-default" data-i18n-title="editor_toolbar_prev_title" data-i18n="editor_toolbar_prev">« 前</button>
@@ -41,8 +51,8 @@
           <!-- Dynamically populated from AtCoder options -->
         </select>
         <span id="save-status" data-i18n="editor_save_status_loading">読み込み中...</span>
-        <button id="whats-new-btn" class="btn btn-default btn-icon" data-i18n-title="editor_toolbar_whats_new_title" style="position: relative;">
-          🎉<span id="whats-new-badge" class="whats-new-badge" style="display: none;"></span>
+        <button id="whats-new-btn" class="btn btn-default" data-i18n-title="editor_toolbar_whats_new_title" style="position: relative;">
+          <span id="whats-new-btn-icon">🎉</span><span id="whats-new-btn-text" style="display: none; margin-left: 4px; font-weight: bold;">What's New!</span><span id="whats-new-badge" class="whats-new-badge" style="display: none;"></span>
         </button>
         <button id="settings-btn" class="btn btn-default btn-icon" data-i18n-title="editor_toolbar_settings_title">⚙️</button>
       </div>

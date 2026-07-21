@@ -26,6 +26,11 @@
   const settingsBtn = document.getElementById('settings-btn');
   const whatsNewBtn = document.getElementById('whats-new-btn');
   const whatsNewBadge = document.getElementById('whats-new-badge');
+  const whatsNewBtnText = document.getElementById('whats-new-btn-text');
+  const whatsNewBanner = document.getElementById('whats-new-banner');
+  const whatsNewBannerText = document.getElementById('whats-new-banner-text');
+  const viewReleaseNotesBtn = document.getElementById('view-release-notes-btn');
+  const dismissBannerBtn = document.getElementById('dismiss-banner-btn');
   const changelogModal = document.getElementById('changelog-modal');
   const closeChangelogBtn = document.getElementById('close-changelog-btn');
   const changelogVersionSelect = document.getElementById('changelog-version-select');
@@ -664,6 +669,30 @@ impl UnionFind {
     return html;
   }
 
+  function updateUnreadUI(isUnread, version) {
+    if (isUnread) {
+      if (whatsNewBanner) whatsNewBanner.style.display = 'flex';
+      if (whatsNewBannerText && version) {
+        whatsNewBannerText.textContent = `AtCoder Workspace が v${version} にアップデートされました！`;
+      }
+      if (whatsNewBtn) whatsNewBtn.classList.add('whats-new-unread-btn');
+      if (whatsNewBtnText) whatsNewBtnText.style.display = 'inline';
+      if (whatsNewBadge) whatsNewBadge.style.display = 'inline-block';
+    } else {
+      if (whatsNewBanner) whatsNewBanner.style.display = 'none';
+      if (whatsNewBtn) whatsNewBtn.classList.remove('whats-new-unread-btn');
+      if (whatsNewBtnText) whatsNewBtnText.style.display = 'none';
+      if (whatsNewBadge) whatsNewBadge.style.display = 'none';
+    }
+  }
+
+  function markChangelogAsRead() {
+    updateUnreadUI(false);
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.set({ whats_new_unread: false });
+    }
+  }
+
   function initChangelog() {
     fetch('../changelog.json')
       .then((res) => res.json())
@@ -672,19 +701,22 @@ impl UnionFind {
         if (!Array.isArray(changelogData) || changelogData.length === 0) return;
 
         // Populate version select
-        changelogVersionSelect.innerHTML = '';
-        changelogData.forEach((rel) => {
-          const opt = document.createElement('option');
-          opt.value = rel.version;
-          opt.textContent = `v${rel.version}${rel.date ? ' (' + rel.date + ')' : ''}`;
-          changelogVersionSelect.appendChild(opt);
-        });
+        if (changelogVersionSelect) {
+          changelogVersionSelect.innerHTML = '';
+          changelogData.forEach((rel) => {
+            const opt = document.createElement('option');
+            opt.value = rel.version;
+            opt.textContent = `v${rel.version}${rel.date ? ' (' + rel.date + ')' : ''}`;
+            changelogVersionSelect.appendChild(opt);
+          });
+        }
 
         // Check unread status
         if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-          chrome.storage.local.get(['whats_new_unread'], (res) => {
+          chrome.storage.local.get(['whats_new_unread', 'last_updated_version'], (res) => {
+            const version = res.last_updated_version || changelogData[0].version;
             if (res.whats_new_unread) {
-              if (whatsNewBadge) whatsNewBadge.style.display = 'block';
+              updateUnreadUI(true, version);
             }
           });
         }
@@ -709,15 +741,19 @@ impl UnionFind {
       changelogVersionSelect.value = changelogData[0].version;
       displayChangelogVersion(changelogData[0].version);
     }
-    // Mark as read
-    if (whatsNewBadge) whatsNewBadge.style.display = 'none';
-    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-      chrome.storage.local.set({ whats_new_unread: false });
-    }
+    markChangelogAsRead();
   }
 
   if (whatsNewBtn) {
     whatsNewBtn.onclick = () => openChangelogModal();
+  }
+
+  if (viewReleaseNotesBtn) {
+    viewReleaseNotesBtn.onclick = () => openChangelogModal();
+  }
+
+  if (dismissBannerBtn) {
+    dismissBannerBtn.onclick = () => markChangelogAsRead();
   }
 
   if (closeChangelogBtn) {
