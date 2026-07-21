@@ -236,13 +236,19 @@
                   memory: res.memory,
                   turnstileDebug: res.turnstileDebug,
                   isContestActive: isContestActive(),
+                  contestId: contestId,
+                  problemId: problemId,
                 });
 
                 if (res.status === 'AC') {
-                  const select = document.getElementById('ac-status-select');
-                  if (select) {
-                    select.value = 'self_ac';
-                    select.dispatchEvent(new Event('change'));
+                  const currentPathMatch = window.location.pathname.match(/\/contests\/([^/]+)\/tasks\/([^/]+)/);
+                  const currentProblemId = currentPathMatch ? currentPathMatch[2] : null;
+                  if (problemId === currentProblemId) {
+                    const select = document.getElementById('ac-status-select');
+                    if (select && (select.value === 'unsolved' || !select.value)) {
+                      select.value = 'self_ac';
+                      select.dispatchEvent(new Event('change'));
+                    }
                   }
                 }
               } else {
@@ -253,6 +259,8 @@
                   time: res.time,
                   memory: res.memory,
                   turnstileDebug: res.turnstileDebug,
+                  contestId: contestId,
+                  problemId: problemId,
                 });
               }
             });
@@ -586,9 +594,9 @@
             isContestActive: isContestActive(),
           });
 
-          if (pollRes.status === 'AC') {
+          if (pollRes.status === 'AC' && pending.problemId === problemId) {
             const select = document.getElementById('ac-status-select');
-            if (select) {
+            if (select && (select.value === 'unsolved' || !select.value)) {
               select.value = 'self_ac';
               select.dispatchEvent(new Event('change'));
             }
@@ -596,6 +604,7 @@
         } else {
           notifyEditor({
             type: 'pending-submit-status',
+            contestId: pending.contestId,
             problemId: pending.problemId,
             submissionId: pollRes.submissionId,
             status: pollRes.status,

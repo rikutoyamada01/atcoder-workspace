@@ -41,6 +41,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const snippetCodeInput = document.getElementById('snippet-code-input');
   const cancelSnippetBtn = document.getElementById('cancel-snippet-btn');
   const saveSnippetBtn = document.getElementById('save-snippet-btn');
+  const importVSCodeBtn = document.getElementById('import-vscode-btn');
+  const exportVSCodeBtn = document.getElementById('export-vscode-btn');
+  const importVSCodeFile = document.getElementById('import-vscode-file');
 
   // State Variables
   let customSnippets = [];
@@ -579,6 +582,140 @@ func main() {
     }
   };
 
+  // Import VS Code snippets
+  const importVSCodeSnippets = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const importedJson = JSON.parse(event.target.result);
+        if (typeof importedJson !== 'object' || importedJson === null) {
+          showToast(i18nProvider.t('settings_snippets_import_no_snippets'));
+          return;
+        }
+
+        let targetLangDefault = 'cpp';
+        const fileName = file.name.toLowerCase();
+        if (fileName.includes('cpp') || fileName.includes('c++')) targetLangDefault = 'cpp';
+        else if (fileName.includes('python') || fileName.includes('py')) targetLangDefault = 'python';
+        else if (fileName.includes('rust') || fileName.includes('rs')) targetLangDefault = 'rust';
+        else if (fileName.includes('java')) targetLangDefault = 'java';
+        else if (fileName.includes('go')) targetLangDefault = 'go';
+
+        let promptNeeded = true;
+        const importedSnippets = [];
+
+        for (const [key, value] of Object.entries(importedJson)) {
+          if (!value || typeof value !== 'object') continue;
+
+          const title = key;
+          const code = Array.isArray(value.body) ? value.body.join('\n') : (value.body || '');
+          const desc = value.description || '';
+          const tags = value.prefix ? value.prefix.split(',').map(t => t.trim()).filter(Boolean) : [];
+
+          // 言語の決定
+          let snippetLangs = [];
+          if (value.scope) {
+            snippetLangs = value.scope.split(',')
+              .map(s => s.trim().toLowerCase())
+              .map(s => {
+                if (s === 'c++') return 'cpp';
+                if (s === 'py') return 'python';
+                if (s === 'rs') return 'rust';
+                if (['cpp', 'python', 'rust', 'java', 'go'].includes(s)) return s;
+                return null;
+              })
+              .filter(Boolean);
+          }
+
+          if (snippetLangs.length === 0) {
+            if (promptNeeded) {
+              const promptMsg = i18nProvider.t('settings_snippets_import_lang_prompt');
+              const userLang = prompt(promptMsg, targetLangDefault);
+              if (userLang === null) return; // キャンセル
+              const normalized = userLang.toLowerCase().trim();
+              if (['cpp', 'python', 'rust', 'java', 'go'].includes(normalized)) {
+                targetLangDefault = normalized;
+              }
+              promptNeeded = false;
+            }
+            snippetLangs = [targetLangDefault];
+          }
+
+          snippetLangs.forEach(lang => {
+            importedSnippets.push({
+              id: 'snippet_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+              title,
+              lang,
+              desc,
+              tags,
+              code
+            });
+          });
+        }
+
+        if (importedSnippets.length === 0) {
+          showToast(i18nProvider.t('settings_snippets_import_no_snippets'));
+          return;
+        }
+
+        customSnippets = [...customSnippets, ...importedSnippets];
+
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+          chrome.storage.local.set({ 'settings:custom_snippets': customSnippets }, () => {
+            showToast(i18nProvider.t('settings_snippets_import_success', [importedSnippets.length]));
+            renderCustomSnippets();
+          });
+        } else {
+          showToast(i18nProvider.t('settings_snippets_import_success', [importedSnippets.length]));
+          renderCustomSnippets();
+        }
+      } catch (err) {
+        showToast(i18nProvider.t('settings_snippets_import_error'));
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = ''; // リセット
+  };
+
+  // Export snippets to VS Code format
+  const exportVSCodeSnippets = () => {
+    if (customSnippets.length === 0) {
+      showToast(i18nProvider.t('settings_snippets_table_empty'));
+      return;
+    }
+
+    const exportObj = {};
+    customSnippets.forEach(item => {
+      let keyName = item.title;
+      if (exportObj[keyName]) {
+        keyName = `${item.title} (${item.lang.toUpperCase()})`;
+      }
+
+      const scope = item.lang === 'cpp' ? 'cpp,c++' : item.lang;
+
+      exportObj[keyName] = {
+        scope: scope,
+        prefix: item.tags.length > 0 ? item.tags.join(', ') : item.title.toLowerCase().replace(/\s+/g, '-'),
+        body: item.code.split('\n'),
+        description: item.desc
+      };
+    });
+
+    const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'atcoder-workspace-snippets.code-snippets';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast(i18nProvider.t('settings_snippets_export_success'));
+  };
+
   // Check hash redirect for scroll
   const checkHashRedirect = () => {
     if (window.location.hash === '#custom-snippets-section') {
@@ -596,6 +733,7 @@ func main() {
   const noStatusMessage = document.getElementById('no-status-message');
   const statusSearchInput = document.getElementById('status-search-input');
   const statusSearchBtn = document.getElementById('status-search-btn');
+  const statusFilterSelect = document.getElementById('status-filter-select');
 
   // Memory cache for fetched contest problems
   let temporaryProblems = [];
@@ -654,6 +792,7 @@ func main() {
     if (!statusTableBody) return;
 
     const query = statusSearchInput ? statusSearchInput.value.trim().toLowerCase() : '';
+    const filter = statusFilterSelect ? statusFilterSelect.value : 'all';
     let filteredProblems = [...allProblems];
 
     // Apply normalized filter query (ignores spaces and underscores for smooth "abc 300 a" match on abc300_a)
@@ -662,6 +801,32 @@ func main() {
         const cleanP = p.toLowerCase().replace(/[\s_]/g, '');
         const cleanQuery = query.toLowerCase().replace(/[\s_]/g, '');
         return cleanP.includes(cleanQuery);
+      });
+    }
+
+    // Resolve statuses map for filtering
+    const problemStatusesMap = {};
+    filteredProblems.forEach((problemKey) => {
+      const parts = problemKey.split(':');
+      if (parts.length < 2) return;
+      const contestId = parts[0];
+      const problemId = parts[1];
+      const statusKey = `status:${contestId}:${problemId}`;
+      let currentStatus = 'unsolved';
+      if (statuses[statusKey]) {
+        currentStatus = statuses[statusKey];
+      } else {
+        const acProblems = statuses['stats:ac_problems'] || [];
+        if (acProblems.includes(problemKey)) {
+          currentStatus = 'self_ac';
+        }
+      }
+      problemStatusesMap[problemKey] = currentStatus;
+    });
+
+    if (filter !== 'all') {
+      filteredProblems = filteredProblems.filter((p) => {
+        return problemStatusesMap[p] === filter;
       });
     }
 
@@ -719,6 +884,8 @@ func main() {
 
       const formattedProblem = problemId.toUpperCase().replace(contestId.toUpperCase() + '_', '');
       const formattedContest = contestId.toUpperCase();
+      const contestUrl = `https://atcoder.jp/contests/${contestId}`;
+      const problemUrl = `https://atcoder.jp/contests/${contestId}/tasks/${problemId}`;
 
       const row = document.createElement('tr');
 
@@ -727,8 +894,8 @@ func main() {
       if (currentStatus === 'editorial_ac') dotClass = 'dot-editorial';
 
       row.innerHTML = `
-        <td style="font-weight: 600;">${escapeHtml(formattedContest)}</td>
-        <td>${escapeHtml(formattedProblem)}</td>
+        <td style="font-weight: 600;"><a href="${contestUrl}" target="_blank" class="status-table-link">${escapeHtml(formattedContest)}</a></td>
+        <td><a href="${problemUrl}" target="_blank" class="status-table-link">${escapeHtml(formattedProblem)}</a></td>
         <td class="status-select-cell">
           <div style="display: flex; align-items: center;">
             <span class="status-badge-dot ${dotClass}" id="dot-${problemKey.replace(':', '-')}"></span>
@@ -899,6 +1066,17 @@ func main() {
     saveSnippetBtn.addEventListener('click', saveSnippet);
   }
 
+  if (importVSCodeBtn && importVSCodeFile) {
+    importVSCodeBtn.addEventListener('click', () => {
+      importVSCodeFile.click();
+    });
+    importVSCodeFile.addEventListener('change', importVSCodeSnippets);
+  }
+
+  if (exportVSCodeBtn) {
+    exportVSCodeBtn.addEventListener('click', exportVSCodeSnippets);
+  }
+
   if (statusSearchInput) {
     statusSearchInput.addEventListener('input', () => {
       // Reset to page 1 on input
@@ -925,6 +1103,13 @@ func main() {
       // Reset to page 1 on new search trigger
       currentPage = 1;
       triggerContestSearch();
+    });
+  }
+
+  if (statusFilterSelect) {
+    statusFilterSelect.addEventListener('change', () => {
+      currentPage = 1;
+      loadProblemStatuses();
     });
   }
 

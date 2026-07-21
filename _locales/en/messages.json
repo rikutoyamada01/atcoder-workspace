@@ -107,6 +107,27 @@
   "settings_snippets_title": {
     "message": "Custom Snippets"
   },
+  "settings_snippets_import": {
+    "message": "Import"
+  },
+  "settings_snippets_export": {
+    "message": "Export"
+  },
+  "settings_snippets_import_success": {
+    "message": "Imported $1 snippets successfully."
+  },
+  "settings_snippets_export_success": {
+    "message": "Snippets exported successfully."
+  },
+  "settings_snippets_import_error": {
+    "message": "Failed to load JSON file."
+  },
+  "settings_snippets_import_no_snippets": {
+    "message": "No importable snippets found."
+  },
+  "settings_snippets_import_lang_prompt": {
+    "message": "No language (scope) is defined for some or all snippets.\nPlease specify the destination language (cpp / python / rust / java / go):"
+  },
   "settings_snippets_label": {
     "message": "Registered Snippets"
   },
@@ -541,6 +562,18 @@
   },
   "options_status_fetch_error": {
     "message": "Contest not found or fetch failed"
+  },
+  "options_status_filter_all": {
+    "message": "All"
+  },
+  "options_status_filter_self": {
+    "message": "Self AC"
+  },
+  "options_status_filter_editorial": {
+    "message": "Editorial AC"
+  },
+  "options_status_filter_unsolved": {
+    "message": "Unsolved"
   },
   "options_pagination_prev": {
     "message": "Prev"

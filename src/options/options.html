@@ -88,9 +88,14 @@
               </div>
               
               <div class="setting-item-vertical" style="border: none; padding: 0; margin-bottom: 10px; width: 100%;">
-                <div style="display: flex; gap: 8px; width: 100%; max-width: 400px; align-items: center;">
-                  <input type="text" id="status-search-input" class="form-control" placeholder="コンテストIDで検索・追加 (例: abc300)" data-i18n-placeholder="options_status_search_placeholder" style="flex: 1;">
+                <div style="display: flex; flex-wrap: wrap; gap: 8px; width: 100%; max-width: 600px; align-items: center;">
+                  <input type="text" id="status-search-input" class="form-control" placeholder="コンテストIDで検索・追加 (例: abc300)" data-i18n-placeholder="options_status_search_placeholder" style="flex: 2; min-width: 200px;">
                   <button type="button" id="status-search-btn" class="settings-btn" style="white-space: nowrap; height: 34px; margin-top: 0;" data-i18n="options_status_search_btn">検索</button>
+                  <select id="status-filter-select" class="form-control" style="flex: 1; min-width: 130px; height: 34px;">
+                    <option value="all" data-i18n="options_status_filter_all">すべて / All</option>
+                    <option value="self_ac" data-i18n="options_status_filter_self">自力AC / Self AC</option>
+                    <option value="editorial_ac" data-i18n="options_status_filter_editorial">解説AC / Editorial AC</option>
+                  </select>
                 </div>
               </div>
 
@@ -228,6 +233,11 @@
                 </table>
                 <div id="no-snippets-message" class="no-snippets-message" data-i18n="settings_snippets_table_empty">
                   登録されている自作スニペットはありません。
+                </div>
+                <div class="snippets-footer-actions">
+                  <button id="import-vscode-btn" class="btn btn-secondary btn-sm" data-i18n="settings_snippets_import">インポート</button>
+                  <button id="export-vscode-btn" class="btn btn-secondary btn-sm" data-i18n="settings_snippets_export">エクスポート</button>
+                  <input type="file" id="import-vscode-file" style="display: none;" accept=".json,.code-snippets">
                 </div>
               </div>
             </div>
