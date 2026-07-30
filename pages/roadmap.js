@@ -285,7 +285,6 @@ const skillsDb = {
   }
 };
 
-// 実装済みの機能IDリスト (開発の進捗に合わせてここへIDを追加するだけで、進捗率やスコアボード、各カードの鍵マークが自動更新されます)
 const completedSkills = ["monaco", "submit", "test", "template", "ac_distinction"];
 
 function updateRoadmapProgress() {
@@ -298,7 +297,6 @@ function updateRoadmapProgress() {
   document.getElementById('scorePoints').textContent = earnedPts + ' pts';
   document.getElementById('progressBar').style.width = pct + '%';
 
-  // Update each node card
   Object.keys(skillsDb).forEach(id => {
     const el = document.getElementById('node-' + id);
     if (!el) return;
@@ -323,7 +321,6 @@ function updateRoadmapProgress() {
   });
 }
 
-// Connections definition: [from_node_id, to_node_id]
 const connections = [
   ['node-monaco', 'node-template'],
   ['node-monaco', 'node-notes'],
@@ -341,12 +338,13 @@ const connections = [
 ];
 
 function drawConnections() {
-  // Clear existing lines
   const svg = document.getElementById('treeSvg');
+  if (!svg) return;
   const existingLines = svg.querySelectorAll('line, path');
   existingLines.forEach(el => el.remove());
 
   const wrapper = document.querySelector('.tree-wrapper');
+  if (!wrapper) return;
   const wrapperRect = wrapper.getBoundingClientRect();
   const columns = Array.from(document.querySelectorAll('.tree-column'));
 
@@ -361,28 +359,25 @@ function drawConnections() {
     const fromCol = columns.findIndex(col => col.contains(fromEl));
     const toCol = columns.findIndex(col => col.contains(toEl));
 
-    // Soft colored stroke lines matching the source node phase in light mode
     let strokeColor = '#ccc';
     if (fromId === 'node-monaco' || fromId === 'node-test' || fromId === 'node-submit') {
-      strokeColor = '#91d5ff'; // Phase 1: Soft Blue-Cyan
+      strokeColor = '#91d5ff';
     } else if (fromId === 'node-notes' || fromId === 'node-template' || fromId === 'node-dashboard' || fromId === 'node-customtest') {
-      strokeColor = '#b7eb8f'; // Phase 2: Soft Green
+      strokeColor = '#b7eb8f';
     } else if (fromId === 'node-library' || fromId === 'node-queue' || fromId === 'node-error' || fromId === 'node-export') {
-      strokeColor = '#ffe58f'; // Phase 3: Soft Amber
+      strokeColor = '#ffe58f';
     } else if (fromId === 'node-safety' || fromId === 'node-autopush') {
-      strokeColor = '#d3adf7'; // Phase 4: Soft Purple
+      strokeColor = '#d3adf7';
     }
 
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
 
     if (fromCol === toCol) {
-      // Connections within the same column
       const colCards = Array.from(columns[fromCol].querySelectorAll('.skill-node'));
       const fromIndex = colCards.indexOf(fromEl);
       const toIndex = colCards.indexOf(toEl);
 
       if (Math.abs(fromIndex - toIndex) === 1) {
-        // Adjacent vertical connection -> straight line from bottom of top card to top of bottom card
         const topEl = fromIndex < toIndex ? fromEl : toEl;
         const bottomEl = fromIndex < toIndex ? toEl : fromEl;
         const topRect = topEl.getBoundingClientRect();
@@ -395,8 +390,6 @@ function drawConnections() {
 
         path.setAttribute('d', `M ${cx1} ${cy1} L ${cx2} ${cy2}`);
       } else {
-        // Non-adjacent vertical connection (e.g. monaco -> test) -> left-side rounded orthogonal C-bypass loop
-        // Exits left horizontally, goes down in the padded margin, and enters left horizontally.
         const topEl = fromIndex < toIndex ? fromEl : toEl;
         const bottomEl = fromIndex < toIndex ? toEl : fromEl;
         const topRect = topEl.getBoundingClientRect();
@@ -415,7 +408,6 @@ function drawConnections() {
         const x_arc2 = x2 - offset + r;
         const y_arc2 = y2 - r;
         
-        // Sweep: 0 for counter-clockwise curves (curving left-and-down, then down-and-right)
         const pathData = `M ${x1} ${y1} ` +
                          `L ${x_arc1} ${y1} ` +
                          `A ${r} ${r} 0 0 0 ${x1 - offset} ${y_arc1} ` +
@@ -425,9 +417,6 @@ function drawConnections() {
         path.setAttribute('d', pathData);
       }
     } else {
-      // Connections between different columns -> Rounded orthogonal path
-      // This ensures that the line enters the destination card perfectly horizontally,
-      // so the arrowhead and dashed line align flawlessly without any diagonal distortions.
       const x1 = fromRect.right - wrapperRect.left;
       const y1 = fromRect.top + fromRect.height / 2 - wrapperRect.top;
       const x2 = toRect.left - wrapperRect.left;
@@ -435,10 +424,9 @@ function drawConnections() {
 
       const xm = (x1 + x2) / 2;
       const signY = Math.sign(y2 - y1);
-      const r = Math.min(10, Math.abs(y2 - y1) / 2); // Corner radius, max 10px
+      const r = Math.min(10, Math.abs(y2 - y1) / 2);
 
       if (signY === 0) {
-        // Straight horizontal line
         path.setAttribute('d', `M ${x1} ${y1} L ${x2} ${y2}`);
       } else {
         const x_arc1 = xm - r;
@@ -446,7 +434,6 @@ function drawConnections() {
         const x_arc2 = xm + r;
         const y_arc2 = y2 - r * signY;
         
-        // Sweep flags: 1 for clockwise, 0 for counter-clockwise
         const sweep1 = signY > 0 ? 1 : 0;
         const sweep2 = signY > 0 ? 0 : 1;
         
@@ -479,7 +466,6 @@ function getPhaseName(phase) {
   }
 }
 
-// Modal Peek
 function openPeek(id) {
   const data = skillsDb[id];
   if (!data) return;
@@ -490,7 +476,6 @@ function openPeek(id) {
   document.getElementById('peekPrereqs').textContent = data.prereqs;
   document.getElementById('peekDesc').textContent = data.desc;
 
-  // Update badges
   const phaseName = getPhaseName(data.phase);
   const phaseBadge = `<span class="badge badge-phase">${phaseName}</span>`;
   const ptsBadge = `<span class="badge badge-pts">${data.pts} PTS</span>`;
@@ -499,7 +484,6 @@ function openPeek(id) {
   const statusBadge = `<span class="${statusBadgeClass}">${statusText}</span>`;
   document.getElementById('peekMetaRow').innerHTML = phaseBadge + ptsBadge + statusBadge;
 
-  // Features checklist
   const featuresList = document.getElementById('peekFeatures');
   featuresList.innerHTML = '';
   data.key_features.forEach(f => {
@@ -508,7 +492,6 @@ function openPeek(id) {
     featuresList.appendChild(li);
   });
 
-  // Tech specs pills
   const techList = document.getElementById('peekTech');
   techList.innerHTML = '';
   data.technical_specs.forEach(t => {
@@ -518,10 +501,7 @@ function openPeek(id) {
     techList.appendChild(span);
   });
 
-  // User impact & metrics
   document.getElementById('peekImpact').textContent = data.user_impact;
-
-  // Verification steps
   document.getElementById('peekVerification').textContent = data.verification;
 
   document.getElementById('overlay').style.display = 'block';
@@ -533,7 +513,6 @@ function closePeek() {
   document.getElementById('peekModal').style.display = 'none';
 }
 
-// Initialize
 window.addEventListener('load', () => {
   updateRoadmapProgress();
   drawConnections();

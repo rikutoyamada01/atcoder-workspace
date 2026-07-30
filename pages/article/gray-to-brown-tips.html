@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>灰レーティング脱出！茶色になるまでに絶対押さえるべき解法 & 実践Tips | AtCoder Workspace Articles</title>
+  <meta name="description" content="AtCoder灰レーティングから脱出して茶色を目指す初心者向けの実践ガイド。A・B問題の早解きからC問題突破に必要な4大解法パターン、TLE・オーバーフローの回避コツを徹底解説。">
+  <meta name="keywords" content="AtCoder,灰レーティング,灰脱出,茶色,初心者,競プロ,ABC,二分探索,全探索,累積和">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="灰レーティング脱出！茶色になるまでに絶対押さえるべき解法 & 実践Tips">
+  <meta property="og:description" content="難解なアルゴリズムは不要！灰レーティングから茶色になるために必要な4大パターンと本番Tipsを分かりやすく解説。">
+  <meta property="og:url" content="https://rikutoyamada01.github.io/atcoder-workspace/pages/article/gray-to-brown-tips.html">
+
+  <link rel="stylesheet" href="../site.css?v=1.6.4">
+
+  <style>
+    .article-container {
+      background: #ffffff;
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 36px;
+      margin-bottom: 40px;
+      line-height: 1.8;
+      color: #333333;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .article-hero {
+      border-bottom: 2px solid var(--btn-primary);
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+
+    .article-hero h1 {
+      font-size: 26px;
+      font-weight: bold;
+      color: #222222;
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+
+    .article-meta-info {
+      font-size: 13px;
+      color: #777777;
+      display: flex;
+      gap: 15px;
+    }
+
+    .badge-gray {
+      background: #808080;
+      color: #ffffff;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 11px;
+    }
+
+    .badge-brown {
+      background: #804000;
+      color: #ffffff;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 11px;
+    }
+
+    .article-container h2 {
+      font-size: 20px;
+      font-weight: bold;
+      color: #222222;
+      margin: 32px 0 16px 0;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #eeeeee;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .article-container h3 {
+      font-size: 16px;
+      font-weight: bold;
+      color: #333333;
+      margin: 20px 0 10px 0;
+    }
+
+    .tip-box {
+      background-color: #f8f9fa;
+      border-left: 4px solid var(--btn-primary);
+      padding: 16px 20px;
+      border-radius: 0 6px 6px 0;
+      margin: 20px 0;
+    }
+
+    .tip-box.warning {
+      background-color: #fff8f8;
+      border-left-color: #d9534f;
+    }
+
+    .tip-box h4 {
+      font-size: 15px;
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: #222222;
+    }
+
+    .code-snippet {
+      background: #252526;
+      color: #d4d4d4;
+      padding: 12px 16px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      margin: 12px 0;
+      white-space: pre-wrap;
+    }
+
+    .checklist {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .checklist li {
+      position: relative;
+      padding-left: 28px;
+      margin-bottom: 10px;
+    }
+
+    .checklist li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: var(--brand-green);
+      font-weight: bold;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="site-header"></div>
+
+  <main class="container">
+
+    <article class="article-container">
+
+      <header class="article-hero">
+        <h1>灰レーティング脱出！茶色になるまでに絶対に押さえるべき解法 & 実践Tips</h1>
+        <div class="article-meta-info">
+          <span>対象: <span class="badge-gray">灰コーダー (Rating 0 ~ 399)</span> → <span class="badge-brown">目標: 茶コーダー (Rating 400+)</span></span>
+          <span>読了時間: 約 5 分</span>
+        </div>
+      </header>
+
+      <p>
+        「AtCoder を始めたけど、なかなか灰色を脱出できない」「C問題になると急に解けなくなる……」とお悩みではありませんか？<br>
+        安心してください。茶色レーティングになるために、難解な高等アルゴリズム（セグメント木や複雑なグラフ理論）を覚える必要は<strong>一切ありません</strong>。
+      </p>
+      <p>
+        灰脱出に必要なのは、基本となる<strong>「4つの必須パターン」</strong>を習得し、<strong>「ペナルティ（WA・TLE）を出さない丁寧さ」</strong>を身につけることです。この記事では、灰コーダーが茶色になるための最も効率的な実践Tipsをまとめました！
+      </p>
+
+      <h2>1. 灰脱出に必要な「3大必須解法パターン」</h2>
+      <p>ABC（AtCoder Beginner Contest）の A・B・C 問題で頻出する3つのパターンです。難解なアルゴリズムを覚える前に、まずこの3つを完璧にしましょう。</p>
+
+      <h3>① 全探索（全ペア比較・二重ループ）</h3>
+      <p>
+        考えられる全ての可能性を試す最も確実な解法です。制約 $N \le 2000$ 程度であれば、二重ループ $O(N^2)$ の全探索で正解（AC）になります。
+      </p>
+      <div class="code-snippet">// 全ペア (i, j) の組み合わせを調べる全探索例 (C++)
+for (int i = 0; i &lt; N; i++) {
+  for (int j = i + 1; j &lt; N; j++) {
+    if (a[i] + a[j] == K) { ans++; }
+  }
+}</div>
+
+      <h3>② ソート ＋ 二分探索 (`std::lower_bound`)</h3>
+      <p>
+        $N = 10^5$ を超えると二重ループは TLE（タイムアウト）します。配列を <code>std::sort</code> で昇順に並び替え、<code>std::lower_bound</code>（二分探索）を使うことで、$O(N \log N)$ に高速化できます。
+      </p>
+      <div class="code-snippet">// ソート後に二分探索で条件を満たす要素を探す (C++)
+sort(a.begin(), a.end());
+auto it = lower_bound(a.begin(), a.end(), target);</div>
+
+      <h3>③ 累積和 (Prefix Sum)</h3>
+      <p>
+        「任意の区間 $[L, R]$ の合計値」をクエリごとに $O(1)$ で一瞬で求めたい時に使います。あらかじめ先頭からの和を前計算（$O(N)$）しておくことで、配列に<strong>負の数が含まれていても使えます</strong>。
+      </p>
+      <div class="code-snippet">// 累積和の例 (C++)
+// S[i] に先頭 i 個の和を前計算
+// 区間 [L, R] の和 = S[R + 1] - S[L]
+long long sum = S[R + 1] - S[L];</div>
+
+      <h3>④ グリッド・配列のシミュレーション</h3>
+      <p>
+        「コマが上下左右に動く」「指示通りに操作を $K$ 回繰り返す」といった問題です。問題文の指示をそのまま素直にコード（二次元配列など）へ落とし込む力（実装力）が試されます。
+      </p>
+
+      <h2>2. TLE（タイムアウト）を出さない「10⁸ルール」Tips</h2>
+      <p>
+        灰コーダーが一番ハマりやすいのが「答えは合っているのに TLE（時間制限超過）になる」という罠です。
+      </p>
+      
+      <div class="tip-box">
+        <h4>⚡ 鉄則: 1秒間に計算できるのは約 1億回 (10⁸ 回) まで！</h4>
+        <p>
+          AtCoder の制限時間（通常2秒）では、計算回数が <strong>2 × 10⁸ 回 (2億回)</strong> を超えると TLE になります。<br>
+          - $N = 10^5$ のときに $O(N^2)$ の二重ループを書く $\rightarrow$ $10^{10}$ 回になり**確定で TLE**！<br>
+          - 二分探索やソートを用いて $O(N \log N)$ に落とす必要があります。
+        </p>
+      </div>
+
+      <h2>3. 提出前に必ず確認！「ポカミス防止」チェックリスト</h2>
+      <p>
+        1回の誤答（WA や RE）は **5分のペナルティ** になり、レーティングに大きく響きます。提出ボタンを押す前に以下をチェックしましょう。
+      </p>
+
+      <ul class="checklist">
+        <li><strong>オーバーフローのチェック:</strong> 大きな数値の掛け算（$10^5 \times 10^5 = 10^{10}$）を <code>int</code> 型で受けていないか？（<code>long long</code> を使う）</li>
+        <li><strong>$N = 1$ のコーナーケース:</strong> 要素が1個だけのとき、配列外参照やループ不成立が起きないか？</li>
+        <li><strong>初期化忘れ:</strong> ループやテストケースの先頭で、合計値変数 <code>sum = 0;</code> をリセットしているか？</li>
+        <li><strong>Python の提出言語:</strong> Python の場合、<code>CPython</code> ではなく <strong><code>PyPy3</code></strong> で提出しているか？（速度が数倍〜数十倍速くなります）</li>
+      </ul>
+
+      <h2>4. コンテスト本番の立ち回り Tips</h2>
+      <div class="tip-box warning">
+        <h4>💡 A・B 問題の早解きでアドバンテージを取る</h4>
+        <p>
+          ABC コンテストでは、A・B 問題をノーミスで速く解くだけでもパフォーマンスが大幅に上がります。<br>
+          C問題で詰まった時は、焦らず手元のノートに <strong>$N = 3$ や $N = 4$ の具体的な小さな例を手書きで書いて観察する</strong> のが解法のヒントを見つける一番の近道です！
+        </p>
+      </div>
+
+    </article>
+
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="../components.js?v=1.6.4"></script>
+</body>
+</html>

@@ -588,7 +588,7 @@ impl UnionFind {
     // Open console drawer
     toggleConsole(true);
     const prepText = i18nProvider ? i18nProvider.t('editor_console_preparing') : '準備中...';
-    consoleResults.innerHTML = `<div style="font-size: 12px; color: #777;">${escapeHtml(prepText)}</div>`;
+    setConsoleHTML(`<div style="font-size: 12px; color: #777;">${escapeHtml(prepText)}</div>`);
 
     console.log('[AtCoder Workspace] Editor: Sending run-tests message to parent', {
       languageId: currentLanguageId,
@@ -614,7 +614,9 @@ impl UnionFind {
     const prepSubmitText = i18nProvider
       ? i18nProvider.t('editor_console_preparing_submit')
       : '提出準備中...';
-    consoleResults.innerHTML = `<div style="font-size: 12px; color: #777;">${escapeHtml(prepSubmitText)}</div>`;
+    setConsoleHTML(
+      `<div style="font-size: 12px; color: #777;">${escapeHtml(prepSubmitText)}</div>`
+    );
 
     console.log('[AtCoder Workspace] Editor: Sending submit-code message to parent', {
       languageId: currentLanguageId,
@@ -780,7 +782,9 @@ impl UnionFind {
         const submitStartedText = i18nProvider
           ? i18nProvider.t('editor_judge_submitted')
           : '提出処理を開始しました...';
-        consoleResults.innerHTML = `<div style="font-size: 12px; color: #777;">${escapeHtml(submitStartedText)}</div>`;
+        setConsoleHTML(
+          `<div style="font-size: 12px; color: #777;">${escapeHtml(submitStartedText)}</div>`
+        );
         break;
       }
 
@@ -793,14 +797,14 @@ impl UnionFind {
         const captchaDescHtml = i18nProvider
           ? i18nProvider.t('editor_judge_captcha_desc')
           : 'ボット判定（Cloudflare Turnstile）の認証完了を待機しています。<br>画面の左下に表示されたチェックボックス（私は人間です）を手動でクリックして認証を完了させてください。<br>（認証完了後、自動的に提出処理が再開されます）';
-        consoleResults.innerHTML = `
+        setConsoleHTML(`
           <div style="font-size: 12px; color: #333;">
             <div style="margin-bottom: 8px; color: #ff8c00; font-weight: bold;">⚠️ ${escapeHtml(e.data.message)}</div>
             <div style="line-height: 1.6;">
               ${captchaDescHtml}
             </div>
           </div>
-        `;
+        `);
         break;
       }
 
@@ -837,7 +841,7 @@ impl UnionFind {
         const targetProblemId = e.data.problemId || problemId;
 
         // Update Console Results
-        consoleResults.innerHTML = `
+        setConsoleHTML(`
           <div style="font-size: 12px; color: #333;">
             <div style="margin-bottom: 8px;">${escapeHtml(statusLabel)}: <span class="case-status status-running">${escapeHtml(e.data.status)}</span></div>
             <div style="margin-bottom: 4px;">${escapeHtml(timeLabel)}: ${escapeHtml(e.data.time)}</div>
@@ -847,7 +851,7 @@ impl UnionFind {
               <a href="https://atcoder.jp/contests/${targetContestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">${escapeHtml(detailLinkLabel)} (ID: ${e.data.submissionId})</a>
             </div>
           </div>
-        `;
+        `);
         consoleResults.scrollTop = consoleResults.scrollHeight;
 
         testSummary.textContent = i18nProvider
@@ -909,7 +913,7 @@ impl UnionFind {
 
         // Update Console Results
         const updateConsole = (celebrationHTML = '') => {
-          consoleResults.innerHTML = `
+          setConsoleHTML(`
             <div style="font-size: 12px; color: #333;">
               <div style="margin-bottom: 8px;">${escapeHtml(statusLabel)}: <span class="case-status status-${e.data.status.toLowerCase()}">${escapeHtml(e.data.status)}</span></div>
               <div style="margin-bottom: 4px;">${escapeHtml(timeLabel)}: ${escapeHtml(e.data.time)}</div>
@@ -920,7 +924,7 @@ impl UnionFind {
               </div>
               ${celebrationHTML}
             </div>
-          `;
+          `);
           consoleResults.scrollTop = consoleResults.scrollHeight;
         };
 
@@ -996,12 +1000,12 @@ impl UnionFind {
         testSummary.textContent = `${errorLabel}: ${e.data.message}`;
         testSummary.className = 'summary-wa';
 
-        consoleResults.innerHTML = `
+        setConsoleHTML(`
           <div class="case-error-block">
             <div class="case-io-label">${escapeHtml(errorLabel)}:</div>
             <pre class="case-error-content">${escapeHtml(e.data.message)}</pre>
           </div>
-        `;
+        `);
         consoleResults.scrollTop = consoleResults.scrollHeight;
         break;
       }
@@ -1027,7 +1031,7 @@ impl UnionFind {
 
           const targetContestId = e.data.contestId || contestId;
 
-          consoleResults.innerHTML = `
+          setConsoleHTML(`
             <div style="font-size: 12px; color: #333;">
               <div style="margin-bottom: 8px;">${escapeHtml(statusLabel)}: <span class="case-status status-running">${escapeHtml(e.data.status)}</span></div>
               <div style="margin-bottom: 4px;">${escapeHtml(timeLabel)}: ${escapeHtml(e.data.time)}</div>
@@ -1036,7 +1040,7 @@ impl UnionFind {
                 <a href="https://atcoder.jp/contests/${targetContestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">${escapeHtml(detailLinkLabel)} (ID: ${e.data.submissionId})</a>
               </div>
             </div>
-          `;
+          `);
           consoleResults.scrollTop = consoleResults.scrollHeight;
           saveConsoleState(contestId, problemId);
         }
@@ -1137,7 +1141,7 @@ impl UnionFind {
               const html = buildConsoleHTML(celebrationHTML);
 
               if (targetProblemId === problemId) {
-                consoleResults.innerHTML = html;
+                setConsoleHTML(html);
                 consoleResults.scrollTop = consoleResults.scrollHeight;
                 testSummary.textContent = summaryText;
                 testSummary.className = summaryClass;
@@ -1691,6 +1695,12 @@ impl UnionFind {
     });
   }
 
+  function setConsoleHTML(html) {
+    if (!consoleResults) return;
+    consoleResults.innerHTML = html;
+    ensureLearningNotesSection();
+  }
+
   function saveConsoleState(cId, pId) {
     if (!cId || !pId) return;
     const learningNotesSection = document.getElementById('learning-notes-section');
@@ -1719,7 +1729,7 @@ impl UnionFind {
     if (stateStr) {
       try {
         const state = JSON.parse(stateStr);
-        consoleResults.innerHTML = state.html;
+        setConsoleHTML(state.html);
         testSummary.textContent = state.summaryText;
         testSummary.className = state.summaryClass;
         toggleConsole(state.visible);
@@ -1730,15 +1740,13 @@ impl UnionFind {
     } else {
       clearConsoleState();
     }
-    ensureLearningNotesSection();
   }
 
   function clearConsoleState() {
-    consoleResults.innerHTML = '';
+    setConsoleHTML('');
     testSummary.textContent = '';
     testSummary.className = '';
     toggleConsole(false);
-    ensureLearningNotesSection();
   }
 
   /**
@@ -2150,41 +2158,100 @@ impl UnionFind {
 
   // --- Learning Notes & Tags Module ---
   const PRESET_METHOD_TAGS = [
-    '二分探索',
-    'DP',
-    '累積和',
-    'BFS/DFS',
-    '尺取り法',
-    'UnionFind',
-    '貪欲法',
-    '数学・考察',
-    '全探索',
-    'グラフ',
+    { name: '二分探索', desc: 'ソート済み配列から O(log N) で高速に値を探索する手法' },
+    { name: 'DP', desc: '動的計画法。小問題の結果をメモして効率的に解を求める手法' },
+    { name: '累積和', desc: '前計算により任意区間の総和を O(1) で求める手法' },
+    { name: 'BFS/DFS', desc: '幅優先/深さ優先探索。グラフや迷路の最短経路・走査に使用' },
+    { name: '尺取り法', desc: '条件を満たす区間の両端(L, R)をスライドさせて O(N) で探す手法' },
+    { name: 'UnionFind', desc: '要素同士のグループ結合と同一判定を高速に行うデータ構造' },
+    { name: '貪欲法', desc: '各ステップで局所的に最も有利な選択を繰り返す手法' },
+    { name: '数学・考察', desc: '数式変形やパズル的な法則性を見つけ出して解くアプローチ' },
+    { name: '全探索', desc: 'すべてのパターンを全通り試す手法 (Nが小さい時に有効)' },
+    { name: 'グラフ', desc: '頂点と辺のネットワーク構造(木、網状)に関する問題' },
   ];
+
   const PRESET_CAUSE_TAGS = [
-    'コーナーケース',
-    'オーバーフロー',
-    'TLE(計算量)',
-    '配列外参照/RE',
-    '初期化忘れ',
-    '実装重め',
-    'バグ埋め込み',
+    { name: 'コーナーケース', desc: 'N=1, N=0, 全て同じ値, 負数など端っこの特殊ケースでの例外' },
+    {
+      name: 'オーバーフロー',
+      desc: 'int型の上限(約21億)を超えてオーバーフロー。long long を使用しよう',
+    },
+    {
+      name: 'TLE(計算量)',
+      desc: '実行時間制限(通常2秒)を超過。O(N^2) を O(N log N) などに改善が必要',
+    },
+    {
+      name: '配列外参照/RE',
+      desc: '配列の範囲外(例: a[N] や負のインデックス)にアクセスしてクラッシュ',
+    },
+    { name: '初期化忘れ', desc: 'ループの各回で変数や配列を初期化し忘れたバグ' },
+    { name: '実装重め', desc: '方針は合っているがコード記述量が多くデバッグに時間がかかった状態' },
+    { name: 'バグ埋め込み', desc: 'タイポや不等号の向きミスなど、単純な記述ミスによる誤答' },
   ];
+
+  function getTagDescription(tagName) {
+    const methodItem = PRESET_METHOD_TAGS.find((t) => t.name === tagName);
+    if (methodItem) return methodItem.desc;
+    const causeItem = PRESET_CAUSE_TAGS.find((t) => t.name === tagName);
+    if (causeItem) return causeItem.desc;
+    return '';
+  }
 
   let currentProblemNotes = { tags: [], note: '' };
   let noteDebounceTimer = null;
 
-  const selectedTagsContainer = document.getElementById('selected-tags-container');
-  const toggleTagDropdownBtn = document.getElementById('toggle-tag-dropdown-btn');
-  const tagDropdownPanel = document.getElementById('tag-dropdown-panel');
-  const methodTagsWrapper = document.getElementById('method-tags-wrapper');
-  const causeTagsWrapper = document.getElementById('cause-tags-wrapper');
-  const customTagInput = document.getElementById('custom-tag-input');
-  const learningNoteTextarea = document.getElementById('learning-note-textarea');
-
   function getNoteStorageKey(cId, pId) {
     if (!pId) return null;
     return `problem_notes:${cId || 'global'}:${pId}`;
+  }
+
+  function createLearningNotesSectionDOM() {
+    const div = document.createElement('div');
+    div.id = 'learning-notes-section';
+    div.className = 'learning-notes-section';
+    div.innerHTML = `
+      <div class="learning-tags-bar">
+        <span class="tags-label">🏷️ タグ:</span>
+        <div id="selected-tags-container" class="selected-tags-container"></div>
+        <button id="toggle-tag-dropdown-btn" class="btn btn-default btn-xs tag-select-btn">＋ タグを選択 ▾</button>
+      </div>
+      <div id="tag-dropdown-panel" class="tag-dropdown-panel" style="display: none;">
+        <div class="tag-group">
+          <span class="tag-group-title">💡 解法・手法</span>
+          <div class="tag-chips-wrapper" id="method-tags-wrapper"></div>
+        </div>
+        <div class="tag-group">
+          <span class="tag-group-title">⚠️ 詰まった原因</span>
+          <div class="tag-chips-wrapper" id="cause-tags-wrapper"></div>
+        </div>
+        <div class="custom-tag-input-wrapper">
+          <input type="text" id="custom-tag-input" class="form-control input-xs" placeholder="カスタムタグを追加 (Enterで確定)">
+        </div>
+      </div>
+      <div class="learning-note-container">
+        <div class="note-header">
+          <span class="note-label">📝 補足メモ (任意):</span>
+        </div>
+        <textarea id="learning-note-textarea" class="form-control note-textarea" rows="1" placeholder="N=1の例外処理、計算量オーバーの注意点など..."></textarea>
+      </div>
+    `;
+    return div;
+  }
+
+  function ensureLearningNotesSection() {
+    if (!consoleResults) return;
+    let section = document.getElementById('learning-notes-section');
+    let isNew = false;
+    if (!section) {
+      section = createLearningNotesSectionDOM();
+      isNew = true;
+    }
+    if (section.parentElement !== consoleResults || consoleResults.lastElementChild !== section) {
+      consoleResults.appendChild(section);
+    }
+    if (isNew) {
+      initLearningNotesUI();
+    }
   }
 
   function loadLearningNotesAndTags(cId, pId) {
@@ -2240,16 +2307,13 @@ impl UnionFind {
     saveLearningNotesAndTags();
   }
 
-  function ensureLearningNotesSection() {
-    const learningNotesSection = document.getElementById('learning-notes-section');
-    if (!learningNotesSection || !consoleResults) return;
-    if (learningNotesSection.parentElement !== consoleResults || consoleResults.lastElementChild !== learningNotesSection) {
-      consoleResults.appendChild(learningNotesSection);
-    }
-  }
-
   function renderLearningNotesAndTags() {
     ensureLearningNotesSection();
+
+    const selectedTagsContainer = document.getElementById('selected-tags-container');
+    const methodTagsWrapper = document.getElementById('method-tags-wrapper');
+    const causeTagsWrapper = document.getElementById('cause-tags-wrapper');
+    const learningNoteTextarea = document.getElementById('learning-note-textarea');
 
     if (selectedTagsContainer) {
       selectedTagsContainer.innerHTML = '';
@@ -2257,6 +2321,11 @@ impl UnionFind {
         const chip = document.createElement('span');
         chip.className = 'tag-chip';
         chip.textContent = `#${tag} `;
+
+        const desc = getTagDescription(tag);
+        if (desc) {
+          chip.title = desc;
+        }
 
         const removeBtn = document.createElement('span');
         removeBtn.className = 'tag-chip-remove';
@@ -2273,11 +2342,13 @@ impl UnionFind {
 
     if (methodTagsWrapper) {
       methodTagsWrapper.innerHTML = '';
-      PRESET_METHOD_TAGS.forEach((tag) => {
+      PRESET_METHOD_TAGS.forEach((tagObj) => {
+        const tag = tagObj.name;
         const option = document.createElement('span');
         const isActive = currentProblemNotes.tags.includes(tag);
         option.className = `tag-option-chip ${isActive ? 'active' : ''}`;
         option.textContent = `#${tag}`;
+        option.title = tagObj.desc;
         option.onclick = () => toggleTag(tag);
         methodTagsWrapper.appendChild(option);
       });
@@ -2285,17 +2356,22 @@ impl UnionFind {
 
     if (causeTagsWrapper) {
       causeTagsWrapper.innerHTML = '';
-      PRESET_CAUSE_TAGS.forEach((tag) => {
+      PRESET_CAUSE_TAGS.forEach((tagObj) => {
+        const tag = tagObj.name;
         const option = document.createElement('span');
         const isActive = currentProblemNotes.tags.includes(tag);
         option.className = `tag-option-chip ${isActive ? 'active' : ''}`;
         option.textContent = `#${tag}`;
+        option.title = tagObj.desc;
         option.onclick = () => toggleTag(tag);
         causeTagsWrapper.appendChild(option);
       });
 
       // Render custom tags not in presets
-      const presetSet = new Set([...PRESET_METHOD_TAGS, ...PRESET_CAUSE_TAGS]);
+      const presetSet = new Set([
+        ...PRESET_METHOD_TAGS.map((t) => t.name),
+        ...PRESET_CAUSE_TAGS.map((t) => t.name),
+      ]);
       currentProblemNotes.tags.forEach((tag) => {
         if (!presetSet.has(tag)) {
           const option = document.createElement('span');
@@ -2313,6 +2389,11 @@ impl UnionFind {
   }
 
   function initLearningNotesUI() {
+    const toggleTagDropdownBtn = document.getElementById('toggle-tag-dropdown-btn');
+    const tagDropdownPanel = document.getElementById('tag-dropdown-panel');
+    const customTagInput = document.getElementById('custom-tag-input');
+    const learningNoteTextarea = document.getElementById('learning-note-textarea');
+
     if (toggleTagDropdownBtn && tagDropdownPanel) {
       toggleTagDropdownBtn.onclick = (e) => {
         e.stopPropagation();

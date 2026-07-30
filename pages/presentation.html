@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AtCoder Workspace - コンセプトプレゼンテーション | 環境構築不要で快適な競プロエディタ</title>
+  <meta name="description" content="AtCoderが使いづらいと感じる初心者必見！環境構築不要でブラウザをIDE化するChrome拡張機能「AtCoder Workspace」のご紹介。問題文の隣にエディタを表示し、自動テストや自動提出で競プロの摩擦をゼロにします。">
+  <meta name="keywords" content="AtCoder,使いづらい,使いずらい,競プロ,環境構築,Chrome拡張機能,自動テスト,Monaco Editor,VSCode">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="AtCoder Workspace - コンセプトプレゼンテーション">
+  <meta property="og:description" content="AtCoderが使いづらいと感じる初心者向けの環境構築不要エディタ。コピペゼロ、画面遷移ゼロで即AC。">
+  <meta property="og:url" content="https://rikutoyamada01.github.io/atcoder-workspace/pages/presentation.html">
+
+  <link rel="stylesheet" href="site.css?v=1.6.4">
+
+  <style>
+    .faq-section {
+      margin-top: 40px;
+      margin-bottom: 40px;
+    }
+    .faq-item {
+      margin-bottom: 25px;
+      border-bottom: 1px solid #f0f0f0;
+      padding-bottom: 20px;
+    }
+    .faq-question {
+      font-size: 16px;
+      font-weight: 700;
+      color: #333333;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .faq-question::before {
+      content: "Q.";
+      color: #d9534f;
+      font-size: 18px;
+      font-weight: 900;
+    }
+    .faq-answer {
+      font-size: 14px;
+      color: #555555;
+      line-height: 1.6;
+      padding-left: 24px;
+      position: relative;
+    }
+    .faq-answer::before {
+      content: "A.";
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: #337ab7;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .hero-banner {
+      background-color: #ffffff;
+      border-bottom: 1px solid #eeeeee;
+      padding: 40px 0;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .hero-banner h1 {
+      font-size: 32px;
+      font-weight: bold;
+      color: #222222;
+      margin-bottom: 12px;
+    }
+    .hero-banner p {
+      font-size: 16px;
+      color: #666666;
+      max-width: 700px;
+      margin: 0 auto 20px auto;
+    }
+    
+    .panel {
+      margin-bottom: 25px;
+      background-color: #ffffff;
+      border: 1px solid #dddddd;
+      border-radius: 4px;
+      box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+    }
+    .panel-heading {
+      color: #333333;
+      background-color: #f5f5f5;
+      border-color: #dddddd;
+      padding: 10px 15px;
+      border-bottom: 1px solid #dddddd;
+      font-weight: bold;
+      font-size: 15px;
+    }
+    .panel-body {
+      padding: 15px;
+    }
+
+    .calculator-box {
+      background-color: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 6px;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+    .calculator-box h3 {
+      margin-top: 0;
+      font-size: 18px;
+      color: #333333;
+      margin-bottom: 15px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+      font-size: 13.5px;
+    }
+    .form-control {
+      width: 100%;
+      padding: 8px 12px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    .calc-result {
+      background-color: #e8f4ff;
+      border: 1px solid #b6d4f5;
+      border-radius: 4px;
+      padding: 15px;
+      margin-top: 15px;
+    }
+    .calc-result-title {
+      font-size: 13px;
+      color: #555555;
+      margin-bottom: 5px;
+    }
+    .calc-result-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #337ab7;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 35px;
+    }
+    .feature-card {
+      background-color: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      padding: 20px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .feature-card:hover {
+      border-color: #337ab7;
+      box-shadow: 0 4px 12px rgba(51,122,183,0.15);
+      transform: translateY(-2px);
+    }
+    .feature-icon {
+      font-size: 28px;
+      margin-bottom: 12px;
+    }
+    .feature-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #222222;
+    }
+    .feature-desc {
+      font-size: 13px;
+      color: #666666;
+      line-height: 1.6;
+    }
+
+    .mock-container {
+      border: 2px dashed #cccccc;
+      border-radius: 8px;
+      padding: 15px;
+      background-color: #fcfcfc;
+      margin-bottom: 40px;
+    }
+    .mock-header {
+      font-size: 13px;
+      font-weight: bold;
+      color: #777777;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .mock-workspace {
+      display: flex;
+      border: 1px solid #dddddd;
+      border-radius: 4px;
+      overflow: hidden;
+      background-color: #ffffff;
+      height: 380px;
+    }
+    .mock-atcoder-side {
+      flex: 1;
+      border-right: 1px solid #eeeeee;
+      padding: 15px;
+      overflow-y: auto;
+      background-color: #ffffff;
+      font-size: 12px;
+      transition: border 0.3s;
+    }
+    .mock-editor-side {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background-color: #1e1e1e;
+      color: #d4d4d4;
+      font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+      transition: border 0.3s;
+    }
+    .mock-editor-toolbar {
+      background-color: #252526;
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #333333;
+      font-size: 11px;
+    }
+    .mock-btn {
+      background-color: #5cb85c;
+      color: #ffffff;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .mock-btn:hover {
+      background-color: #449d44;
+    }
+    .mock-btn-test {
+      background-color: #337ab7;
+      margin-right: 6px;
+    }
+    .mock-btn-test:hover {
+      background-color: #286090;
+    }
+    .mock-editor-code {
+      flex: 1;
+      padding: 12px;
+      font-size: 12px;
+      line-height: 1.5;
+      overflow-y: auto;
+    }
+    .mock-console-panel {
+      height: 120px;
+      background-color: #252526;
+      border-top: 1px solid #333333;
+      padding: 10px;
+      font-size: 11px;
+      font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+      overflow-y: auto;
+      transition: border 0.3s;
+    }
+    .status-ac {
+      color: #5cb85c;
+      font-weight: bold;
+    }
+
+    .highlight-border-editor {
+      outline: 3px solid #337ab7 !important;
+    }
+    .highlight-border-test {
+      outline: 3px solid #5cb85c !important;
+    }
+    .highlight-border-console {
+      outline: 3px solid #f0ad4e !important;
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 35px;
+      font-size: 13.5px;
+    }
+    .comparison-table th, .comparison-table td {
+      border: 1px solid #dddddd;
+      padding: 10px 12px;
+      text-align: left;
+    }
+    .comparison-table th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    .comparison-table tr:nth-child(even) {
+      background-color: #fafafa;
+    }
+    .cell-good {
+      color: #3c763d;
+      background-color: #dff0d8 !important;
+      font-weight: bold;
+    }
+    .cell-bad {
+      color: #a94442;
+      background-color: #f2dede !important;
+    }
+
+    .compliance-box {
+      background-color: #f0f7fd;
+      border-left: 4px solid #337ab7;
+      padding: 15px 20px;
+      margin-bottom: 35px;
+      border-radius: 0 4px 4px 0;
+    }
+    .compliance-title {
+      font-weight: bold;
+      color: #337ab7;
+      margin-bottom: 8px;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .compliance-item {
+      font-size: 13px;
+      color: #444444;
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+    .compliance-item:last-child {
+      margin-bottom: 0;
+    }
+
+    @media (max-width: 768px) {
+      .mock-workspace {
+        flex-direction: column;
+        height: auto;
+      }
+      .mock-atcoder-side {
+        height: 180px;
+      }
+      .mock-editor-side {
+        height: 250px;
+      }
+      .mock-console-panel {
+        height: 100px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <div class="container">
+    <div class="page-header">
+      <h1>AtCoder Workspace <small>環境構築不要でブラウザを開発環境に変える Chrome 拡張機能</small></h1>
+    </div>
+
+    <div class="hero-banner">
+      <h1>競プロの「めんどくさい」を、ゼロにする。</h1>
+      <p>問題文とエディタの行き来、テストケースの手動コピペ、コンパイル環境の設定——。すべての不要な往復作業を削減し、アルゴリズムの思考だけに集中できる環境を提供します。</p>
+    </div>
+
+    <h2>主要機能とインタラクティブ体験</h2>
+    <p style="margin-bottom: 15px; font-size: 13.5px; color: #555555;">以下のカードにホバーすると、下部のプレビュー画面で該当するUI要素が強調表示されます。</p>
+    
+    <div class="features-grid">
+      <div class="feature-card" data-target="split">
+        <div class="feature-icon">📑</div>
+        <div class="feature-title">画面分割＆Monaco Editor</div>
+        <div class="feature-desc">問題文の右隣にVSCodeと同じMonaco Editorを表示。環境構築不要で、ブラウザを開いた瞬間からC++やPythonのコーディングが可能です。</div>
+      </div>
+      <div class="feature-card" data-target="test">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-title">ワンクリック・自動テスト</div>
+        <div class="feature-desc">問題文中のサンプル入出力を自動スクレイピング。コピー＆ペーストを一切することなく、ワンクリックで全テストケースを一括実行します。</div>
+      </div>
+      <div class="feature-card" data-target="console">
+        <div class="feature-icon">🔍</div>
+        <div class="feature-title">結果判定＆Diff表示</div>
+        <div class="feature-desc">実行結果（AC / WA / TLE）と期待される出力との差分（Diff）をコンソールに分かりやすく表示。デバッグのスピードが劇的に向上します。</div>
+      </div>
+    </div>
+
+    <div class="mock-container">
+      <div class="mock-header">
+        <span>インタラクティブ・ワークスペースプレビュー</span>
+        <span>AtCoder Problem & Monaco Editor Integration</span>
+      </div>
+      <div class="mock-workspace">
+        <div class="mock-atcoder-side" id="mockAtcoderSide">
+          <h3 style="font-size: 14px; margin-bottom: 8px;">A - Weekly Contest Problem</h3>
+          <p style="margin-bottom: 10px;">整数 N が与えられます。1 から N までの和を求めてください。</p>
+          <div style="background-color: #f5f5f5; padding: 6px 10px; border-radius: 3px; font-family: monospace; margin-bottom: 8px;">
+            <strong>入力例 1:</strong> 10<br>
+            <strong>出力例 1:</strong> 55
+          </div>
+        </div>
+        <div class="mock-editor-side" id="mockEditorArea">
+          <div class="mock-editor-toolbar">
+            <span>C++ (GCC 12.2)</span>
+            <div>
+              <button class="mock-btn mock-btn-test" id="mockTestBtn">▶ テスト実行</button>
+              <button class="mock-btn">提出</button>
+            </div>
+          </div>
+          <div class="mock-editor-code">
+            <span style="color: #569cd6;">#include</span> <span style="color: #ce9178;">&lt;iostream&gt;</span><br>
+            <span style="color: #569cd6;">using namespace</span> std;<br><br>
+            <span style="color: #569cd6;">int</span> <span style="color: #dcdcaa;">main</span>() {<br>
+            &nbsp;&nbsp;<span style="color: #569cd6;">long long</span> N;<br>
+            &nbsp;&nbsp;cin &gt;&gt; N;<br>
+            &nbsp;&nbsp;cout &lt;&lt; N * (N + <span style="color: #b5cea8;">1</span>) / <span style="color: #b5cea8;">2</span> &lt;&lt; endl;<br>
+            &nbsp;&nbsp;<span style="color: #569cd6;">return</span> <span style="color: #b5cea8;">0</span>;<br>
+            }
+          </div>
+          <div class="mock-console-panel" id="mockConsolePanel">
+            <div style="color: #aaa; margin-bottom: 4px;">=== テスト実行結果 (サンプル 1/1) ===</div>
+            <div>ケース 1: <span class="status-ac">AC</span> (実行時間: 2ms, メモリ: 3.1MB)</div>
+            <div style="color: #6a9955;">出力: 55 | 期待値: 55</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h2>無駄な時間の削り出し：ロスタイム試算</h2>
+    <div class="calculator-box">
+      <h3>⌛ 競技プログラミングの「往復作業」削減試算シミュレーター</h3>
+      <p style="font-size: 13px; color: #666666; margin-bottom: 15px;">
+        1回のコンテスト・過去問演習で発生する「サンプルのコピペ」「コードテスト画面への移動」「提出コードのコピペ」にかかる隠れたロスタイムを計算します。
+      </p>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+        <div class="form-group">
+          <label for="calc-problems">1回の演習で解く問題数 (問):</label>
+          <input type="number" id="calc-problems" class="form-control" value="4" min="1" max="20">
+        </div>
+        <div class="form-group">
+          <label for="calc-tests">1問題あたりの平均テスト回数 (回):</label>
+          <input type="number" id="calc-tests" class="form-control" value="3" min="1" max="10">
+        </div>
+      </div>
+      
+      <div class="calc-result">
+        <div class="calc-result-title">年間（50回のコンテスト/演習）で削れる無駄なコピペ回数:</div>
+        <div class="calc-result-value" id="calc-val-copypaste">2,200 回</div>
+        <div class="calc-result-title" style="margin-top: 10px;">浮いた思考時間・純粋な演習への集中可能時間:</div>
+        <div class="calc-result-value" id="calc-val-time" style="color: #5cb85c;">265 分 (約 4.4 時間)</div>
+      </div>
+    </div>
+
+    <h2>他環境との機能比較</h2>
+    <div style="overflow-x: auto;">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>機能・項目</th>
+            <th>AtCoder Web標準</th>
+            <th>ローカルVSCode + CLI</th>
+            <th>AtCoder Workspace</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>環境構築コスト</strong></td>
+            <td class="cell-good">不要 (0分)</td>
+            <td class="cell-bad">高い (GCC/Python/oj設定)</td>
+            <td class="cell-good">不要 (拡張導入の10秒)</td>
+          </tr>
+          <tr>
+            <td><strong>サンプルテスト実行</strong></td>
+            <td class="cell-bad">手動コピペ＆画面遷移</td>
+            <td class="cell-good">コマンド実行 (oj t)</td>
+            <td class="cell-good">1クリック自動実行</td>
+          </tr>
+          <tr>
+            <td><strong>画面分割表示</strong></td>
+            <td class="cell-bad">なし (タブ往復)</td>
+            <td class="cell-bad">要画面並べ替え</td>
+            <td class="cell-good">シームレス左右分割</td>
+          </tr>
+          <tr>
+            <td><strong>提出手続き</strong></td>
+            <td class="cell-bad">コード貼り付け＆画面遷移</td>
+            <td class="cell-good">コマンド提出 (oj s)</td>
+            <td class="cell-good">1クリック直接提出</td>
+          </tr>
+          <tr>
+            <td><strong>画面・タブの切り替え</strong></td>
+            <td class="cell-bad">頻繁に発生 (提出・結果で遷移)</td>
+            <td class="cell-bad">エディタとブラウザを常に行き来</td>
+            <td class="cell-good">0回 (1つのブラウザタブで完結)</td>
+          </tr>
+          <tr>
+            <td><strong>コードの自動保存</strong></td>
+            <td class="cell-bad">なし (ブラウザ戻ると消える)</td>
+            <td class="cell-good">あり (オートセーブ)</td>
+            <td class="cell-good">あり (キー入力停止後1.5秒で保存)</td>
+          </tr>
+          <tr>
+            <td><strong>競技規約への適合性</strong></td>
+            <td class="cell-good">適合 (公式ツール)</td>
+            <td class="cell-good">適合</td>
+            <td class="cell-good">適合 (AI非搭載・公式規約準拠)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>安心・安全に使用するための規約適合性</h2>
+    <div class="compliance-box">
+      <div class="compliance-title">
+        <span>🛡️</span> 競技規約への適合性とセキュリティについて
+      </div>
+      <div class="compliance-item">
+        <strong>生成AI・自動入力補完機能の排除:</strong> アルゴリズム自体の考案・記述プロセスをユーザー自らの力で行えるよう、カンニングや規約違反のリスクに繋がる生成AI補助やインテリセンス機能はあえて非搭載としています。
+      </div>
+      <div class="compliance-item">
+        <strong>完全ローカル完結型設計:</strong> 外部に独自の中継サーバーを一切持たず、提出やコードテストはユーザー自身のブラウザセッション（Cookie）から直接公式APIへ安全に通信するため、不正アクセスや資格情報の流出がありません。
+      </div>
+      <div class="compliance-item">
+        <strong>過度なリクエストの制限:</strong> 提出状況のポーリング間隔やテスト実行は、AtCoder公式のサーバー負荷規約に準拠したウェイト（待機時間）を設けており、意図しない負荷をかけません。
+      </div>
+    </div>
+
+    <h2>よくある質問 (FAQ)</h2>
+    <div class="faq-section">
+      <div class="faq-item">
+        <div class="faq-question">AtCoderの環境構築が難しくてできません。GCCのインストールやVSCodeの設定をせずにC++やPythonでAtCoderを解く方法はありますか？</div>
+        <div class="faq-answer">
+          はい、あります。Google Chrome拡張機能<strong>「AtCoder Workspace」</strong>をインストールするだけで、お使いのブラウザ上の問題ページがVSCodeと同じMonaco Editorを使用したIDE（開発環境）に変わります。コンパイラのインストールやパス設定といった難しい環境構築は一切不要で、すぐにコードを書いて実行・提出できます。
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">AtCoderが使いづらい（使いずらい）と感じます。特に問題文とコードテスト画面の切り替えやサンプルのコピペが面倒です。解決策はありますか？</div>
+        <div class="faq-answer">
+          まさにその不便さを解決するために本拡張機能は開発されました。インストールすると、問題文のすぐ右側にコードエディタが左右分割で表示されます。また、問題ページ内のサンプル入出力を自動抽出し、ワンクリックでテスト実行・期待値とのDiff比較を行えるため、画面の往復やコピー＆ペーストの作業は完全にゼロになります。
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">この拡張機能を使うことで、AtCoderの規約違反（カンニング等）になりませんか？</div>
+        <div class="faq-answer">
+          ご安心ください。本拡張機能には、自動で回答コードを生成するような生成AI機能やカンニングを補助するシステムは意図的に搭載していません。また、提出やテスト実行はAtCoder公式のサーバー負荷制限ルールを遵守し、ユーザーご自身のブラウザセッションを使用して安全に通信します。安心してお使いいただけます。
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">利用料金はかかりますか？また、対応しているプログラミング言語は何ですか？</div>
+        <div class="faq-answer">
+          完全無料（MITライセンス）でご利用いただけます。対応言語は、AtCoder公式の「コードテスト」機能がサポートしている全プログラミング言語（C++, Python, Java, Go, Rust等）に対応しています。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="site-footer"></div>
+
+  <script src="components.js?v=1.6.4"></script>
+  <script src="presentation.js"></script>
+</body>
+</html>

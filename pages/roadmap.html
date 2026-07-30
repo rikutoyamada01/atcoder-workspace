@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>開発ロードマップ | AtCoder Workspace Pages</title>
+  <meta name="description" content="AtCoder Workspaceの今後の機能追加ロードマップと実装進捗。解法メモ、自動テスト、提出履歴、GitHub連携のロードマップツリー。">
+  <meta name="keywords" content="AtCoder,ロードマップ,開発計画,Chrome拡張機能,自動テスト,Monaco Editor">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="開発ロードマップ | AtCoder Workspace">
+  <meta property="og:description" content="AtCoder Workspaceの今後の機能追加ロードマップと実装進捗ツリー。">
+  <meta property="og:url" content="https://rikutoyamada01.github.io/atcoder-workspace/pages/roadmap.html">
+
+  <link rel="stylesheet" href="site.css?v=1.6.4">
+
+  <style>
+    .page-header {
+      margin-bottom: 24px;
+    }
+    
+    .score-panel {
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 16px 24px;
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    }
+    .score-item {
+      display: flex;
+      flex-direction: column;
+    }
+    .score-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: #888888;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .score-value {
+      font-size: 22px;
+      font-weight: 800;
+      color: #222222;
+    }
+    .score-value.green { color: #5cb85c; }
+    
+    .progress-container {
+      flex: 1;
+      max-width: 300px;
+      margin: 0 24px;
+    }
+    .progress-bar-bg {
+      height: 8px;
+      background: #eeeeee;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #5cb85c, #337ab7);
+      width: 0%;
+      transition: width 0.6s ease;
+    }
+    
+    .tree-wrapper {
+      position: relative;
+      margin-bottom: 40px;
+      padding: 20px 0;
+    }
+    .tree-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+    
+    .tree-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .tree-column-header {
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      color: #444444;
+      background-color: #f5f5f5;
+      border: 1px solid #e0e0e0;
+    }
+
+    .tree-column:nth-child(1) .tree-column-header { background: #e6f7ff; border-color: #91d5ff; color: #0050b3; }
+    .tree-column:nth-child(2) .tree-column-header { background: #f6ffed; border-color: #b7eb8f; color: #237804; }
+    .tree-column:nth-child(3) .tree-column-header { background: #fffbe6; border-color: #ffe58f; color: #ad6800; }
+    .tree-column:nth-child(4) .tree-column-header { background: #f9f0ff; border-color: #d3adf7; color: #531dab; }
+
+    .skill-node {
+      background: #ffffff;
+      border: 1px solid #d9d9d9;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 24px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+      position: relative;
+    }
+    .skill-node:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+      border-color: #337ab7;
+    }
+    .skill-node.completed {
+      border-color: #5cb85c;
+      background: #f6ffed;
+    }
+    .skill-node.locked {
+      opacity: 0.85;
+    }
+
+    .node-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .node-phase {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #888888;
+    }
+    .node-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #222222;
+      margin-bottom: 6px;
+    }
+    .node-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+    }
+    .node-pts {
+      font-weight: 700;
+      color: #888888;
+    }
+    .node-status {
+      font-weight: 700;
+    }
+    .status-completed { color: #5cb85c; }
+    .status-locked { color: #888888; }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 2000;
+      display: none;
+    }
+    .modal-peek {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 90%;
+      max-width: 650px;
+      max-height: 85vh;
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      z-index: 2001;
+      display: none;
+      overflow-y: auto;
+      padding: 24px;
+    }
+    .peek-header {
+      border-bottom: 1px solid #eeeeee;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+    .peek-header h3 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #222222;
+      margin-bottom: 6px;
+    }
+    .peek-meta-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      font-size: 12px;
+    }
+    .badge {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+    .badge-phase { background: #e6f7ff; color: #0050b3; }
+    .badge-pts { background: #fffbe6; color: #ad6800; }
+    .badge-status { background: #f0f0f0; color: #666; }
+    .badge-status.completed { background: #f6ffed; color: #237804; }
+
+    .peek-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #555555;
+      margin: 16px 0 6px 0;
+      text-transform: uppercase;
+    }
+    .peek-section {
+      font-size: 13.5px;
+      color: #444444;
+      line-height: 1.6;
+    }
+    .peek-section ul {
+      margin-left: 20px;
+      margin-bottom: 10px;
+    }
+
+    .tech-pill {
+      display: inline-block;
+      background: #f5f5f5;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-family: monospace;
+      margin: 2px 4px 2px 0;
+      color: #555;
+    }
+
+    .peek-close {
+      position: absolute;
+      top: 16px; right: 16px;
+      background: none; border: none;
+      font-size: 20px; color: #888;
+      cursor: pointer;
+    }
+    .peek-close:hover { color: #222; }
+
+    @media (max-width: 850px) {
+      .tree-grid { grid-template-columns: 1fr; }
+      .score-panel { flex-direction: column; gap: 12px; text-align: center; }
+      .progress-container { width: 100%; max-width: 100%; margin: 10px 0; }
+    }
+  </style>
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <div class="container">
+    <div class="page-header">
+      <h1>🗺️ 開発ロードマップ <small>AtCoder Workspace Skill Tree & Progress</small></h1>
+    </div>
+
+    <div class="score-panel">
+      <div class="score-item">
+        <span class="score-label">実装済機能数</span>
+        <span class="score-value green" id="scoreCompleted">5 / 13</span>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progressBar"></div>
+        </div>
+      </div>
+
+      <div class="score-item">
+        <span class="score-label">累計開発スコア</span>
+        <span class="score-value" id="scorePoints">800 pts</span>
+      </div>
+    </div>
+
+    <p style="font-size: 13.5px; color: #666666; margin-bottom: 24px;">
+      カードをクリックすると、機能の仕様・使用ライブラリ・実装検証手順の詳細ポップアップが開きます。
+    </p>
+
+    <div class="tree-wrapper">
+      <svg class="tree-svg" id="treeSvg">
+        <defs>
+          <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+            <polygon points="0 0, 6 3, 0 6" fill="#cccccc" />
+          </marker>
+        </defs>
+      </svg>
+
+      <div class="tree-grid">
+        <!-- Column 1: Phase 1 -->
+        <div class="tree-column">
+          <div class="tree-column-header">Phase 1: 基本機能</div>
+          
+          <div class="skill-node completed" id="node-monaco" onclick="openPeek('monaco')">
+            <div class="node-phase">Phase 1</div>
+            <div class="node-title">Monaco エディタ埋込</div>
+            <div class="node-footer">
+              <span class="node-pts">200 pts</span>
+              <span class="node-status status-completed">✓ 実装済</span>
+            </div>
+          </div>
+
+          <div class="skill-node completed" id="node-test" onclick="openPeek('test')">
+            <div class="node-phase">Phase 1</div>
+            <div class="node-title">自動テスト実行</div>
+            <div class="node-footer">
+              <span class="node-pts">200 pts</span>
+              <span class="node-status status-completed">✓ 実装済</span>
+            </div>
+          </div>
+
+          <div class="skill-node completed" id="node-submit" onclick="openPeek('submit')">
+            <div class="node-phase">Phase 1</div>
+            <div class="node-title">自動提出 ＆ 提出結果ログ</div>
+            <div class="node-footer">
+              <span class="node-pts">100 pts</span>
+              <span class="node-status status-completed">✓ 実装済</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 2: Phase 2 -->
+        <div class="tree-column">
+          <div class="tree-column-header">Phase 2: データ蓄積</div>
+
+          <div class="skill-node completed" id="node-template" onclick="openPeek('template')">
+            <div class="node-phase">Phase 2</div>
+            <div class="node-title">テンプレート＆スニペット</div>
+            <div class="node-footer">
+              <span class="node-pts">200 pts</span>
+              <span class="node-status status-completed">✓ 実装済</span>
+            </div>
+          </div>
+
+          <div class="skill-node completed" id="node-ac_distinction" onclick="openPeek('ac_distinction')">
+            <div class="node-phase">Phase 2</div>
+            <div class="node-title">自力・解説AC分類</div>
+            <div class="node-footer">
+              <span class="node-pts">100 pts</span>
+              <span class="node-status status-completed">✓ 実装済</span>
+            </div>
+          </div>
+
+          <div class="skill-node locked" id="node-customtest" onclick="openPeek('customtest')">
+            <div class="node-phase">Phase 2</div>
+            <div class="node-title">カスタムテストケース追加</div>
+            <div class="node-footer">
+              <span class="node-pts">100 pts</span>
+              <span class="node-status status-locked">未実装</span>
+            </div>
+          </div>
+
+          <div class="skill-node locked" id="node-notes" onclick="openPeek('notes')">
+            <div class="node-phase">Phase 2</div>
+            <div class="node-title">問題別学習メモ (Note)</div>
+            <div class="node-footer">
+              <span class="node-pts">100 pts</span>
+              <span class="node-status status-locked">未実装</span>
+            </div>
+          </div>
+
+          <div class="skill-node locked" id="node-dashboard" onclick="openPeek('dashboard')">
+            <div class="node-phase">Phase 2</div>
+            <div class="node-title">学習ダッシュボード＆エラー</div>
+            <div class="node-footer">
+              <span class="node-pts">100 pts</span>
+              <span class="node-status status-locked">未実装</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 3: Phase 3 -->
+        <div class="tree-column">
+          <div class="tree-column-header">Phase 3: 分析・管理</div>
+
+          <div class="skill-node locked" id="node-library" onclick="openPeek('library')">
+            <div class="node-phase">Phase 3</div>
+            <div class="node-title">解法ライブラリ</div>
+            <div class="node-footer">
+              <span class="node-pts">100 pts</span>
+              <span class="node-status status-locked">未実装</span>
+            </div>
+          </div>
+
+          <div class="skill-node locked" id="node-error" onclick="openPeek('error')">
+            <div class="node-phase">Phase 3</div>
+            <div class="node-title">エラー解析＆コンパイル</div>
+            <div class="node-footer">
+              <span class="node-pts">100 pts</span>
+              <span class="node-status status-locked">未実装</span>
+            </div>
+          </div>
+
+          <div class="skill-node locked" id="node-export" onclick="openPeek('export')">
+            <div class="node-phase">Phase 3</div>
+            <div class="node-title">Markdown一括エクスポート</div>
+            <div class="node-footer">
+              <span class="node-pts">100 pts</span>
+              <span class="node-status status-locked">未実装</span>
+            </div>
+          </div>
+
+          <div class="skill-node locked" id="node-queue" onclick="openPeek('queue')">
+            <div class="node-phase">Phase 3</div>
+            <div class="node-title">復習キュー (Review Queue)</div>
+            <div class="node-footer">
+              <span class="node-pts">100 pts</span>
+              <span class="node-status status-locked">未実装</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 4: Phase 4 -->
+        <div class="tree-column">
+          <div class="tree-column-header">Phase 4: 外部連携</div>
+
+          <div class="skill-node locked" id="node-safety" onclick="openPeek('safety')">
+            <div class="node-phase">Phase 4</div>
+            <div class="node-title">コンテストセーフティ</div>
+            <div class="node-footer">
+              <span class="node-pts">100 pts</span>
+              <span class="node-status status-locked">未実装</span>
+            </div>
+          </div>
+
+          <div class="skill-node locked" id="node-autopush" onclick="openPeek('autopush')">
+            <div class="node-phase">Phase 4</div>
+            <div class="node-title">GitHub Autopush</div>
+            <div class="node-footer">
+              <span class="node-pts">100 pts</span>
+              <span class="node-status status-locked">未実装</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="site-footer"></div>
+
+  <script src="components.js?v=1.6.4"></script>
+  <script src="roadmap.js"></script>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="overlay" onclick="closePeek()"></div>
+  <div class="modal-peek" id="peekModal">
+    <button class="peek-close" onclick="closePeek()">&times;</button>
+    
+    <div class="peek-header">
+      <h3 id="peekTitle"></h3>
+      <div class="peek-meta-row" id="peekMetaRow"></div>
+      <div class="peek-prereqs" id="peekPrereqs" style="font-size: 12px; color: #777; margin-top: 8px;"></div>
+    </div>
+    
+    <div class="peek-section-title">✨ 機能概要</div>
+    <div class="peek-section" id="peekDesc"></div>
+
+    <div class="peek-section-title">🎯 主な機能要件</div>
+    <div class="peek-section">
+      <ul id="peekFeatures"></ul>
+    </div>
+
+    <div class="peek-section-title">🛠️ 技術スタック & API</div>
+    <div class="peek-section" id="peekTech"></div>
+
+    <div class="peek-section-title">💡 ユーザー体験 (UX) へのインパクト</div>
+    <div class="peek-section" id="peekImpact"></div>
+
+    <div class="peek-section-title">🧪 動作検証ステップ</div>
+    <div class="peek-section" id="peekVerification"></div>
+  </div>
+
+</body>
+</html>

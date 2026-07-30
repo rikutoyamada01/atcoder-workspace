@@ -1,0 +1,182 @@
+/* ==========================================
+   AtCoder Workspace Pages & Articles - Shared Stylesheet (site.css)
+   ========================================== */
+
+:root {
+  --bg-dark: #222222;
+  --text-dark-muted: #9d9d9d;
+  --text-dark-link: #cccccc;
+  --text-dark-hover: #ffffff;
+  --brand-green: #5cb85c;
+  --btn-primary: #337ab7;
+  --btn-primary-hover: #286090;
+  --border-light: #eeeeee;
+  --border-dark: #333333;
+  --font-family: "Helvetica Neue", Helvetica, Arial, "Meiryo", sans-serif;
+  --font-mono: Monaco, Menlo, Consolas, "Courier New", monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-family);
+  color: #333333;
+  background-color: #f9f9f9;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Base Container */
+.container {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 15px;
+  flex: 1;
+}
+
+/* Page Header */
+.page-header {
+  padding-bottom: 12px;
+  margin: 30px 0 24px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.page-header h1 {
+  font-size: 26px;
+  font-weight: 700;
+  color: #222222;
+}
+
+.page-header h1 small {
+  font-size: 16px;
+  color: #777777;
+  font-weight: normal;
+  margin-left: 10px;
+}
+
+/* ==========================================
+   Shared Sticky Navbar
+   ========================================== */
+.navbar {
+  background-color: var(--bg-dark);
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.navbar-brand {
+  color: var(--text-dark-muted);
+  font-size: 18px;
+  font-weight: 700;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.navbar-brand::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: var(--brand-green);
+  border-radius: 50%;
+}
+
+.navbar-brand:hover {
+  color: var(--text-dark-hover);
+}
+
+.navbar-links {
+  display: flex;
+  gap: 8px;
+}
+
+.nav-link {
+  color: var(--text-dark-muted);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.2s, background-color 0.2s;
+  padding: 6px 12px;
+  border-radius: 4px;
+}
+
+.nav-link:hover {
+  color: var(--text-dark-hover);
+}
+
+.nav-link.active {
+  color: var(--text-dark-hover);
+  font-weight: bold;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ==========================================
+   Shared Full-Width Footer (Outside Container)
+   ========================================== */
+footer {
+  background-color: var(--bg-dark);
+  color: var(--text-dark-muted);
+  padding: 24px 15px;
+  margin-top: 60px;
+  font-size: 13px;
+  text-align: center;
+  border-top: 1px solid var(--border-dark);
+  width: 100%;
+}
+
+footer p {
+  margin: 0;
+  line-height: 1.8;
+}
+
+footer a {
+  color: var(--text-dark-link);
+  text-decoration: none;
+  margin: 0 6px;
+  transition: color 0.2s;
+}
+
+footer a:hover {
+  color: var(--text-dark-hover);
+  text-decoration: underline;
+}
+
+/* Responsive Navbar */
+@media (max-width: 650px) {
+  .navbar {
+    flex-direction: column;
+    padding: 10px 15px;
+    gap: 8px;
+  }
+
+  .navbar-links {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .nav-link {
+    font-size: 13px;
+    padding: 4px 8px;
+  }
+}
