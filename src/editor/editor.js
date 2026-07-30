@@ -1701,8 +1701,16 @@ impl UnionFind {
 
   function saveConsoleState(cId, pId) {
     if (!cId || !pId) return;
+    const learningNotesSection = document.getElementById('learning-notes-section');
+    if (learningNotesSection && learningNotesSection.parentElement === consoleResults) {
+      learningNotesSection.remove();
+    }
+    const htmlToSave = consoleResults.innerHTML;
+    if (learningNotesSection) {
+      consoleResults.appendChild(learningNotesSection);
+    }
     const state = {
-      html: consoleResults.innerHTML,
+      html: htmlToSave,
       summaryText: testSummary.textContent,
       summaryClass: testSummary.className,
       visible: consolePanel.style.display !== 'none',
@@ -1730,6 +1738,7 @@ impl UnionFind {
     } else {
       clearConsoleState();
     }
+    ensureLearningNotesSection();
   }
 
   function clearConsoleState() {
@@ -1737,6 +1746,7 @@ impl UnionFind {
     testSummary.textContent = '';
     testSummary.className = '';
     toggleConsole(false);
+    ensureLearningNotesSection();
   }
 
   /**
@@ -2220,7 +2230,17 @@ impl UnionFind {
     saveLearningNotesAndTags();
   }
 
+  function ensureLearningNotesSection() {
+    const learningNotesSection = document.getElementById('learning-notes-section');
+    if (!learningNotesSection || !consoleResults) return;
+    if (learningNotesSection.parentElement !== consoleResults || consoleResults.lastElementChild !== learningNotesSection) {
+      consoleResults.appendChild(learningNotesSection);
+    }
+  }
+
   function renderLearningNotesAndTags() {
+    ensureLearningNotesSection();
+
     if (selectedTagsContainer) {
       selectedTagsContainer.innerHTML = '';
       currentProblemNotes.tags.forEach((tag) => {
