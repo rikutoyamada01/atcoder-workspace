@@ -1248,6 +1248,10 @@ func main() {
   const closeChangelogBtn = document.getElementById('close-changelog-btn');
   const changelogVersionSelect = document.getElementById('changelog-version-select');
   const changelogContent = document.getElementById('changelog-content');
+  const whatsNewBanner = document.getElementById('whats-new-banner');
+  const whatsNewBannerText = document.getElementById('whats-new-banner-text');
+  const viewReleaseNotesBtn = document.getElementById('view-release-notes-btn');
+  const dismissBannerBtn = document.getElementById('dismiss-banner-btn');
 
   let changelogData = [];
 
@@ -1258,6 +1262,13 @@ func main() {
     html = html.replace(/(<li>.*<\/li>)/gms, '<ul>$1</ul>');
     html = html.replace(/<\/ul>\s*<ul>/g, '');
     return html;
+  }
+
+  function markChangelogAsRead() {
+    if (whatsNewBanner) whatsNewBanner.style.display = 'none';
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.set({ whats_new_unread: false });
+    }
   }
 
   function initChangelog() {
@@ -1274,6 +1285,19 @@ func main() {
             opt.value = rel.version;
             opt.textContent = `v${rel.version}${rel.date ? ' (' + rel.date + ')' : ''}`;
             changelogVersionSelect.appendChild(opt);
+          });
+        }
+
+        // Check unread status for Options page banner
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+          chrome.storage.local.get(['whats_new_unread', 'last_updated_version'], (res) => {
+            const version = res.last_updated_version || changelogData[0].version;
+            if (res.whats_new_unread) {
+              if (whatsNewBanner) whatsNewBanner.style.display = 'flex';
+              if (whatsNewBannerText) {
+                whatsNewBannerText.textContent = `AtCoder Workspace が v${version} にアップデートされました！`;
+              }
+            }
           });
         }
       })
@@ -1297,10 +1321,19 @@ func main() {
       changelogVersionSelect.value = changelogData[0].version;
       displayChangelogVersion(changelogData[0].version);
     }
+    markChangelogAsRead();
   }
 
   if (optionsChangelogBtn) {
     optionsChangelogBtn.onclick = () => openChangelogModal();
+  }
+
+  if (viewReleaseNotesBtn) {
+    viewReleaseNotesBtn.onclick = () => openChangelogModal();
+  }
+
+  if (dismissBannerBtn) {
+    dismissBannerBtn.onclick = () => markChangelogAsRead();
   }
 
   if (closeChangelogBtn) {
