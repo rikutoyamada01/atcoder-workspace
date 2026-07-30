@@ -1178,6 +1178,15 @@ body.vs-dark-theme .tag-option-chip.active {
   max-width: none !important;
 }
 
+/* Linkable tags/labels: Default looks normal, underline on hover */
+.has-article-link {
+  cursor: pointer !important;
+}
+
+.has-article-link:hover {
+  text-decoration: underline !important;
+}
+
 .custom-tag-input-wrapper input {
   font-size: 10px;
   padding: 2px 6px;

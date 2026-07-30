@@ -1,5 +1,10 @@
 [
   {
+    "version": "1.7.0",
+    "date": "2026-07-30",
+    "content": "### Added\n- **📝 学習ノート & 🏷️ タグ機能**: コンソール領域で問題ごとの解法メモやタグをローカル保存・管理できる機能を追加\n- **🏷️ タグのハイパーリンク機能**: `🏷️ タグ:` ラベルホバー時に下線が表示され、クリックで直感的に『競プロ用語解説ガイド』が開く連携を追加\n- **🚀 GitHub Actions 自動デプロイ**: master ブランチへのプッシュで `pages/` を自動デプロイする CI/CD パイプラインを統合\n\n### Changed\n- Web サイトの階層構造を `pages/` ディレクトリ配下に完全整理・一元化\n- MathJax v3 を組み込み、数式 (LaTeX) の描画品質を向上\n\n### 📚 New Articles & Guides (新着記事)\n- 🎯 [灰レーティング脱出！茶色になるまでに絶対に押さえるべき解法 & 実践Tips](https://rikutoyamada01.github.io/atcoder-workspace/pages/article/gray-to-brown-tips.html)\n- 📖 [競プロ初心者向け アルゴリズム & 用語解説ガイド](https://rikutoyamada01.github.io/atcoder-workspace/pages/article/glossary.html)\n- 🧮 [計算量・TLEシミュレーター & 10⁸の壁突破ガイド](https://rikutoyamada01.github.io/atcoder-workspace/pages/article/complexity.html)"
+  },
+  {
     "version": "1.6.4",
     "date": "2026-07-21",
     "content": "### Changed\n- Editor（問題ページ内ワークスペース）から不要な通知バナーおよび What's New ボタンを撤去して UI を本来のシンプルさに還元\n- 拡張機能の設定画面（Options ページ）へ未読通知バナーを統合し、アップデート時に自動で設定画面が開き目立つバナーからリリースノートを確認できる仕様に変更"

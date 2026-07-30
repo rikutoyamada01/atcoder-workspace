@@ -2314,6 +2314,15 @@ impl UnionFind {
     const methodTagsWrapper = document.getElementById('method-tags-wrapper');
     const causeTagsWrapper = document.getElementById('cause-tags-wrapper');
     const learningNoteTextarea = document.getElementById('learning-note-textarea');
+    const tagsLabel = document.querySelector('.tags-label');
+
+    if (tagsLabel && !tagsLabel.classList.contains('has-article-link')) {
+      tagsLabel.classList.add('has-article-link');
+      tagsLabel.title = 'クリックで競プロ用語解説ガイド記事を開く';
+      tagsLabel.addEventListener('click', () => {
+        window.open('https://rikutoyamada01.github.io/atcoder-workspace/pages/article/glossary.html', '_blank');
+      });
+    }
 
     if (selectedTagsContainer) {
       selectedTagsContainer.innerHTML = '';
@@ -2349,7 +2358,10 @@ impl UnionFind {
         option.className = `tag-option-chip ${isActive ? 'active' : ''}`;
         option.textContent = `#${tag}`;
         option.title = tagObj.desc;
-        option.onclick = () => toggleTag(tag);
+        option.onclick = (e) => {
+          e.stopPropagation();
+          toggleTag(tag);
+        };
         methodTagsWrapper.appendChild(option);
       });
     }
@@ -2363,7 +2375,10 @@ impl UnionFind {
         option.className = `tag-option-chip ${isActive ? 'active' : ''}`;
         option.textContent = `#${tag}`;
         option.title = tagObj.desc;
-        option.onclick = () => toggleTag(tag);
+        option.onclick = (e) => {
+          e.stopPropagation();
+          toggleTag(tag);
+        };
         causeTagsWrapper.appendChild(option);
       });
 
@@ -2377,7 +2392,10 @@ impl UnionFind {
           const option = document.createElement('span');
           option.className = 'tag-option-chip active';
           option.textContent = `#${tag}`;
-          option.onclick = () => toggleTag(tag);
+          option.onclick = (e) => {
+            e.stopPropagation();
+            toggleTag(tag);
+          };
           causeTagsWrapper.appendChild(option);
         }
       });

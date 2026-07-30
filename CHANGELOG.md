@@ -5,6 +5,22 @@ All notable changes to the AtCoder Workspace extension will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2026-07-30
+
+### Added
+- **📝 学習ノート & 🏷️ タグ機能**: コンソール領域で問題ごとの解法メモやタグ（`二分探索`, `DP`, `コーナーケース` 等）をローカル保存・管理できる機能を追加
+- **🏷️ タグのハイパーリンク機能**: `🏷️ タグ:` ラベルホバー時に下線が表示され、クリックで直感的に『競プロ用語解説ガイド』が開く連携を追加
+- **🚀 GitHub Actions 自動デプロイ**: master ブランチへのプッシュで `pages/` を自動デプロイする CI/CD パイプラインを統合
+
+### Changed
+- Web サイトの階層構造を `pages/` ディレクトリ配下に完全整理・一元化
+- MathJax v3 を組み込み、数式 (LaTeX) の描画品質を向上
+
+### 📚 New Articles & Guides (新着記事)
+- 🎯 [灰レーティング脱出！茶色になるまでに絶対に押さえるべき解法 & 実践Tips](https://rikutoyamada01.github.io/atcoder-workspace/pages/article/gray-to-brown-tips.html)
+- 📖 [競プロ初心者向け アルゴリズム & 用語解説ガイド](https://rikutoyamada01.github.io/atcoder-workspace/pages/article/glossary.html)
+- 🧮 [計算量・TLEシミュレーター & 10⁸の壁突破ガイド](https://rikutoyamada01.github.io/atcoder-workspace/pages/article/complexity.html)
+
 ## [1.6.4] - 2026-07-21
 
 ### Changed
