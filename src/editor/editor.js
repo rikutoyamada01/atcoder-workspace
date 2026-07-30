@@ -1236,6 +1236,7 @@ impl UnionFind {
           `;
           consoleResults.appendChild(row);
         }
+        ensureLearningNotesSection();
         saveConsoleState(contestId, problemId);
         break;
 
@@ -1328,15 +1329,6 @@ impl UnionFind {
             `;
           }
           body.innerHTML = bodyHtml;
-
-          // Add click listener on header to toggle body visibility & icon
-          const header = row.querySelector('.case-row-header');
-          header.onclick = () => {
-            const isVisible = body.style.display === 'block';
-            body.style.display = isVisible ? 'none' : 'block';
-            icon.textContent = isVisible ? '▶' : '▼';
-            saveConsoleState(contestId, problemId);
-          };
         }
 
         testSummary.textContent = i18nProvider
@@ -2133,6 +2125,24 @@ impl UnionFind {
       if (reviewLink) {
         if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
           chrome.storage.local.set({ 'stats:has_reviewed': true });
+        }
+        return;
+      }
+
+      const caseHeader = e.target.closest('.case-row-header');
+      if (caseHeader) {
+        const row = caseHeader.closest('.case-row');
+        if (row) {
+          const body = row.querySelector('.case-row-body');
+          const icon = row.querySelector('.case-icon');
+          if (body) {
+            const isHidden = body.style.display === 'none' || body.style.display === '';
+            body.style.display = isHidden ? 'block' : 'none';
+            if (icon) {
+              icon.textContent = isHidden ? '▼' : '▶';
+            }
+            saveConsoleState(contestId, problemId);
+          }
         }
       }
     });

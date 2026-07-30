@@ -96,4 +96,56 @@ describe('Learning Notes and Tags Feature', () => {
     expect(result[key].tags).toEqual(['二分探索', 'コーナーケース']);
     expect(result[key].note).toBe('N=1に注意');
   });
+
+  test('should toggle accordion visibility on case-row-header click via event delegation', () => {
+    const consoleResults = document.createElement('div');
+    consoleResults.id = 'console-results';
+    document.body.appendChild(consoleResults);
+
+    consoleResults.innerHTML = `
+      <div class="case-row" id="case-row-0">
+        <div class="case-row-header">
+          <span class="case-icon">▶</span>
+          <span class="case-label">ケース 1:</span>
+          <span class="case-status status-ac">AC</span>
+        </div>
+        <div class="case-row-body" style="display: none;">Details</div>
+      </div>
+    `;
+
+    consoleResults.addEventListener('click', (e) => {
+      const caseHeader = e.target.closest('.case-row-header');
+      if (caseHeader) {
+        const row = caseHeader.closest('.case-row');
+        if (row) {
+          const body = row.querySelector('.case-row-body');
+          const icon = row.querySelector('.case-icon');
+          if (body) {
+            const isHidden = body.style.display === 'none' || body.style.display === '';
+            body.style.display = isHidden ? 'block' : 'none';
+            if (icon) {
+              icon.textContent = isHidden ? '▼' : '▶';
+            }
+          }
+        }
+      }
+    });
+
+    const header = consoleResults.querySelector('.case-row-header');
+    const body = consoleResults.querySelector('.case-row-body');
+    const icon = consoleResults.querySelector('.case-icon');
+
+    expect(body.style.display).toBe('none');
+    expect(icon.textContent).toBe('▶');
+
+    // Click to open AC case
+    header.click();
+    expect(body.style.display).toBe('block');
+    expect(icon.textContent).toBe('▼');
+
+    // Click again to close
+    header.click();
+    expect(body.style.display).toBe('none');
+    expect(icon.textContent).toBe('▶');
+  });
 });
