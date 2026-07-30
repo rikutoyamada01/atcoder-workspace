@@ -73,6 +73,32 @@
         </div>
       </div>
       <div class="console-body" id="console-results"></div>
+      <div id="learning-notes-section" class="learning-notes-section">
+        <div class="learning-tags-bar">
+          <span class="tags-label">🏷️ タグ:</span>
+          <div id="selected-tags-container" class="selected-tags-container"></div>
+          <button id="toggle-tag-dropdown-btn" class="btn btn-default btn-xs tag-select-btn">＋ タグを選択 ▾</button>
+        </div>
+        <div id="tag-dropdown-panel" class="tag-dropdown-panel" style="display: none;">
+          <div class="tag-group">
+            <span class="tag-group-title">💡 解法・手法</span>
+            <div class="tag-chips-wrapper" id="method-tags-wrapper"></div>
+          </div>
+          <div class="tag-group">
+            <span class="tag-group-title">⚠️ 詰まった原因</span>
+            <div class="tag-chips-wrapper" id="cause-tags-wrapper"></div>
+          </div>
+          <div class="custom-tag-input-wrapper">
+            <input type="text" id="custom-tag-input" class="form-control input-xs" placeholder="カスタムタグを追加 (Enterで確定)">
+          </div>
+        </div>
+        <div class="learning-note-container">
+          <div class="note-header">
+            <span class="note-label">📝 補足メモ (任意):</span>
+          </div>
+          <textarea id="learning-note-textarea" class="form-control note-textarea" rows="2" placeholder="N=1の例外処理、計算量オーバーの注意点など..."></textarea>
+        </div>
+      </div>
     </div>
   </div>
 

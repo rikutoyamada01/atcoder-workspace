@@ -736,6 +736,8 @@ impl UnionFind {
         }
         // Load console state for this problem
         loadConsoleState(contestId, problemId);
+        // Load learning notes and tags for this problem
+        loadLearningNotesAndTags(contestId, problemId);
         break;
       }
 
@@ -2125,4 +2127,203 @@ impl UnionFind {
       }
     });
   }
+
+  // --- Learning Notes & Tags Module ---
+  const PRESET_METHOD_TAGS = [
+    '二分探索',
+    'DP',
+    '累積和',
+    'BFS/DFS',
+    '尺取り法',
+    'UnionFind',
+    '貪欲法',
+    '数学・考察',
+    '全探索',
+    'グラフ',
+  ];
+  const PRESET_CAUSE_TAGS = [
+    'コーナーケース',
+    'オーバーフロー',
+    'TLE(計算量)',
+    '配列外参照/RE',
+    '初期化忘れ',
+    '実装重め',
+    'バグ埋め込み',
+  ];
+
+  let currentProblemNotes = { tags: [], note: '' };
+  let noteDebounceTimer = null;
+
+  const selectedTagsContainer = document.getElementById('selected-tags-container');
+  const toggleTagDropdownBtn = document.getElementById('toggle-tag-dropdown-btn');
+  const tagDropdownPanel = document.getElementById('tag-dropdown-panel');
+  const methodTagsWrapper = document.getElementById('method-tags-wrapper');
+  const causeTagsWrapper = document.getElementById('cause-tags-wrapper');
+  const customTagInput = document.getElementById('custom-tag-input');
+  const learningNoteTextarea = document.getElementById('learning-note-textarea');
+
+  function getNoteStorageKey(cId, pId) {
+    if (!pId) return null;
+    return `problem_notes:${cId || 'global'}:${pId}`;
+  }
+
+  function loadLearningNotesAndTags(cId, pId) {
+    const key = getNoteStorageKey(cId, pId);
+    currentProblemNotes = { tags: [], note: '' };
+    if (!key || !isContextValid()) {
+      renderLearningNotesAndTags();
+      return;
+    }
+
+    try {
+      chrome.storage.local.get([key], (result) => {
+        if (result && result[key]) {
+          currentProblemNotes = {
+            tags: Array.isArray(result[key].tags) ? result[key].tags : [],
+            note: typeof result[key].note === 'string' ? result[key].note : '',
+          };
+        }
+        renderLearningNotesAndTags();
+      });
+    } catch (e) {
+      console.error('[AtCoder Workspace] Failed to load learning notes/tags', e);
+      renderLearningNotesAndTags();
+    }
+  }
+
+  function saveLearningNotesAndTags() {
+    const key = getNoteStorageKey(contestId, problemId);
+    if (!key || !isContextValid()) return;
+
+    const dataToSave = {
+      tags: currentProblemNotes.tags,
+      note: currentProblemNotes.note,
+      updatedAt: Date.now(),
+    };
+
+    try {
+      chrome.storage.local.set({ [key]: dataToSave });
+    } catch (e) {
+      console.error('[AtCoder Workspace] Failed to save learning notes/tags', e);
+    }
+  }
+
+  function toggleTag(tagName) {
+    if (!tagName) return;
+    const index = currentProblemNotes.tags.indexOf(tagName);
+    if (index >= 0) {
+      currentProblemNotes.tags.splice(index, 1);
+    } else {
+      currentProblemNotes.tags.push(tagName);
+    }
+    renderLearningNotesAndTags();
+    saveLearningNotesAndTags();
+  }
+
+  function renderLearningNotesAndTags() {
+    if (selectedTagsContainer) {
+      selectedTagsContainer.innerHTML = '';
+      currentProblemNotes.tags.forEach((tag) => {
+        const chip = document.createElement('span');
+        chip.className = 'tag-chip';
+        chip.textContent = `#${tag} `;
+
+        const removeBtn = document.createElement('span');
+        removeBtn.className = 'tag-chip-remove';
+        removeBtn.textContent = '×';
+        removeBtn.onclick = (e) => {
+          e.stopPropagation();
+          toggleTag(tag);
+        };
+
+        chip.appendChild(removeBtn);
+        selectedTagsContainer.appendChild(chip);
+      });
+    }
+
+    if (methodTagsWrapper) {
+      methodTagsWrapper.innerHTML = '';
+      PRESET_METHOD_TAGS.forEach((tag) => {
+        const option = document.createElement('span');
+        const isActive = currentProblemNotes.tags.includes(tag);
+        option.className = `tag-option-chip ${isActive ? 'active' : ''}`;
+        option.textContent = `#${tag}`;
+        option.onclick = () => toggleTag(tag);
+        methodTagsWrapper.appendChild(option);
+      });
+    }
+
+    if (causeTagsWrapper) {
+      causeTagsWrapper.innerHTML = '';
+      PRESET_CAUSE_TAGS.forEach((tag) => {
+        const option = document.createElement('span');
+        const isActive = currentProblemNotes.tags.includes(tag);
+        option.className = `tag-option-chip ${isActive ? 'active' : ''}`;
+        option.textContent = `#${tag}`;
+        option.onclick = () => toggleTag(tag);
+        causeTagsWrapper.appendChild(option);
+      });
+
+      // Render custom tags not in presets
+      const presetSet = new Set([...PRESET_METHOD_TAGS, ...PRESET_CAUSE_TAGS]);
+      currentProblemNotes.tags.forEach((tag) => {
+        if (!presetSet.has(tag)) {
+          const option = document.createElement('span');
+          option.className = 'tag-option-chip active';
+          option.textContent = `#${tag}`;
+          option.onclick = () => toggleTag(tag);
+          causeTagsWrapper.appendChild(option);
+        }
+      });
+    }
+
+    if (learningNoteTextarea) {
+      learningNoteTextarea.value = currentProblemNotes.note || '';
+    }
+  }
+
+  function initLearningNotesUI() {
+    if (toggleTagDropdownBtn && tagDropdownPanel) {
+      toggleTagDropdownBtn.onclick = (e) => {
+        e.stopPropagation();
+        const isHidden = tagDropdownPanel.style.display === 'none';
+        tagDropdownPanel.style.display = isHidden ? 'flex' : 'none';
+        toggleTagDropdownBtn.textContent = isHidden ? '▲ タグを閉じる' : '＋ タグを選択 ▾';
+      };
+
+      document.addEventListener('click', (e) => {
+        if (tagDropdownPanel && tagDropdownPanel.style.display !== 'none') {
+          if (!tagDropdownPanel.contains(e.target) && e.target !== toggleTagDropdownBtn) {
+            tagDropdownPanel.style.display = 'none';
+            toggleTagDropdownBtn.textContent = '＋ タグを選択 ▾';
+          }
+        }
+      });
+    }
+
+    if (customTagInput) {
+      customTagInput.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const val = customTagInput.value.trim().replace(/^#/, '');
+          if (val && !currentProblemNotes.tags.includes(val)) {
+            toggleTag(val);
+            customTagInput.value = '';
+          }
+        }
+      };
+    }
+
+    if (learningNoteTextarea) {
+      learningNoteTextarea.oninput = () => {
+        currentProblemNotes.note = learningNoteTextarea.value;
+        if (noteDebounceTimer) clearTimeout(noteDebounceTimer);
+        noteDebounceTimer = setTimeout(() => {
+          saveLearningNotesAndTags();
+        }, 500);
+      };
+    }
+  }
+
+  initLearningNotesUI();
 })();
