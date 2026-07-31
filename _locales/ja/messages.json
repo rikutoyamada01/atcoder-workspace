@@ -608,6 +608,27 @@
   "editor_console_warning_note": {
     "message": "※ 浮動小数点数を出力する問題や、解が複数存在する問題（スペシャルジャッジ）では、実際の提出結果（AC/WA）と異なる場合があります。"
   },
+  "options_whats_new_banner_text": {
+    "message": "AtCoder Workspace が v$VERSION$ にアップデートされました！",
+    "placeholders": {
+      "version": { "content": "$1" }
+    }
+  },
+  "options_whats_new_btn_view": {
+    "message": "新機能・変更内容を見る"
+  },
+  "options_changelog_btn": {
+    "message": "🎉 リリースノートを見る"
+  },
+  "options_changelog_modal_title": {
+    "message": "🎉 リリースノート / 更新履歴"
+  },
+  "options_changelog_version_label": {
+    "message": "バージョン選択:"
+  },
+  "options_changelog_modal_close": {
+    "message": "閉じる"
+  },
   "options_backup_mode_merge": {
     "message": "マージ（既存データを保持）",
     "description": "Backup import merge mode"

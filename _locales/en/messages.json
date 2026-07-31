@@ -608,6 +608,27 @@
   "editor_console_warning_note": {
     "message": "* For problems involving floating-point outputs or multiple valid solutions (special judge), local test results may differ from the actual submission results (AC/WA)."
   },
+  "options_whats_new_banner_text": {
+    "message": "AtCoder Workspace updated to v$VERSION$!",
+    "placeholders": {
+      "version": { "content": "$1" }
+    }
+  },
+  "options_whats_new_btn_view": {
+    "message": "View What's New"
+  },
+  "options_changelog_btn": {
+    "message": "🎉 View Release Notes"
+  },
+  "options_changelog_modal_title": {
+    "message": "🎉 Release Notes & Changelog"
+  },
+  "options_changelog_version_label": {
+    "message": "Select Version:"
+  },
+  "options_changelog_modal_close": {
+    "message": "Close"
+  },
   "options_backup_mode_merge": {
     "message": "Merge (Keep existing data)",
     "description": "Backup import merge mode"

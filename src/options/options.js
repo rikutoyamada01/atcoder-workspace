@@ -1297,7 +1297,9 @@ func main() {
             if (res.whats_new_unread) {
               if (whatsNewBanner) whatsNewBanner.style.display = 'flex';
               if (whatsNewBannerText) {
-                whatsNewBannerText.textContent = `AtCoder Workspace が v${version} にアップデートされました！`;
+                whatsNewBannerText.textContent = i18nProvider
+                  ? i18nProvider.t('options_whats_new_banner_text', [version])
+                  : `AtCoder Workspace が v${version} にアップデートされました！`;
               }
             }
           });

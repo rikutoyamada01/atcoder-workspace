@@ -72,12 +72,42 @@
     updateSaveStatusText();
   }
 
+  let testSummaryState = null; // { type: 'running', count, total } | { type: 'all_ac', acCount, total } | { type: 'non_ac', displayStatus, acCount, total } | { type: 'error', message }
+
+  function updateTestSummaryText() {
+    if (!testSummary || !testSummaryState) return;
+    if (testSummaryState.type === 'running') {
+      testSummary.textContent = i18nProvider
+        ? i18nProvider.t('editor_runner_running_cases', [testSummaryState.count, testSummaryState.total])
+        : `実行中... (${testSummaryState.count}/${testSummaryState.total})`;
+      testSummary.className = 'summary-running';
+    } else if (testSummaryState.type === 'all_ac') {
+      testSummary.textContent = i18nProvider
+        ? i18nProvider.t('editor_runner_all_ac', [testSummaryState.acCount, testSummaryState.total])
+        : `すべてAC (${testSummaryState.acCount}/${testSummaryState.total})`;
+      testSummary.className = 'summary-ac';
+    } else if (testSummaryState.type === 'non_ac') {
+      testSummary.textContent = i18nProvider
+        ? i18nProvider.t('editor_runner_non_ac', [testSummaryState.displayStatus, testSummaryState.acCount, testSummaryState.total])
+        : `${testSummaryState.displayStatus}あり (${testSummaryState.acCount}/${testSummaryState.total} AC)`;
+      testSummary.className = 'summary-wa';
+    } else if (testSummaryState.type === 'error') {
+      const errorText = i18nProvider ? i18nProvider.t('editor_label_error') : 'エラー';
+      testSummary.textContent = `${errorText}: ${testSummaryState.message}`;
+      testSummary.className = 'summary-wa';
+    }
+  }
+
   function applyTranslations() {
     if (i18nProvider && typeof i18n !== 'undefined' && i18n.translatePage) {
       i18n.translatePage(i18nProvider);
+      if (consoleResults) {
+        i18n.translatePage(i18nProvider, consoleResults);
+      }
     }
     updateSaveStatusText();
     updateEditorLanguageState();
+    updateTestSummaryText();
     if (typeof renderLearningNotesAndTags === 'function') {
       renderLearningNotesAndTags();
     }
@@ -1220,10 +1250,8 @@ impl UnionFind {
         totalCount = e.data.total;
         caseStatuses = [];
 
-        testSummary.textContent = i18nProvider
-          ? i18nProvider.t('editor_runner_running_cases', ['0', totalCount])
-          : `実行中... (0/${totalCount})`;
-        testSummary.className = 'summary-running';
+        testSummaryState = { type: 'running', count: 0, total: totalCount };
+        updateTestSummaryText();
 
         consoleResults.innerHTML = '';
         consoleResults.scrollTop = 0; // Reset scroll to top
@@ -1236,11 +1264,14 @@ impl UnionFind {
           row.innerHTML = `
             <div class="case-row-header">
               <span class="case-icon">▶</span>
-              <span class="case-label">${escapeHtml(caseLabel)} ${i + 1}:</span>
-              <span class="case-status status-running">${escapeHtml(caseRunningText)}</span>
+              <span class="case-label"><span data-i18n="editor_runner_case">${escapeHtml(caseLabel)}</span> ${i + 1}:</span>
+              <span class="case-status status-running" data-i18n="editor_runner_running">${escapeHtml(caseRunningText)}</span>
             </div>
             <div class="case-row-body" style="display: none;"></div>
           `;
+          if (i18nProvider && typeof i18n !== 'undefined' && i18n.translatePage) {
+            i18n.translatePage(i18nProvider, row);
+          }
           consoleResults.appendChild(row);
         }
         ensureLearningNotesSection();
@@ -1260,6 +1291,7 @@ impl UnionFind {
           }
 
           const statusBadge = row.querySelector('.case-status');
+          statusBadge.removeAttribute('data-i18n'); // Status codes (AC/WA/TLE) are universal
           statusBadge.textContent = status;
           statusBadge.className = `case-status status-${status.toLowerCase()}`;
 
@@ -1290,11 +1322,11 @@ impl UnionFind {
             bodyHtml = `
               <div class="case-io-grid">
                 <div class="case-io-block">
-                  <div class="case-io-label">${escapeHtml(expectedLabel)}:</div>
+                  <div class="case-io-label"><span data-i18n="editor_runner_expected">${escapeHtml(expectedLabel)}</span>:</div>
                   <pre class="case-io-content">${escapeHtml(e.data.expected)}</pre>
                 </div>
                 <div class="case-io-block">
-                  <div class="case-io-label">${escapeHtml(actualLabel)}:</div>
+                  <div class="case-io-label"><span data-i18n="editor_runner_actual">${escapeHtml(actualLabel)}</span>:</div>
                   <pre class="case-io-content">${escapeHtml(e.data.output)}</pre>
                 </div>
               </div>
@@ -1302,48 +1334,48 @@ impl UnionFind {
           } else if (status === 'RE' || status === 'ERR' || status === 'TLE' || status === 'MLE') {
             body.style.display = 'block';
             icon.textContent = '▼';
+            const labelKey =
+              status === 'TLE'
+                ? 'editor_runner_timeout'
+                : status === 'MLE'
+                  ? 'editor_runner_mle'
+                  : 'editor_runner_stderr';
+            const descKey =
+              status === 'TLE'
+                ? 'editor_runner_timeout_desc'
+                : status === 'MLE'
+                  ? 'editor_runner_mle_desc'
+                  : 'editor_runner_error_desc';
             const labelText =
               status === 'TLE'
-                ? i18nProvider
-                  ? i18nProvider.t('editor_runner_timeout')
-                  : 'タイムアウト検出 (TLE):'
+                ? (i18nProvider ? i18nProvider.t('editor_runner_timeout') : 'タイムアウト検出 (TLE):')
                 : status === 'MLE'
-                  ? i18nProvider
-                    ? i18nProvider.t('editor_runner_mle')
-                    : 'メモリ制限超過 (MLE):'
-                  : i18nProvider
-                    ? i18nProvider.t('editor_runner_stderr')
-                    : 'エラー詳細 (stderr):';
+                  ? (i18nProvider ? i18nProvider.t('editor_runner_mle') : 'メモリ制限超過 (MLE):')
+                  : (i18nProvider ? i18nProvider.t('editor_runner_stderr') : 'エラー詳細 (stderr):');
             const errMsg =
               e.data.stderr ||
               e.data.message ||
               (status === 'TLE'
-                ? i18nProvider
-                  ? i18nProvider.t('editor_runner_timeout_desc')
-                  : '実行制限時間（TLE）を超過しました。'
+                ? (i18nProvider ? i18nProvider.t('editor_runner_timeout_desc') : '実行制限時間（TLE）を超過しました。')
                 : status === 'MLE'
-                  ? i18nProvider
-                    ? i18nProvider.t('editor_runner_mle_desc')
-                    : 'メモリ制限（MLE）を超過しました。'
-                  : i18nProvider
-                    ? i18nProvider.t('editor_runner_error_desc')
-                    : 'エラーが発生しました。');
+                  ? (i18nProvider ? i18nProvider.t('editor_runner_mle_desc') : 'メモリ制限（MLE）を超過しました。')
+                  : (i18nProvider ? i18nProvider.t('editor_runner_error_desc') : 'エラーが発生しました。'));
             bodyHtml = `
               <div class="case-error-block">
-                <div class="case-io-label">${escapeHtml(labelText)}</div>
-                <pre class="case-error-content">${escapeHtml(errMsg)}</pre>
+                <div class="case-io-label" data-i18n="${labelKey}">${escapeHtml(labelText)}</div>
+                <pre class="case-error-content" ${!e.data.stderr && !e.data.message ? `data-i18n="${descKey}"` : ''}>${escapeHtml(errMsg)}</pre>
               </div>
             `;
           }
           body.innerHTML = bodyHtml;
+          if (i18nProvider && typeof i18n !== 'undefined' && i18n.translatePage) {
+            i18n.translatePage(i18nProvider, body);
+          }
         }
 
-        testSummary.textContent = i18nProvider
-          ? i18nProvider.t('editor_runner_running_cases', [resultsCount, totalCount])
-          : `実行中... (${resultsCount}/${totalCount})`;
+        testSummaryState = { type: 'running', count: resultsCount, total: totalCount };
+        updateTestSummaryText();
 
-        // Auto-scroll to the bottom of the console results
-        consoleResults.scrollTop = consoleResults.scrollHeight;
         saveConsoleState(contestId, problemId);
         break;
       }
@@ -1353,10 +1385,7 @@ impl UnionFind {
         setButtonsDisabled(false);
 
         if (acCount === totalCount) {
-          testSummary.textContent = i18nProvider
-            ? i18nProvider.t('editor_runner_all_ac', [acCount, totalCount])
-            : `すべてAC (${acCount}/${totalCount})`;
-          testSummary.className = 'summary-ac';
+          testSummaryState = { type: 'all_ac', acCount, total: totalCount };
         } else {
           // Priority of statuses to display in the overall summary
           const uniqueNonAcStatuses = [...new Set(caseStatuses)].filter((s) => s !== 'AC');
@@ -1375,11 +1404,9 @@ impl UnionFind {
             displayStatus = uniqueNonAcStatuses[0];
           }
 
-          testSummary.textContent = i18nProvider
-            ? i18nProvider.t('editor_runner_non_ac', [displayStatus, acCount, totalCount])
-            : `${displayStatus}あり (${acCount}/${totalCount} AC)`;
-          testSummary.className = 'summary-wa';
+          testSummaryState = { type: 'non_ac', displayStatus, acCount, total: totalCount };
         }
+        updateTestSummaryText();
         saveConsoleState(contestId, problemId);
         break;
 
@@ -1387,7 +1414,8 @@ impl UnionFind {
         isTesting = false;
         setButtonsDisabled(false);
 
-        const errorText = i18nProvider ? i18nProvider.t('editor_label_error') : 'エラー';
+        testSummaryState = { type: 'error', message: e.data.message };
+        updateTestSummaryText();
         testSummary.textContent = `${errorText}: ${e.data.message}`;
         testSummary.className = 'summary-wa';
 

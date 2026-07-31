@@ -71,14 +71,44 @@ describe('Runner Module Tests', () => {
     expect(global.fetch).toHaveBeenCalledTimes(1);
     expect(onIdle).not.toHaveBeenCalled();
 
-    // Idle check interval is 300ms.
-    // Advance timer by 299ms: should not poll again.
-    jest.advanceTimersByTime(299);
+    // Idle check interval is 1000ms.
+    // Advance timer by 999ms: should not poll again.
+    jest.advanceTimersByTime(999);
     await flushPromises();
     expect(global.fetch).toHaveBeenCalledTimes(1);
 
-    // Advance timer by 1ms (total 300ms): should trigger poll.
+    // Advance timer by 1ms (total 1000ms): should trigger poll.
     jest.advanceTimersByTime(1);
+    await flushPromises();
+
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+    expect(onIdle).toHaveBeenCalledTimes(1);
+  });
+
+  test('ensureIdle retries after delay on HTTP 429 response', async () => {
+    // 1st call: HTTP 429, 2nd call: Status 3 (Completed)
+    const mockHeaders = new Map([['Retry-After', '2']]);
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 429,
+        headers: mockHeaders,
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ Result: { Status: 3 } }),
+      });
+
+    const onIdle = jest.fn();
+    runner.ensureIdle('abc100', onIdle, Date.now());
+
+    await flushPromises();
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(onIdle).not.toHaveBeenCalled();
+
+    // Retry delay based on Retry-After header is 2000ms.
+    jest.advanceTimersByTime(2000);
     await flushPromises();
 
     expect(global.fetch).toHaveBeenCalledTimes(2);
@@ -129,6 +159,55 @@ describe('Runner Module Tests', () => {
     expect(reject).not.toHaveBeenCalled();
   });
 
+  test('pollResult retries after delay on HTTP 429 response', async () => {
+    // 1st call: HTTP 429, 2nd call: Completed
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 429,
+        headers: new Map(),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            Result: {
+              Status: 3,
+              ExitCode: 0,
+              TimeConsumption: 5,
+              MemoryConsumption: 1024,
+              Output: btoa('retried success\n'),
+              Error: btoa(''),
+            },
+          }),
+      });
+
+    const resolve = jest.fn();
+    const reject = jest.fn();
+
+    runner.pollResult('abc100', resolve, reject, Date.now());
+
+    await flushPromises();
+
+    // 1st fetch failed with 429, should not reject yet
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(resolve).not.toHaveBeenCalled();
+    expect(reject).not.toHaveBeenCalled();
+
+    // Default 1st retry delay is 2000ms
+    jest.advanceTimersByTime(2000);
+    await flushPromises();
+
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+    expect(resolve).toHaveBeenCalledWith({
+      Stdout: 'retried success\n',
+      Stderr: '',
+      ExitCode: 0,
+      TimeConsumption: 5,
+      MemoryConsumption: 1024,
+    });
+  });
+
   test('runSampleTests reports error when CSRF token is missing', async () => {
     // Make sure AtCoder status is idle
     global.fetch.mockResolvedValue({
@@ -150,13 +229,13 @@ describe('Runner Module Tests', () => {
       message: 'CSRFトークンが見つかりません。',
     });
 
-    // Next case delay is 50ms.
-    // Advance by 49ms: should not complete yet.
-    jest.advanceTimersByTime(49);
+    // Next case delay is 500ms.
+    // Advance by 499ms: should not complete yet.
+    jest.advanceTimersByTime(499);
     await flushPromises();
     expect(onComplete).not.toHaveBeenCalled();
 
-    // Advance by 1ms (total 50ms): should complete.
+    // Advance by 1ms (total 500ms): should complete.
     jest.advanceTimersByTime(1);
     await flushPromises();
 
@@ -219,24 +298,91 @@ describe('Runner Module Tests', () => {
       stderr: '',
     });
 
-    // Next case delay is 50ms.
-    // Advance by 49ms: should not complete yet.
-    jest.advanceTimersByTime(49);
+    // Next case delay is 500ms.
+    // Advance by 499ms: should not complete yet.
+    jest.advanceTimersByTime(499);
     await flushPromises();
     expect(onComplete).not.toHaveBeenCalled();
 
-    // Advance by 1ms (total 50ms): should complete.
+    // Advance by 1ms (total 500ms): should complete.
     jest.advanceTimersByTime(1);
     await flushPromises();
 
     expect(onComplete).toHaveBeenCalled();
   });
 
-  test('runSampleTests returns TLE status if execution time exceeds time limit', async () => {
-    // Add CSRF input to mock DOM
+  test('runSampleTests retries POST submission on HTTP 429 response', async () => {
     document.body.innerHTML = '<input name="csrf_token" value="dummy-csrf-token" />';
 
-    // Mock Scraper limits
+    // 1st fetch: ensureIdle (ok)
+    // 2nd fetch: submit (HTTP 429)
+    // 3rd fetch: ensureIdle on retry (ok)
+    // 4th fetch: submit on retry (ok)
+    // 5th fetch: pollResult (status 3, AC)
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ Result: { Status: 3 } }),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 429,
+        headers: new Map([['Retry-After', '1']]),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ Result: { Status: 3 } }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        text: () => Promise.resolve(''),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            Result: {
+              Status: 3,
+              ExitCode: 0,
+              TimeConsumption: 12,
+              MemoryConsumption: 1024,
+              Output: btoa('out1\n'),
+              Error: btoa(''),
+            },
+          }),
+      });
+
+    const onCaseResult = jest.fn();
+    const onComplete = jest.fn();
+
+    const samples = [{ input: 'in1', expected: 'out1' }];
+    runner.runSampleTests('abc100', 'print("out1")', 'python', samples, onCaseResult, onComplete);
+
+    await flushPromises(); // 1st ensureIdle
+    await flushPromises(); // 1st submit (429)
+
+    expect(onCaseResult).not.toHaveBeenCalled();
+
+    // Retry delay is 1000ms (Retry-After: 1)
+    jest.advanceTimersByTime(1000);
+    await flushPromises(); // 2nd ensureIdle
+    await flushPromises(); // 2nd submit
+    await flushPromises(); // pollResult
+
+    expect(onCaseResult).toHaveBeenCalledWith({
+      index: 0,
+      status: 'AC',
+      time: 12,
+      memory: 1024,
+      output: 'out1\n',
+      expected: 'out1',
+      stderr: '',
+    });
+  });
+
+  test('runSampleTests returns TLE status if execution time exceeds time limit', async () => {
+    document.body.innerHTML = '<input name="csrf_token" value="dummy-csrf-token" />';
+
     window.AtCoderWorkspace.Scraper = {
       extractTimeLimit: () => 1500, // 1500 ms limit
       extractMemoryLimit: () => 1024,
@@ -380,7 +526,6 @@ describe('Runner Module Tests', () => {
     let nowMock = startTime;
     jest.spyOn(Date, 'now').mockImplementation(() => nowMock);
 
-    // Mock fetch to return running status (Status 1) so it keeps polling
     global.fetch.mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({ Result: { Status: 1 } }),
@@ -389,95 +534,55 @@ describe('Runner Module Tests', () => {
     const resolve = jest.fn();
     const reject = jest.fn();
 
-    // Poll 1 (at 0ms elapsed) -> schedules next for 200ms
+    // Poll 1 (at 0ms elapsed) -> schedules next for 1000ms
     runner.pollResult('abc100', resolve, reject, startTime);
     await flushPromises();
     expect(global.fetch).toHaveBeenCalledTimes(1);
 
-    // Advance by 199ms: should not poll.
-    nowMock = startTime + 199;
-    jest.advanceTimersByTime(199);
+    // Advance by 999ms: should not poll.
+    nowMock = startTime + 999;
+    jest.advanceTimersByTime(999);
     await flushPromises();
     expect(global.fetch).toHaveBeenCalledTimes(1);
 
-    // Advance by 1ms (total 200ms): Poll 2 fires -> schedules next for 400ms
-    nowMock = startTime + 200;
+    // Advance by 1ms (total 1000ms): Poll 2 fires -> schedules next for 2000ms
+    nowMock = startTime + 1000;
     jest.advanceTimersByTime(1);
     await flushPromises();
     expect(global.fetch).toHaveBeenCalledTimes(2);
 
-    // Advance by 199ms: should not poll.
-    nowMock = startTime + 399;
-    jest.advanceTimersByTime(199);
-    await flushPromises();
-    expect(global.fetch).toHaveBeenCalledTimes(2);
-
-    // Advance by 1ms (total 400ms): Poll 3 fires -> schedules next for 600ms
-    nowMock = startTime + 400;
-    jest.advanceTimersByTime(1);
+    // Advance to 2000ms: Poll 3 fires -> schedules next for 3000ms
+    nowMock = startTime + 2000;
+    jest.advanceTimersByTime(1000);
     await flushPromises();
     expect(global.fetch).toHaveBeenCalledTimes(3);
 
-    // Advance to 600ms
-    nowMock = startTime + 600;
-    jest.advanceTimersByTime(200);
-    await flushPromises();
-    expect(global.fetch).toHaveBeenCalledTimes(4); // Poll 4 at 600ms, schedules next for 800ms
-
-    // Advance to 800ms
-    nowMock = startTime + 800;
-    jest.advanceTimersByTime(200);
-    await flushPromises();
-    expect(global.fetch).toHaveBeenCalledTimes(5); // Poll 5 at 800ms, schedules next for 1000ms
-
-    // Advance to 1000ms
-    nowMock = startTime + 1000;
-    jest.advanceTimersByTime(200);
-    await flushPromises();
-    expect(global.fetch).toHaveBeenCalledTimes(6); // Poll 6 at 1000ms, schedules next for 1500ms (elapsed >= 1000ms)
-
-    // Now polling interval is 500ms.
-    // Advance by 499ms: should not poll.
-    nowMock = startTime + 1499;
-    jest.advanceTimersByTime(499);
-    await flushPromises();
-    expect(global.fetch).toHaveBeenCalledTimes(6);
-
-    // Advance by 1ms (total 1500ms): Poll 7 fires -> schedules next for 2000ms
-    nowMock = startTime + 1500;
-    jest.advanceTimersByTime(1);
-    await flushPromises();
-    expect(global.fetch).toHaveBeenCalledTimes(7);
-
-    // Advance to 2000ms
-    nowMock = startTime + 2000;
-    jest.advanceTimersByTime(500);
-    await flushPromises();
-    expect(global.fetch).toHaveBeenCalledTimes(8); // Poll 8 at 2000ms, schedules next for 2500ms
-
-    // Advance to 2500ms
-    nowMock = startTime + 2500;
-    jest.advanceTimersByTime(500);
-    await flushPromises();
-    expect(global.fetch).toHaveBeenCalledTimes(9); // Poll 9 at 2500ms, schedules next for 3000ms
-
-    // Advance to 3000ms
+    // Advance to 3000ms: Poll 4 fires -> elapsed >= 3000ms, schedules next for 4500ms (1500ms interval)
     nowMock = startTime + 3000;
-    jest.advanceTimersByTime(500);
+    jest.advanceTimersByTime(1000);
     await flushPromises();
-    expect(global.fetch).toHaveBeenCalledTimes(10); // Poll 10 at 3000ms, schedules next for 4000ms (elapsed >= 3000ms)
+    expect(global.fetch).toHaveBeenCalledTimes(4);
 
-    // Now polling interval is 1000ms.
-    // Advance by 999ms: should not poll.
-    nowMock = startTime + 3999;
-    jest.advanceTimersByTime(999);
+    // Advance by 1499ms: should not poll.
+    nowMock = startTime + 4499;
+    jest.advanceTimersByTime(1499);
     await flushPromises();
-    expect(global.fetch).toHaveBeenCalledTimes(10);
+    expect(global.fetch).toHaveBeenCalledTimes(4);
 
-    // Advance by 1ms (total 4000ms): Poll 11 fires -> schedules next for 5000ms
-    nowMock = startTime + 4000;
+    // Advance by 1ms (total 4500ms): Poll 5 fires
+    nowMock = startTime + 4500;
     jest.advanceTimersByTime(1);
     await flushPromises();
-    expect(global.fetch).toHaveBeenCalledTimes(11);
+    expect(global.fetch).toHaveBeenCalledTimes(5);
+  });
+
+  test('_getRetryDelay respects Retry-After header and falls back to exponential backoff', () => {
+    const mockHeadersWithSec = new Map([['Retry-After', '3']]);
+    expect(runner._getRetryDelay({ headers: mockHeadersWithSec }, 1)).toBe(3000);
+
+    expect(runner._getRetryDelay(null, 1)).toBe(2000);
+    expect(runner._getRetryDelay(null, 2)).toBe(4000);
+    expect(runner._getRetryDelay(null, 3)).toBe(8000);
+    expect(runner._getRetryDelay(null, 4)).toBe(10000); // capped at 10s
   });
 });
