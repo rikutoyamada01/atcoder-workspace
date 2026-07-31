@@ -5,12 +5,17 @@ All notable changes to the AtCoder Workspace extension will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.7.0] - 2026-07-30
+## [1.7.0] - 2026-07-31
 
 ### Added
 - **📝 学習ノート & 🏷️ タグ機能**: コンソール領域で問題ごとの解法メモやタグ（`二分探索`, `DP`, `コーナーケース` 等）をローカル保存・管理できる機能を追加
 - **🏷️ タグのハイパーリンク機能**: `🏷️ タグ:` ラベルホバー時に下線が表示され、クリックで直感的に『競プロ用語解説ガイド』が開く連携を追加
 - **🚀 GitHub Actions 自動デプロイ**: master ブランチへのプッシュで `pages/` を自動デプロイする CI/CD パイプラインを統合
+
+### Fixed
+- **⚡ AtCoder テストランナーの HTTP 429 (Rate Limit) エラー回避**: リクエスト間隔の最適化、`Retry-After` ヘッダー対応および指数バックオフ付き自動再試行機能（最大3回）を導入し、テスト実行時のアクセス制限エラーを防止
+- **📜 コンソールの自動スクロール制御の改善**: サンプルテスト判定時（AC/WA）にコンソール領域が毎回最下部へ強制自動スクロールされる挙動を解除し、選択中のスクロール位置を維持可能に修正
+- **🌐 学習ノート領域の多言語 (i18n) サポート修正**: 動的 DOM 生成時のタグ名・説明キーの不一致を修正し、多言語表示を適正化
 
 ### Changed
 - Web サイトの階層構造を `pages/` ディレクトリ配下に完全整理・一元化
