@@ -690,6 +690,7 @@
   "tag_name_uninitialized": { "message": "Uninitialized Vars" },
   "tag_name_heavy_impl": { "message": "Heavy Implementation" },
   "tag_name_bug_typo": { "message": "Typo / Bug" },
+  "tag_name_cast_precision": { "message": "Type Cast & Precision" },
   "tag_desc_binary_search": {
     "message": "Search in sorted arrays in O(log N) time",
     "description": "Description for binary search tag"
@@ -757,6 +758,10 @@
   "tag_desc_bug_typo": {
     "message": "Simple mistake like typos or inverted comparison operators",
     "description": "Description for typo bug tag"
+  },
+  "tag_desc_cast_precision": {
+    "message": "Truncation from integer division or double precision loss. Avoid by integerization or proper casting",
+    "description": "Description for type cast & precision tag"
   },
   "settings_storage_cache_details_toggle": {
     "message": "Show cache details"

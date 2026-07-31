@@ -690,6 +690,7 @@
   "tag_name_uninitialized": { "message": "初期化忘れ" },
   "tag_name_heavy_impl": { "message": "実装重め" },
   "tag_name_bug_typo": { "message": "バグ埋め込み" },
+  "tag_name_cast_precision": { "message": "型キャスト・精度" },
   "tag_desc_binary_search": {
     "message": "ソート済み配列から O(log N) で高速に値を探索する手法",
     "description": "Description for binary search tag"
@@ -756,7 +757,11 @@
   },
   "tag_desc_bug_typo": {
     "message": "タイポや不等号の向きミスなど、単純な記述ミスによる誤答",
-    "description": "Description for typo bug tag"
+    "description": "Description for bug/typo tag"
+  },
+  "tag_desc_cast_precision": {
+    "message": "整数除算による切り捨てや double の精度誤差。整数化や適切なキャストで回避",
+    "description": "Description for type cast & precision tag"
   },
   "settings_storage_cache_details_toggle": {
     "message": "キャッシュの内訳を表示"

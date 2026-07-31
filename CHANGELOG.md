@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MathJax v3 を組み込み、数式 (LaTeX) の描画品質を向上
 
 ### 📚 New Articles & Guides (新着記事)
+- 🔢 [「小数で解くな、整数で解け！」競プロにおける浮動小数点数・切り捨て罠の完全回避ガイド](https://rikutoyamada01.github.io/atcoder-workspace/pages/article/integerization-tips.html)
 - 🎯 [灰レーティング脱出！茶色になるまでに絶対に押さえるべき解法 & 実践Tips](https://rikutoyamada01.github.io/atcoder-workspace/pages/article/gray-to-brown-tips.html)
 - 📖 [競プロ初心者向け アルゴリズム & 用語解説ガイド](https://rikutoyamada01.github.io/atcoder-workspace/pages/article/glossary.html)
 - 🧮 [計算量・TLEシミュレーター & 10⁸の壁突破ガイド](https://rikutoyamada01.github.io/atcoder-workspace/pages/article/complexity.html)

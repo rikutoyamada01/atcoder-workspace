@@ -2210,6 +2210,12 @@ impl UnionFind {
       desc: 'int型の上限(約21億)を超えてオーバーフロー。long long を使用しよう',
     },
     {
+      name: '型キャスト・精度',
+      nameKey: 'tag_name_cast_precision',
+      descKey: 'tag_desc_cast_precision',
+      desc: '整数除算による切り捨てや double の精度誤差。整数化や適切なキャストで回避',
+    },
+    {
       name: 'TLE(計算量)',
       nameKey: 'tag_name_tle',
       descKey: 'tag_desc_tle',
