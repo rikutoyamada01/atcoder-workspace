@@ -516,7 +516,10 @@ body.vs-dark-theme .snippet-tag-custom {
 
 /* Console Panel */
 #console-panel {
+  position: relative;
   height: 200px;
+  min-height: 80px;
+  max-height: calc(100vh - 100px);
   border-top: 1px solid #dddddd;
   background-color: #ffffff;
   display: flex;
@@ -537,6 +540,34 @@ body.vs-dark-theme .snippet-tag-custom {
   color: #333333;
   flex-shrink: 0;
   user-select: none;
+  cursor: ns-resize;
+  position: relative;
+  transition: background-color 0.2s ease;
+}
+
+.console-header::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 3px;
+  background-color: #cccccc;
+  border-radius: 2px;
+  opacity: 0.6;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.console-header:hover,
+.console-header.resizing {
+  background-color: #eaeaea;
+}
+
+.console-header:hover::before,
+.console-header.resizing::before {
+  opacity: 1;
+  background-color: #337ab7;
 }
 
 .console-header-left {
@@ -1226,6 +1257,7 @@ body.vs-dark-theme .note-label {
   padding: 4px 6px;
   resize: vertical;
   min-height: 32px;
+  overflow-y: hidden;
   border-radius: 3px;
   width: 100% !important;
   max-width: none !important;

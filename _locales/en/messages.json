@@ -326,6 +326,9 @@
   "editor_console_slider_title": {
     "message": "Toggle Console (Ctrl+J)"
   },
+  "editor_console_resizer_title": {
+    "message": "Drag to resize terminal height"
+  },
   "editor_judge_not_logged_in": {
     "message": "Not logged in"
   },

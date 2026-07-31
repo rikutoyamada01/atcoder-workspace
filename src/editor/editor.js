@@ -685,6 +685,70 @@ impl UnionFind {
     toggleConsole();
   };
 
+  // --- Console Panel Drag Resizing Logic ---
+  const consoleHeader = document.querySelector('#console-panel .console-header');
+  let isResizingConsole = false;
+  let resizeStartY = 0;
+  let resizeStartHeight = 200;
+
+  if (chrome.storage && chrome.storage.local) {
+    chrome.storage.local.get(['settings:console_panel_height'], (res) => {
+      if (res && res['settings:console_panel_height']) {
+        const savedHeight = parseInt(res['settings:console_panel_height'], 10);
+        if (!isNaN(savedHeight) && savedHeight >= 80 && savedHeight <= window.innerHeight - 100) {
+          consolePanel.style.height = `${savedHeight}px`;
+        }
+      }
+    });
+  }
+
+  function startConsoleResize(e) {
+    if (e.target && e.target.closest && (e.target.closest('#console-info-icon') || e.target.closest('button') || e.target.closest('a'))) {
+      return;
+    }
+    e.preventDefault();
+    isResizingConsole = true;
+    resizeStartY = e.clientY;
+    resizeStartHeight = consolePanel.offsetHeight;
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'ns-resize';
+    if (consoleHeader) consoleHeader.classList.add('resizing');
+  }
+
+  function doConsoleResize(e) {
+    if (!isResizingConsole) return;
+    const dy = resizeStartY - e.clientY;
+    const newHeight = Math.max(80, Math.min(window.innerHeight - 100, resizeStartHeight + dy));
+    consolePanel.style.height = `${newHeight}px`;
+
+    if (window.editor && typeof window.editor.layout === 'function') {
+      window.editor.layout();
+    }
+  }
+
+  function stopConsoleResize() {
+    if (!isResizingConsole) return;
+    isResizingConsole = false;
+    document.body.style.userSelect = '';
+    document.body.style.cursor = '';
+    if (consoleHeader) consoleHeader.classList.remove('resizing');
+
+    const currentHeight = consolePanel.offsetHeight;
+    if (chrome.storage && chrome.storage.local) {
+      chrome.storage.local.set({ 'settings:console_panel_height': currentHeight });
+    }
+
+    if (window.editor && typeof window.editor.layout === 'function') {
+      window.editor.layout();
+    }
+  }
+
+  if (consoleHeader) {
+    consoleHeader.addEventListener('mousedown', startConsoleResize);
+  }
+  document.addEventListener('mousemove', doConsoleResize);
+  document.addEventListener('mouseup', stopConsoleResize);
+
   // Helper to map AtCoder language names to Monaco Editor language IDs
   function getLanguageMode(langText) {
     if (!langText) return 'plaintext';
@@ -2468,8 +2532,15 @@ impl UnionFind {
       });
     }
 
+    function autoResizeTextarea(textarea) {
+      if (!textarea) return;
+      textarea.style.height = 'auto';
+      textarea.style.height = `${Math.max(32, textarea.scrollHeight)}px`;
+    }
+
     if (learningNoteTextarea) {
       learningNoteTextarea.value = currentProblemNotes.note || '';
+      autoResizeTextarea(learningNoteTextarea);
     }
   }
 
@@ -2515,6 +2586,7 @@ impl UnionFind {
 
     if (learningNoteTextarea) {
       learningNoteTextarea.oninput = () => {
+        autoResizeTextarea(learningNoteTextarea);
         currentProblemNotes.note = learningNoteTextarea.value;
         if (noteDebounceTimer) clearTimeout(noteDebounceTimer);
         noteDebounceTimer = setTimeout(() => {

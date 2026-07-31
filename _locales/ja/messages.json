@@ -319,12 +319,15 @@
   },
   "editor_save_status_error": {
     "message": "保存エラー"
-  },
+},
   "editor_console_title": {
     "message": "テスト結果"
   },
   "editor_console_slider_title": {
-    "message": "コンソール表示切り替え (Ctrl+J)"
+    "message": "クリックでコンソールの開閉を切り替え"
+  },
+  "editor_console_resizer_title": {
+    "message": "ドラッグしてターミナルの高さを調整"
   },
   "editor_judge_not_logged_in": {
     "message": "未ログイン"
