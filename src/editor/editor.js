@@ -78,6 +78,9 @@
     }
     updateSaveStatusText();
     updateEditorLanguageState();
+    if (typeof renderLearningNotesAndTags === 'function') {
+      renderLearningNotesAndTags();
+    }
   }
 
   async function initI18n() {
@@ -2158,42 +2161,64 @@ impl UnionFind {
 
   // --- Learning Notes & Tags Module ---
   const PRESET_METHOD_TAGS = [
-    { name: '二分探索', desc: 'ソート済み配列から O(log N) で高速に値を探索する手法' },
-    { name: 'DP', desc: '動的計画法。小問題の結果をメモして効率的に解を求める手法' },
-    { name: '累積和', desc: '前計算により任意区間の総和を O(1) で求める手法' },
-    { name: 'BFS/DFS', desc: '幅優先/深さ優先探索。グラフや迷路の最短経路・走査に使用' },
-    { name: '尺取り法', desc: '条件を満たす区間の両端(L, R)をスライドさせて O(N) で探す手法' },
-    { name: 'UnionFind', desc: '要素同士のグループ結合と同一判定を高速に行うデータ構造' },
-    { name: '貪欲法', desc: '各ステップで局所的に最も有利な選択を繰り返す手法' },
-    { name: '数学・考察', desc: '数式変形やパズル的な法則性を見つけ出して解くアプローチ' },
-    { name: '全探索', desc: 'すべてのパターンを全通り試す手法 (Nが小さい時に有効)' },
-    { name: 'グラフ', desc: '頂点と辺のネットワーク構造(木、網状)に関する問題' },
+    { name: '二分探索', nameKey: 'tag_name_binary_search', descKey: 'tag_desc_binary_search', desc: 'ソート済み配列から O(log N) で高速に値を探索する手法' },
+    { name: 'DP', nameKey: 'tag_name_dp', descKey: 'tag_desc_dp', desc: '動的計画法。小問題の結果をメモして効率的に解を求める手法' },
+    { name: '累積和', nameKey: 'tag_name_prefix_sum', descKey: 'tag_desc_prefix_sum', desc: '前計算により任意区間の総和を O(1) で求める手法' },
+    { name: 'BFS/DFS', nameKey: 'tag_name_bfs_dfs', descKey: 'tag_desc_bfs_dfs', desc: '幅優先/深さ優先探索。グラフや迷路の最短経路・走査に使用' },
+    { name: '尺取り法', nameKey: 'tag_name_two_pointers', descKey: 'tag_desc_two_pointers', desc: '条件を満たす区間の両端(L, R)をスライドさせて O(N) で探す手法' },
+    { name: 'UnionFind', nameKey: 'tag_name_union_find', descKey: 'tag_desc_union_find', desc: '要素同士のグループ結合と同一判定を高速に行うデータ構造' },
+    { name: '貪欲法', nameKey: 'tag_name_greedy', descKey: 'tag_desc_greedy', desc: '各ステップで局所的に最も有利な選択を繰り返す手法' },
+    { name: '数学・考察', nameKey: 'tag_name_math', descKey: 'tag_desc_math', desc: '数式変形やパズル的な法則性を見つけ出して解くアプローチ' },
+    { name: '全探索', nameKey: 'tag_name_full_search', descKey: 'tag_desc_full_search', desc: 'すべてのパターンを全通り試す手法 (Nが小さい時に有効)' },
+    { name: 'グラフ', nameKey: 'tag_name_graph', descKey: 'tag_desc_graph', desc: '頂点と辺のネットワーク構造(木、網状)に関する問題' },
   ];
 
   const PRESET_CAUSE_TAGS = [
-    { name: 'コーナーケース', desc: 'N=1, N=0, 全て同じ値, 負数など端っこの特殊ケースでの例外' },
+    { name: 'コーナーケース', nameKey: 'tag_name_corner_case', descKey: 'tag_desc_corner_case', desc: 'N=1, N=0, 全て同じ値, 負数など端っこの特殊ケースでの例外' },
     {
       name: 'オーバーフロー',
+      nameKey: 'tag_name_overflow',
+      descKey: 'tag_desc_overflow',
       desc: 'int型の上限(約21億)を超えてオーバーフロー。long long を使用しよう',
     },
     {
       name: 'TLE(計算量)',
+      nameKey: 'tag_name_tle',
+      descKey: 'tag_desc_tle',
       desc: '実行時間制限(通常2秒)を超過。O(N^2) を O(N log N) などに改善が必要',
     },
     {
       name: '配列外参照/RE',
+      nameKey: 'tag_name_re',
+      descKey: 'tag_desc_re',
       desc: '配列の範囲外(例: a[N] や負のインデックス)にアクセスしてクラッシュ',
     },
-    { name: '初期化忘れ', desc: 'ループの各回で変数や配列を初期化し忘れたバグ' },
-    { name: '実装重め', desc: '方針は合っているがコード記述量が多くデバッグに時間がかかった状態' },
-    { name: 'バグ埋め込み', desc: 'タイポや不等号の向きミスなど、単純な記述ミスによる誤答' },
+    { name: '初期化忘れ', nameKey: 'tag_name_uninitialized', descKey: 'tag_desc_uninitialized', desc: 'ループの各回で変数や配列を初期化し忘れたバグ' },
+    { name: '実装重め', nameKey: 'tag_name_heavy_impl', descKey: 'tag_desc_heavy_impl', desc: '方針は合っているがコード記述量が多くデバッグに時間がかかった状態' },
+    { name: 'バグ埋め込み', nameKey: 'tag_name_bug_typo', descKey: 'tag_desc_bug_typo', desc: 'タイポや不等号の向きミスなど、単純な記述ミスによる誤答' },
   ];
 
+  function getTagDisplayName(tagName) {
+    const methodItem = PRESET_METHOD_TAGS.find((t) => t.name === tagName || t.nameKey === tagName);
+    if (methodItem) {
+      return (i18nProvider && i18nProvider.t(methodItem.nameKey)) || methodItem.name;
+    }
+    const causeItem = PRESET_CAUSE_TAGS.find((t) => t.name === tagName || t.nameKey === tagName);
+    if (causeItem) {
+      return (i18nProvider && i18nProvider.t(causeItem.nameKey)) || causeItem.name;
+    }
+    return tagName;
+  }
+
   function getTagDescription(tagName) {
-    const methodItem = PRESET_METHOD_TAGS.find((t) => t.name === tagName);
-    if (methodItem) return methodItem.desc;
-    const causeItem = PRESET_CAUSE_TAGS.find((t) => t.name === tagName);
-    if (causeItem) return causeItem.desc;
+    const methodItem = PRESET_METHOD_TAGS.find((t) => t.name === tagName || t.nameKey === tagName);
+    if (methodItem) {
+      return (i18nProvider && i18nProvider.t(methodItem.descKey)) || methodItem.desc;
+    }
+    const causeItem = PRESET_CAUSE_TAGS.find((t) => t.name === tagName || t.nameKey === tagName);
+    if (causeItem) {
+      return (i18nProvider && i18nProvider.t(causeItem.descKey)) || causeItem.desc;
+    }
     return '';
   }
 
@@ -2211,30 +2236,33 @@ impl UnionFind {
     div.className = 'learning-notes-section';
     div.innerHTML = `
       <div class="learning-tags-bar">
-        <span class="tags-label">🏷️ タグ:</span>
+        <span class="tags-label" data-i18n="editor_learning_tags_label">🏷️ タグ:</span>
         <div id="selected-tags-container" class="selected-tags-container"></div>
-        <button id="toggle-tag-dropdown-btn" class="btn btn-default btn-xs tag-select-btn">＋ タグを選択 ▾</button>
+        <button id="toggle-tag-dropdown-btn" class="btn btn-default btn-xs tag-select-btn" data-i18n="editor_learning_tags_select_btn">＋ タグを選択 ▾</button>
       </div>
       <div id="tag-dropdown-panel" class="tag-dropdown-panel" style="display: none;">
         <div class="tag-group">
-          <span class="tag-group-title">💡 解法・手法</span>
+          <span class="tag-group-title" data-i18n="editor_learning_tags_group_method">💡 解法・手法</span>
           <div class="tag-chips-wrapper" id="method-tags-wrapper"></div>
         </div>
         <div class="tag-group">
-          <span class="tag-group-title">⚠️ 詰まった原因</span>
+          <span class="tag-group-title" data-i18n="editor_learning_tags_group_cause">⚠️ 詰まった原因</span>
           <div class="tag-chips-wrapper" id="cause-tags-wrapper"></div>
         </div>
         <div class="custom-tag-input-wrapper">
-          <input type="text" id="custom-tag-input" class="form-control input-xs" placeholder="カスタムタグを追加 (Enterで確定)">
+          <input type="text" id="custom-tag-input" class="form-control input-xs" data-i18n-placeholder="editor_learning_tags_custom_placeholder" placeholder="カスタムタグを追加 (Enterで確定)">
         </div>
       </div>
       <div class="learning-note-container">
         <div class="note-header">
-          <span class="note-label">📝 補足メモ (任意):</span>
+          <span class="note-label" data-i18n="editor_learning_note_label">📝 補足メモ (任意):</span>
         </div>
-        <textarea id="learning-note-textarea" class="form-control note-textarea" rows="1" placeholder="N=1の例外処理、計算量オーバーの注意点など..."></textarea>
+        <textarea id="learning-note-textarea" class="form-control note-textarea" rows="1" data-i18n-placeholder="editor_learning_note_placeholder" placeholder="N=1の例外処理、計算量オーバーの注意点など..."></textarea>
       </div>
     `;
+    if (i18nProvider && typeof i18n !== 'undefined' && i18n.translatePage) {
+      i18n.translatePage(i18nProvider, div);
+    }
     return div;
   }
 
@@ -2318,7 +2346,7 @@ impl UnionFind {
 
     if (tagsLabel && !tagsLabel.classList.contains('has-article-link')) {
       tagsLabel.classList.add('has-article-link');
-      tagsLabel.title = 'クリックで競プロ用語解説ガイド記事を開く';
+      tagsLabel.title = (i18nProvider && i18nProvider.t('editor_learning_tags_label_title')) || 'クリックで競プロ用語解説ガイド記事を開く';
       tagsLabel.addEventListener('click', () => {
         window.open('https://rikutoyamada01.github.io/atcoder-workspace/pages/article/glossary.html', '_blank');
       });
@@ -2329,7 +2357,8 @@ impl UnionFind {
       currentProblemNotes.tags.forEach((tag) => {
         const chip = document.createElement('span');
         chip.className = 'tag-chip';
-        chip.textContent = `#${tag} `;
+        const displayName = getTagDisplayName(tag);
+        chip.textContent = `#${displayName} `;
 
         const desc = getTagDescription(tag);
         if (desc) {
@@ -2353,11 +2382,13 @@ impl UnionFind {
       methodTagsWrapper.innerHTML = '';
       PRESET_METHOD_TAGS.forEach((tagObj) => {
         const tag = tagObj.name;
+        const displayName = (i18nProvider && i18nProvider.t(tagObj.nameKey)) || tagObj.name;
+        const desc = (i18nProvider && i18nProvider.t(tagObj.descKey)) || tagObj.desc;
         const option = document.createElement('span');
         const isActive = currentProblemNotes.tags.includes(tag);
         option.className = `tag-option-chip ${isActive ? 'active' : ''}`;
-        option.textContent = `#${tag}`;
-        option.title = tagObj.desc;
+        option.textContent = `#${displayName}`;
+        option.title = desc;
         option.onclick = (e) => {
           e.stopPropagation();
           toggleTag(tag);
@@ -2370,11 +2401,13 @@ impl UnionFind {
       causeTagsWrapper.innerHTML = '';
       PRESET_CAUSE_TAGS.forEach((tagObj) => {
         const tag = tagObj.name;
+        const displayName = (i18nProvider && i18nProvider.t(tagObj.nameKey)) || tagObj.name;
+        const desc = (i18nProvider && i18nProvider.t(tagObj.descKey)) || tagObj.desc;
         const option = document.createElement('span');
         const isActive = currentProblemNotes.tags.includes(tag);
         option.className = `tag-option-chip ${isActive ? 'active' : ''}`;
-        option.textContent = `#${tag}`;
-        option.title = tagObj.desc;
+        option.textContent = `#${displayName}`;
+        option.title = desc;
         option.onclick = (e) => {
           e.stopPropagation();
           toggleTag(tag);
@@ -2413,18 +2446,21 @@ impl UnionFind {
     const learningNoteTextarea = document.getElementById('learning-note-textarea');
 
     if (toggleTagDropdownBtn && tagDropdownPanel) {
+      const selectBtnText = (i18nProvider && i18nProvider.t('editor_learning_tags_select_btn')) || '＋ タグを選択 ▾';
+      const closeBtnText = (i18nProvider && i18nProvider.t('editor_learning_tags_close_btn')) || '▲ タグを閉じる';
+
       toggleTagDropdownBtn.onclick = (e) => {
         e.stopPropagation();
         const isHidden = tagDropdownPanel.style.display === 'none';
         tagDropdownPanel.style.display = isHidden ? 'flex' : 'none';
-        toggleTagDropdownBtn.textContent = isHidden ? '▲ タグを閉じる' : '＋ タグを選択 ▾';
+        toggleTagDropdownBtn.textContent = isHidden ? closeBtnText : selectBtnText;
       };
 
       document.addEventListener('click', (e) => {
         if (tagDropdownPanel && tagDropdownPanel.style.display !== 'none') {
           if (!tagDropdownPanel.contains(e.target) && e.target !== toggleTagDropdownBtn) {
             tagDropdownPanel.style.display = 'none';
-            toggleTagDropdownBtn.textContent = '＋ タグを選択 ▾';
+            toggleTagDropdownBtn.textContent = selectBtnText;
           }
         }
       });

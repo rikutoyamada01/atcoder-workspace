@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "setup": "node scripts/setup-monaco.js",
-    "test": "jest",
+    "check:i18n": "node scripts/check-i18n-keys.js && node scripts/check-hardcoded-i18n.js",
+    "test": "npm run check:i18n && jest",
     "lint": "eslint src tests scripts",
     "format": "prettier --write \"src/**/*.{js,css}\" \"tests/**/*.js\" \"scripts/**/*.js\" \"*.json\" \"README.md\"",
     "format:check": "prettier --check \"src/**/*.{js,css}\" \"tests/**/*.js\" \"scripts/**/*.js\" \"*.json\" \"README.md\"",
