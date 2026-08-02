@@ -691,12 +691,21 @@ impl UnionFind {
   let resizeStartY = 0;
   let resizeStartHeight = 200;
 
+  // Helper to trigger Monaco Editor layout resize safely
+  function triggerEditorLayout() {
+    const ed = editor || window.editor;
+    if (ed && typeof ed.layout === 'function') {
+      ed.layout();
+    }
+  }
+
   if (chrome.storage && chrome.storage.local) {
     chrome.storage.local.get(['settings:console_panel_height'], (res) => {
       if (res && res['settings:console_panel_height']) {
         const savedHeight = parseInt(res['settings:console_panel_height'], 10);
         if (!isNaN(savedHeight) && savedHeight >= 80 && savedHeight <= window.innerHeight - 100) {
           consolePanel.style.height = `${savedHeight}px`;
+          triggerEditorLayout();
         }
       }
     });
@@ -721,9 +730,7 @@ impl UnionFind {
     const newHeight = Math.max(80, Math.min(window.innerHeight - 100, resizeStartHeight + dy));
     consolePanel.style.height = `${newHeight}px`;
 
-    if (window.editor && typeof window.editor.layout === 'function') {
-      window.editor.layout();
-    }
+    triggerEditorLayout();
   }
 
   function stopConsoleResize() {
@@ -738,9 +745,7 @@ impl UnionFind {
       chrome.storage.local.set({ 'settings:console_panel_height': currentHeight });
     }
 
-    if (window.editor && typeof window.editor.layout === 'function') {
-      window.editor.layout();
-    }
+    triggerEditorLayout();
   }
 
   if (consoleHeader) {
@@ -748,6 +753,7 @@ impl UnionFind {
   }
   document.addEventListener('mousemove', doConsoleResize);
   document.addEventListener('mouseup', stopConsoleResize);
+  window.addEventListener('resize', triggerEditorLayout);
 
   // Helper to map AtCoder language names to Monaco Editor language IDs
   function getLanguageMode(langText) {
@@ -1673,6 +1679,7 @@ impl UnionFind {
               bottom: 100, // Adds a 100px padding (approx. 5 lines) at the bottom
             },
           });
+          window.editor = editor;
 
           // Add Monaco shortcut key for toggling console (Ctrl+J)
           editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyJ, () => {
@@ -2253,75 +2260,60 @@ impl UnionFind {
 
   // --- Learning Notes & Tags Module ---
   const PRESET_METHOD_TAGS = [
-    { name: '二分探索', nameKey: 'tag_name_binary_search', descKey: 'tag_desc_binary_search', desc: 'ソート済み配列から O(log N) で高速に値を探索する手法' },
-    { name: 'DP', nameKey: 'tag_name_dp', descKey: 'tag_desc_dp', desc: '動的計画法。小問題の結果をメモして効率的に解を求める手法' },
-    { name: '累積和', nameKey: 'tag_name_prefix_sum', descKey: 'tag_desc_prefix_sum', desc: '前計算により任意区間の総和を O(1) で求める手法' },
-    { name: 'BFS/DFS', nameKey: 'tag_name_bfs_dfs', descKey: 'tag_desc_bfs_dfs', desc: '幅優先/深さ優先探索。グラフや迷路の最短経路・走査に使用' },
-    { name: '尺取り法', nameKey: 'tag_name_two_pointers', descKey: 'tag_desc_two_pointers', desc: '条件を満たす区間の両端(L, R)をスライドさせて O(N) で探す手法' },
-    { name: 'UnionFind', nameKey: 'tag_name_union_find', descKey: 'tag_desc_union_find', desc: '要素同士のグループ結合と同一判定を高速に行うデータ構造' },
-    { name: '貪欲法', nameKey: 'tag_name_greedy', descKey: 'tag_desc_greedy', desc: '各ステップで局所的に最も有利な選択を繰り返す手法' },
-    { name: '数学・考察', nameKey: 'tag_name_math', descKey: 'tag_desc_math', desc: '数式変形やパズル的な法則性を見つけ出して解くアプローチ' },
-    { name: '全探索', nameKey: 'tag_name_full_search', descKey: 'tag_desc_full_search', desc: 'すべてのパターンを全通り試す手法 (Nが小さい時に有効)' },
-    { name: 'グラフ', nameKey: 'tag_name_graph', descKey: 'tag_desc_graph', desc: '頂点と辺のネットワーク構造(木、網状)に関する問題' },
+    { id: 'tag_name_binary_search', descKey: 'tag_desc_binary_search' },
+    { id: 'tag_name_dp', descKey: 'tag_desc_dp' },
+    { id: 'tag_name_prefix_sum', descKey: 'tag_desc_prefix_sum' },
+    { id: 'tag_name_bfs_dfs', descKey: 'tag_desc_bfs_dfs' },
+    { id: 'tag_name_two_pointers', descKey: 'tag_desc_two_pointers' },
+    { id: 'tag_name_union_find', descKey: 'tag_desc_union_find' },
+    { id: 'tag_name_greedy', descKey: 'tag_desc_greedy' },
+    { id: 'tag_name_math', descKey: 'tag_desc_math' },
+    { id: 'tag_name_full_search', descKey: 'tag_desc_full_search' },
+    { id: 'tag_name_graph', descKey: 'tag_desc_graph' },
   ];
 
   const PRESET_CAUSE_TAGS = [
-    { name: 'コーナーケース', nameKey: 'tag_name_corner_case', descKey: 'tag_desc_corner_case', desc: 'N=1, N=0, 全て同じ値, 負数など端っこの特殊ケースでの例外' },
-    {
-      name: 'オーバーフロー',
-      nameKey: 'tag_name_overflow',
-      descKey: 'tag_desc_overflow',
-      desc: 'int型の上限(約21億)を超えてオーバーフロー。long long を使用しよう',
-    },
-    {
-      name: '型キャスト・精度',
-      nameKey: 'tag_name_cast_precision',
-      descKey: 'tag_desc_cast_precision',
-      desc: '整数除算による切り捨てや double の精度誤差。整数化や適切なキャストで回避',
-    },
-    {
-      name: 'TLE(計算量)',
-      nameKey: 'tag_name_tle',
-      descKey: 'tag_desc_tle',
-      desc: '実行時間制限(通常2秒)を超過。O(N^2) を O(N log N) などに改善が必要',
-    },
-    {
-      name: '配列外参照/RE',
-      nameKey: 'tag_name_re',
-      descKey: 'tag_desc_re',
-      desc: '配列の範囲外(例: a[N] や負のインデックス)にアクセスしてクラッシュ',
-    },
-    { name: '初期化忘れ', nameKey: 'tag_name_uninitialized', descKey: 'tag_desc_uninitialized', desc: 'ループの各回で変数や配列を初期化し忘れたバグ' },
-    { name: '実装重め', nameKey: 'tag_name_heavy_impl', descKey: 'tag_desc_heavy_impl', desc: '方針は合っているがコード記述量が多くデバッグに時間がかかった状態' },
-    { name: 'バグ埋め込み', nameKey: 'tag_name_bug_typo', descKey: 'tag_desc_bug_typo', desc: 'タイポや不等号の向きミスなど、単純な記述ミスによる誤答' },
+    { id: 'tag_name_corner_case', descKey: 'tag_desc_corner_case' },
+    { id: 'tag_name_overflow', descKey: 'tag_desc_overflow' },
+    { id: 'tag_name_cast_precision', descKey: 'tag_desc_cast_precision' },
+    { id: 'tag_name_tle', descKey: 'tag_desc_tle' },
+    { id: 'tag_name_re', descKey: 'tag_desc_re' },
+    { id: 'tag_name_uninitialized', descKey: 'tag_desc_uninitialized' },
+    { id: 'tag_name_heavy_impl', descKey: 'tag_desc_heavy_impl' },
+    { id: 'tag_name_bug_typo', descKey: 'tag_desc_bug_typo' },
   ];
 
   function getTagDisplayName(tagName) {
-    const methodItem = PRESET_METHOD_TAGS.find((t) => t.name === tagName || t.nameKey === tagName);
-    if (methodItem) {
-      return (i18nProvider && i18nProvider.t(methodItem.nameKey)) || methodItem.name;
-    }
-    const causeItem = PRESET_CAUSE_TAGS.find((t) => t.name === tagName || t.nameKey === tagName);
-    if (causeItem) {
-      return (i18nProvider && i18nProvider.t(causeItem.nameKey)) || causeItem.name;
+    if (!tagName) return '';
+    if (i18nProvider) {
+      const translated = i18nProvider.t(tagName);
+      if (translated && translated !== tagName) return translated;
     }
     return tagName;
   }
 
   function getTagDescription(tagName) {
-    const methodItem = PRESET_METHOD_TAGS.find((t) => t.name === tagName || t.nameKey === tagName);
+    if (!tagName) return '';
+    const methodItem = PRESET_METHOD_TAGS.find((t) => t.id === tagName);
     if (methodItem) {
-      return (i18nProvider && i18nProvider.t(methodItem.descKey)) || methodItem.desc;
+      return (i18nProvider && i18nProvider.t(methodItem.descKey)) || '';
     }
-    const causeItem = PRESET_CAUSE_TAGS.find((t) => t.name === tagName || t.nameKey === tagName);
+    const causeItem = PRESET_CAUSE_TAGS.find((t) => t.id === tagName);
     if (causeItem) {
-      return (i18nProvider && i18nProvider.t(causeItem.descKey)) || causeItem.desc;
+      return (i18nProvider && i18nProvider.t(causeItem.descKey)) || '';
     }
     return '';
   }
 
   let currentProblemNotes = { tags: [], note: '' };
   let noteDebounceTimer = null;
+  let isDropdownClickListenerAdded = false;
+
+  function autoResizeTextarea(textarea) {
+    if (!textarea) return;
+    textarea.style.height = 'auto';
+    textarea.style.height = `${Math.max(32, textarea.scrollHeight)}px`;
+  }
 
   function getNoteStorageKey(cId, pId) {
     if (!pId) return null;
@@ -2367,17 +2359,46 @@ impl UnionFind {
   function ensureLearningNotesSection() {
     if (!consoleResults) return;
     let section = document.getElementById('learning-notes-section');
-    let isNew = false;
     if (!section) {
       section = createLearningNotesSectionDOM();
-      isNew = true;
     }
     if (section.parentElement !== consoleResults || consoleResults.lastElementChild !== section) {
       consoleResults.appendChild(section);
     }
-    if (isNew) {
-      initLearningNotesUI();
-    }
+    initLearningNotesUI();
+  }
+
+  function migrateTags(rawTags) {
+    if (!Array.isArray(rawTags)) return { tags: [], isMigrated: false };
+    const legacyMap = {
+      '二分探索': 'tag_name_binary_search',
+      'DP': 'tag_name_dp',
+      '累積和': 'tag_name_prefix_sum',
+      'BFS/DFS': 'tag_name_bfs_dfs',
+      '尺取り法': 'tag_name_two_pointers',
+      'UnionFind': 'tag_name_union_find',
+      '貪欲法': 'tag_name_greedy',
+      '数学・考察': 'tag_name_math',
+      '全探索': 'tag_name_full_search',
+      'グラフ': 'tag_name_graph',
+      'コーナーケース': 'tag_name_corner_case',
+      'オーバーフロー': 'tag_name_overflow',
+      '型キャスト・精度': 'tag_name_cast_precision',
+      'TLE(計算量)': 'tag_name_tle',
+      '配列外参照/RE': 'tag_name_re',
+      '初期化忘れ': 'tag_name_uninitialized',
+      '実装重め': 'tag_name_heavy_impl',
+      'バグ埋め込み': 'tag_name_bug_typo',
+    };
+    let isMigrated = false;
+    const cleanTags = rawTags.map((tag) => {
+      if (legacyMap[tag]) {
+        isMigrated = true;
+        return legacyMap[tag];
+      }
+      return tag;
+    });
+    return { tags: cleanTags, isMigrated };
   }
 
   function loadLearningNotesAndTags(cId, pId) {
@@ -2391,10 +2412,17 @@ impl UnionFind {
     try {
       chrome.storage.local.get([key], (result) => {
         if (result && result[key]) {
+          const rawTags = Array.isArray(result[key].tags) ? result[key].tags : [];
+          const { tags: cleanTags, isMigrated } = migrateTags(rawTags);
+
           currentProblemNotes = {
-            tags: Array.isArray(result[key].tags) ? result[key].tags : [],
+            tags: cleanTags,
             note: typeof result[key].note === 'string' ? result[key].note : '',
           };
+
+          if (isMigrated) {
+            saveLearningNotesAndTags();
+          }
         }
         renderLearningNotesAndTags();
       });
@@ -2424,6 +2452,7 @@ impl UnionFind {
   function toggleTag(tagName) {
     if (!tagName) return;
     const index = currentProblemNotes.tags.indexOf(tagName);
+
     if (index >= 0) {
       currentProblemNotes.tags.splice(index, 1);
     } else {
@@ -2479,17 +2508,17 @@ impl UnionFind {
     if (methodTagsWrapper) {
       methodTagsWrapper.innerHTML = '';
       PRESET_METHOD_TAGS.forEach((tagObj) => {
-        const tag = tagObj.name;
-        const displayName = (i18nProvider && i18nProvider.t(tagObj.nameKey)) || tagObj.name;
-        const desc = (i18nProvider && i18nProvider.t(tagObj.descKey)) || tagObj.desc;
+        const tagId = tagObj.id;
+        const displayName = getTagDisplayName(tagId);
+        const desc = getTagDescription(tagId);
         const option = document.createElement('span');
-        const isActive = currentProblemNotes.tags.includes(tag);
+        const isActive = currentProblemNotes.tags.includes(tagId);
         option.className = `tag-option-chip ${isActive ? 'active' : ''}`;
         option.textContent = `#${displayName}`;
         option.title = desc;
         option.onclick = (e) => {
           e.stopPropagation();
-          toggleTag(tag);
+          toggleTag(tagId);
         };
         methodTagsWrapper.appendChild(option);
       });
@@ -2498,31 +2527,31 @@ impl UnionFind {
     if (causeTagsWrapper) {
       causeTagsWrapper.innerHTML = '';
       PRESET_CAUSE_TAGS.forEach((tagObj) => {
-        const tag = tagObj.name;
-        const displayName = (i18nProvider && i18nProvider.t(tagObj.nameKey)) || tagObj.name;
-        const desc = (i18nProvider && i18nProvider.t(tagObj.descKey)) || tagObj.desc;
+        const tagId = tagObj.id;
+        const displayName = getTagDisplayName(tagId);
+        const desc = getTagDescription(tagId);
         const option = document.createElement('span');
-        const isActive = currentProblemNotes.tags.includes(tag);
+        const isActive = currentProblemNotes.tags.includes(tagId);
         option.className = `tag-option-chip ${isActive ? 'active' : ''}`;
         option.textContent = `#${displayName}`;
         option.title = desc;
         option.onclick = (e) => {
           e.stopPropagation();
-          toggleTag(tag);
+          toggleTag(tagId);
         };
         causeTagsWrapper.appendChild(option);
       });
 
       // Render custom tags not in presets
-      const presetSet = new Set([
-        ...PRESET_METHOD_TAGS.map((t) => t.name),
-        ...PRESET_CAUSE_TAGS.map((t) => t.name),
+      const presetKeys = new Set([
+        ...PRESET_METHOD_TAGS.map((t) => t.id),
+        ...PRESET_CAUSE_TAGS.map((t) => t.id),
       ]);
       currentProblemNotes.tags.forEach((tag) => {
-        if (!presetSet.has(tag)) {
+        if (!presetKeys.has(tag)) {
           const option = document.createElement('span');
           option.className = 'tag-option-chip active';
-          option.textContent = `#${tag}`;
+          option.textContent = `#${getTagDisplayName(tag)}`;
           option.onclick = (e) => {
             e.stopPropagation();
             toggleTag(tag);
@@ -2532,13 +2561,7 @@ impl UnionFind {
       });
     }
 
-    function autoResizeTextarea(textarea) {
-      if (!textarea) return;
-      textarea.style.height = 'auto';
-      textarea.style.height = `${Math.max(32, textarea.scrollHeight)}px`;
-    }
-
-    if (learningNoteTextarea) {
+    if (learningNoteTextarea && document.activeElement !== learningNoteTextarea) {
       learningNoteTextarea.value = currentProblemNotes.note || '';
       autoResizeTextarea(learningNoteTextarea);
     }
@@ -2561,14 +2584,22 @@ impl UnionFind {
         toggleTagDropdownBtn.textContent = isHidden ? closeBtnText : selectBtnText;
       };
 
-      document.addEventListener('click', (e) => {
-        if (tagDropdownPanel && tagDropdownPanel.style.display !== 'none') {
-          if (!tagDropdownPanel.contains(e.target) && e.target !== toggleTagDropdownBtn) {
-            tagDropdownPanel.style.display = 'none';
-            toggleTagDropdownBtn.textContent = selectBtnText;
+      if (!isDropdownClickListenerAdded) {
+        isDropdownClickListenerAdded = true;
+        document.addEventListener('click', (e) => {
+          const panel = document.getElementById('tag-dropdown-panel');
+          const btn = document.getElementById('toggle-tag-dropdown-btn');
+          if (panel && panel.style.display !== 'none') {
+            if (!panel.contains(e.target) && e.target !== btn) {
+              panel.style.display = 'none';
+              if (btn) {
+                const sText = (i18nProvider && i18nProvider.t('editor_learning_tags_select_btn')) || '＋ タグを選択 ▾';
+                btn.textContent = sText;
+              }
+            }
           }
-        }
-      });
+        });
+      }
     }
 
     if (customTagInput) {
@@ -2593,8 +2624,25 @@ impl UnionFind {
           saveLearningNotesAndTags();
         }, 500);
       };
+
+      const flushAndSave = () => {
+        currentProblemNotes.note = learningNoteTextarea.value;
+        if (noteDebounceTimer) {
+          clearTimeout(noteDebounceTimer);
+          noteDebounceTimer = null;
+        }
+        saveLearningNotesAndTags();
+      };
+
+      learningNoteTextarea.onblur = flushAndSave;
+      learningNoteTextarea.onchange = flushAndSave;
     }
   }
 
+  window.addEventListener('beforeunload', () => {
+    saveLearningNotesAndTags();
+  });
+
   initLearningNotesUI();
+  renderLearningNotesAndTags();
 })();

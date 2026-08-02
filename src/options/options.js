@@ -747,6 +747,15 @@ func main() {
   const statusSearchBtn = document.getElementById('status-search-btn');
   const statusFilterSelect = document.getElementById('status-filter-select');
 
+  const getTagDisplayName = (tagName) => {
+    if (!tagName) return '';
+    if (i18nProvider) {
+      const translated = i18nProvider.t(tagName);
+      if (translated && translated !== tagName) return translated;
+    }
+    return tagName;
+  };
+
   // Memory cache for fetched contest problems
   let temporaryProblems = [];
 
@@ -768,12 +777,43 @@ func main() {
         const data = items || {};
         const acProblems = data['stats:ac_problems'] || [];
 
-        // Extract all problems that have manually configured status keys
+        // Auto-migrate legacy Japanese tags to unique i18n keys
+        const updates = {};
+        Object.keys(data).forEach((key) => {
+          if (key.startsWith('problem_notes:')) {
+            const item = data[key];
+            if (item && Array.isArray(item.tags)) {
+              let isModified = false;
+              const cleanTags = item.tags.map((t) => {
+                const mappedKey = PRESET_TAG_KEY_MAP[t];
+                if (mappedKey && mappedKey !== t) {
+                  isModified = true;
+                  return mappedKey;
+                }
+                return t;
+              });
+              if (isModified) {
+                item.tags = cleanTags;
+                updates[key] = item;
+              }
+            }
+          }
+        });
+        if (Object.keys(updates).length > 0) {
+          chrome.storage.local.set(updates);
+        }
+
+        // Extract all problems that have manually configured status or learning note/tag keys
         const configuredProblems = [];
         Object.keys(data).forEach((key) => {
           if (key.startsWith('status:')) {
             const parts = key.split(':');
             if (parts.length === 3) {
+              configuredProblems.push(`${parts[1]}:${parts[2]}`);
+            }
+          } else if (key.startsWith('problem_notes:')) {
+            const parts = key.split(':');
+            if (parts.length === 3 && parts[1] !== 'global') {
               configuredProblems.push(`${parts[1]}:${parts[2]}`);
             }
           }
@@ -807,12 +847,21 @@ func main() {
     const filter = statusFilterSelect ? statusFilterSelect.value : 'all';
     let filteredProblems = [...allProblems];
 
-    // Apply normalized filter query (ignores spaces and underscores for smooth "abc 300 a" match on abc300_a)
+    // Apply normalized filter query (supports contest/problem ID and tag name match)
     if (query) {
       filteredProblems = filteredProblems.filter((p) => {
         const cleanP = p.toLowerCase().replace(/[\s_]/g, '');
         const cleanQuery = query.toLowerCase().replace(/[\s_]/g, '');
-        return cleanP.includes(cleanQuery);
+        const parts = p.split(':');
+        const noteKey = `problem_notes:${parts[0]}:${parts[1]}`;
+        const noteData = statuses[noteKey] || {};
+        const tags = Array.isArray(noteData.tags) ? noteData.tags : [];
+        const tagMatch = tags.some((t) => {
+          const disp = getTagDisplayName(t);
+          return t.toLowerCase().includes(cleanQuery) || disp.toLowerCase().includes(cleanQuery);
+        });
+
+        return cleanP.includes(cleanQuery) || tagMatch;
       });
     }
 
@@ -905,6 +954,17 @@ func main() {
       if (currentStatus === 'self_ac') dotClass = 'dot-self';
       if (currentStatus === 'editorial_ac') dotClass = 'dot-editorial';
 
+      const noteKey = `problem_notes:${contestId}:${problemId}`;
+      const noteData = statuses[noteKey] || {};
+      const tags = Array.isArray(noteData.tags) ? noteData.tags : [];
+
+      let tagsHtml = '<span style="color: #999; font-size: 11px;">-</span>';
+      if (tags.length > 0) {
+        tagsHtml = `<div class="status-tags-container">${tags
+          .map((t) => `<span class="status-tag-chip">#${escapeHtml(getTagDisplayName(t))}</span>`)
+          .join('')}</div>`;
+      }
+
       row.innerHTML = `
         <td style="font-weight: 600;"><a href="${contestUrl}" target="_blank" class="status-table-link">${escapeHtml(formattedContest)}</a></td>
         <td><a href="${problemUrl}" target="_blank" class="status-table-link">${escapeHtml(formattedProblem)}</a></td>
@@ -918,6 +978,7 @@ func main() {
             </select>
           </div>
         </td>
+        <td class="status-tags-cell">${tagsHtml}</td>
       `;
 
       const select = row.querySelector('.status-select');

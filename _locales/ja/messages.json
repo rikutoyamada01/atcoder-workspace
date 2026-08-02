@@ -539,6 +539,9 @@
   "options_status_col_problem": {
     "message": "問題"
   },
+  "options_status_col_tags": {
+    "message": "タグ"
+  },
   "options_status_col_status": {
     "message": "ステータス"
   },
@@ -612,7 +615,7 @@
     "message": "※ 浮動小数点数を出力する問題や、解が複数存在する問題（スペシャルジャッジ）では、実際の提出結果（AC/WA）と異なる場合があります。"
   },
   "options_whats_new_banner_text": {
-    "message": "AtCoder Workspace が v$VERSION$ にアップデートされました！",
+    "message": "AtCoder Workspace が v$1 にアップデートされました！",
     "placeholders": {
       "version": { "content": "$1" }
     }

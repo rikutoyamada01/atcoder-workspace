@@ -84,7 +84,7 @@ describe('Learning Notes and Tags Feature', () => {
   test('should store and retrieve problem tags correctly from storage mock', async () => {
     const key = 'problem_notes:abc300:abc300_a';
     const testData = {
-      tags: ['二分探索', 'コーナーケース'],
+      tags: ['tag_name_binary_search', 'tag_name_corner_case'],
       note: 'N=1に注意',
       updatedAt: Date.now(),
     };
@@ -93,7 +93,7 @@ describe('Learning Notes and Tags Feature', () => {
 
     const result = await new Promise((resolve) => chrome.storage.local.get([key], resolve));
     expect(result[key]).toBeDefined();
-    expect(result[key].tags).toEqual(['二分探索', 'コーナーケース']);
+    expect(result[key].tags).toEqual(['tag_name_binary_search', 'tag_name_corner_case']);
     expect(result[key].note).toBe('N=1に注意');
   });
 
