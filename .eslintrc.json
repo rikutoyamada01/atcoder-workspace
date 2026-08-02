@@ -12,7 +12,8 @@
   "globals": {
     "monaco": "readonly",
     "MonacoEnvironment": "writable",
-    "require": "readonly"
+    "require": "readonly",
+    "TagConstants": "readonly"
   },
   "rules": {
     "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],

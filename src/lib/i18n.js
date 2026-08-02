@@ -53,6 +53,22 @@
         placeholders.forEach((val, idx) => {
           message = message.replace(new RegExp(`\\$${idx + 1}`, 'g'), val);
         });
+
+        if (item.placeholders) {
+          Object.keys(item.placeholders).forEach((pName) => {
+            const pObj = item.placeholders[pName];
+            if (pObj && pObj.content) {
+              const m = pObj.content.match(/\$(\d+)/);
+              if (m) {
+                const idx = parseInt(m[1], 10) - 1;
+                if (placeholders[idx] !== undefined) {
+                  const escapedPName = pName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                  message = message.replace(new RegExp(`\\$${escapedPName.toUpperCase()}\\$`, 'gi'), placeholders[idx]);
+                }
+              }
+            }
+          });
+        }
       }
       return message;
     }

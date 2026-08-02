@@ -8,19 +8,11 @@ function calculateSavedTime() {
   const problems = parseInt(inputProblems.value) || 0;
   const tests = parseInt(inputTests.value) || 0;
   
-  // 計算モデル:
-  // 年間想定コンテスト数: 50回
   const annualContests = 50;
   const totalProblems = problems * annualContests;
   
-  // コピペ削減数: 
-  // 1回のテストにつき平均3ケースのサンプルコピペが発生 (3 * tests)
-  // コードのコピー(1回)、提出フォームへの貼り付け(1回)、計2回
   const copypastesSaved = totalProblems * (tests * 3 + 2);
   
-  // 削減ロスタイム:
-  // 手動テストコピペと目視判定にかかる往復コスト: 1回あたり25秒
-  // コード提出タブ切り替えと待機にかかるコスト: 1回あたり15秒
   const secondsSaved = totalProblems * (tests * 25 + 15);
   const minutesSaved = Math.round(secondsSaved / 60);
   const hoursSaved = (minutesSaved / 60).toFixed(1);

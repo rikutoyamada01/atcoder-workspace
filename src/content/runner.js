@@ -5,17 +5,38 @@
 
   const TIMEOUT_MS = 15000; // 実行結果タイムアウト (15秒)
   const IDLE_TIMEOUT_MS = 20000; // 空き状態待ちタイムアウト (20秒)
-  const IDLE_CHECK_INTERVAL_MS = 300; // 空き状態確認ポーリング間隔 (300ms)
-  const NEXT_CASE_DELAY_MS = 50; // 次のケース実行前の遅延 (50ms)
+  const IDLE_CHECK_INTERVAL_MS = 1000; // 空き状態確認ポーリング間隔 (1000ms)
+  const NEXT_CASE_DELAY_MS = 500; // 次のケース実行前の遅延 (500ms)
   const LOCK_RETRY_DELAY_MS = 1500; // ロック発生時の再試行遅延 (1500ms)
   const DEFAULT_TIME_LIMIT_MS = 2000; // デフォルトの実行時間制限 (2000ms)
   const DEFAULT_MEMORY_LIMIT_MB = 1024; // デフォルトのメモリ制限 (1024MB)
+  const MAX_HTTP_RETRIES = 3; // 429・ネットワークエラー時の最大リトライ回数
 
   /**
    * Runner communicates with AtCoder's custom test endpoint
    * to submit, poll, and verify solutions against sample test cases.
    */
   class Runner {
+    /**
+     * Calculates retry delay, respecting Retry-After header if present.
+     * @private
+     * @param {Response} [res]
+     * @param {number} attempt
+     * @returns {number} Delay in milliseconds
+     */
+    _getRetryDelay(res, attempt = 1) {
+      if (res && res.headers) {
+        const retryAfter = res.headers.get('Retry-After');
+        if (retryAfter) {
+          const seconds = parseInt(retryAfter, 10);
+          if (!isNaN(seconds) && seconds > 0) {
+            return seconds * 1000;
+          }
+        }
+      }
+      return Math.min(2000 * Math.pow(2, attempt - 1), 10000);
+    }
+
     /**
      * Calculates the next polling interval based on elapsed time.
      * @private
@@ -24,13 +45,10 @@
      */
     _getPollInterval(startTime) {
       const elapsed = Date.now() - startTime;
-      if (elapsed < 1000) {
-        return 200;
-      }
       if (elapsed < 3000) {
-        return 500;
+        return 1000;
       }
-      return 1000;
+      return 1500;
     }
 
     /**
@@ -39,8 +57,9 @@
      * @param {Function} resolve
      * @param {Function} reject
      * @param {number} startTime
+     * @param {number} [retryCount=0]
      */
-    pollResult(contestId, resolve, reject, startTime) {
+    pollResult(contestId, resolve, reject, startTime, retryCount = 0) {
       if (Date.now() - startTime > TIMEOUT_MS) {
         // 15 seconds timeout
         reject(new Error('TLE: 実行制限時間を超過しました (15秒)'));
@@ -49,7 +68,12 @@
 
       fetch(`/contests/${contestId}/custom_test/json?_=${Date.now()}`)
         .then((res) => {
-          if (!res.ok) throw new Error('Network response not ok: ' + res.status);
+          if (!res.ok) {
+            const err = new Error('Network response not ok: ' + res.status);
+            err.status = res.status;
+            err.response = res;
+            throw err;
+          }
           return res.json();
         })
         .then((data) => {
@@ -63,7 +87,7 @@
             // 0: Queued, 1: Compiling, 2: Running, 3: Completed
             if (status === 0 || status === 1 || status === 2) {
               setTimeout(
-                () => this.pollResult(contestId, resolve, reject, startTime),
+                () => this.pollResult(contestId, resolve, reject, startTime, 0),
                 this._getPollInterval(startTime)
               );
             } else {
@@ -91,13 +115,31 @@
             }
           } else {
             setTimeout(
-              () => this.pollResult(contestId, resolve, reject, startTime),
+              () => this.pollResult(contestId, resolve, reject, startTime, 0),
               this._getPollInterval(startTime)
             );
           }
         })
         .catch((err) => {
-          reject(err);
+          const isNetworkErr =
+            err &&
+            err.name === 'TypeError' &&
+            err.message &&
+            err.message.toLowerCase().includes('fetch');
+          const is429 = err && err.status === 429;
+
+          if ((is429 || isNetworkErr) && retryCount < MAX_HTTP_RETRIES) {
+            const delay = this._getRetryDelay(err.response, retryCount + 1);
+            console.warn(
+              `[AtCoder Workspace] pollResult error (${err.status || 'NetworkError'}). Retrying (${retryCount + 1}/${MAX_HTTP_RETRIES}) in ${delay}ms...`
+            );
+            setTimeout(
+              () => this.pollResult(contestId, resolve, reject, startTime, retryCount + 1),
+              delay
+            );
+          } else {
+            reject(err);
+          }
         });
     }
 
@@ -106,8 +148,9 @@
      * @param {string} contestId
      * @param {Function} onIdle
      * @param {number} startTime
+     * @param {number} [retryCount=0]
      */
-    ensureIdle(contestId, onIdle, startTime) {
+    ensureIdle(contestId, onIdle, startTime, retryCount = 0) {
       if (Date.now() - startTime > IDLE_TIMEOUT_MS) {
         // 20 seconds timeout
         console.warn('[AtCoder Workspace] Idle check timed out, proceeding anyway.');
@@ -117,7 +160,12 @@
 
       fetch(`/contests/${contestId}/custom_test/json?_=${Date.now()}`)
         .then((res) => {
-          if (!res.ok) return { Result: null };
+          if (!res.ok) {
+            const err = new Error('Network response not ok: ' + res.status);
+            err.status = res.status;
+            err.response = res;
+            throw err;
+          }
           return res.json();
         })
         .then((data) => {
@@ -135,7 +183,7 @@
                 '), waiting...'
               );
               setTimeout(
-                () => this.ensureIdle(contestId, onIdle, startTime),
+                () => this.ensureIdle(contestId, onIdle, startTime, 0),
                 IDLE_CHECK_INTERVAL_MS
               );
               return;
@@ -144,8 +192,16 @@
           onIdle();
         })
         .catch((err) => {
-          console.warn('[AtCoder Workspace] Idle check failed:', err, ', proceeding anyway.');
-          onIdle();
+          if (err.status === 429 && retryCount < MAX_HTTP_RETRIES) {
+            const delay = this._getRetryDelay(err.response, retryCount + 1);
+            console.warn(
+              `[AtCoder Workspace] Idle check received 429. Retrying (${retryCount + 1}/${MAX_HTTP_RETRIES}) in ${delay}ms...`
+            );
+            setTimeout(() => this.ensureIdle(contestId, onIdle, startTime, retryCount + 1), delay);
+          } else {
+            console.warn('[AtCoder Workspace] Idle check failed:', err, ', proceeding anyway.');
+            onIdle();
+          }
         });
     }
 
@@ -161,7 +217,7 @@
     runSampleTests(contestId, code, languageId, samples, onCaseResult, onComplete) {
       let index = 0;
 
-      const runNext = () => {
+      const runNext = (caseRetryCount = 0) => {
         if (index >= samples.length) {
           onComplete();
           return;
@@ -181,7 +237,7 @@
                 message: 'CSRFトークンが見つかりません。',
               });
               index++;
-              setTimeout(runNext, NEXT_CASE_DELAY_MS);
+              setTimeout(() => runNext(0), NEXT_CASE_DELAY_MS);
               return;
             }
 
@@ -196,7 +252,12 @@
               body: params,
             })
               .then((res) => {
-                if (!res.ok) throw new Error('POST failed: ' + res.status);
+                if (!res.ok) {
+                  const err = new Error('POST failed: ' + res.status);
+                  err.status = res.status;
+                  err.response = res;
+                  throw err;
+                }
                 return res.text();
               })
               .then((text) => {
@@ -278,15 +339,28 @@
                 });
 
                 index++;
-                setTimeout(runNext, NEXT_CASE_DELAY_MS);
+                setTimeout(() => runNext(0), NEXT_CASE_DELAY_MS);
               })
               .catch((err) => {
                 console.warn(`[AtCoder Workspace] Case ${index + 1} submission error:`, err);
 
+                const isNetworkErr =
+                  err &&
+                  err.name === 'TypeError' &&
+                  err.message &&
+                  err.message.toLowerCase().includes('fetch');
+                const is429 = err && err.status === 429;
+
                 if (err.message && err.message.includes('LockError')) {
                   // Retry same case on lock
                   console.log(`[AtCoder Workspace] Retrying case ${index + 1} due to lock...`);
-                  setTimeout(runNext, LOCK_RETRY_DELAY_MS);
+                  setTimeout(() => runNext(caseRetryCount), LOCK_RETRY_DELAY_MS);
+                } else if ((is429 || isNetworkErr) && caseRetryCount < MAX_HTTP_RETRIES) {
+                  const delay = this._getRetryDelay(err.response, caseRetryCount + 1);
+                  console.warn(
+                    `[AtCoder Workspace] Case ${index + 1} hit HTTP 429 or NetworkError. Retrying submission (${caseRetryCount + 1}/${MAX_HTTP_RETRIES}) in ${delay}ms...`
+                  );
+                  setTimeout(() => runNext(caseRetryCount + 1), delay);
                 } else {
                   const isTle = err.message && err.message.includes('TLE');
                   onCaseResult({
@@ -295,7 +369,7 @@
                     message: err.message || '実行エラーが発生しました。',
                   });
                   index++;
-                  setTimeout(runNext, NEXT_CASE_DELAY_MS);
+                  setTimeout(() => runNext(0), NEXT_CASE_DELAY_MS);
                 }
               });
           },

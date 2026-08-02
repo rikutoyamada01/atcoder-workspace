@@ -38,3 +38,10 @@ jobs:
 
       - name: Run unit tests (Jest)
         run: npm test
+
+      - name: Verify Pages links (Offline Link Checker)
+        uses: lycheeverse/lychee-action@v1.9.0
+        with:
+          args: --offline --remap "https://rikutoyamada01.github.io/atcoder-workspace/ ./pages/" "pages/**/*.html" "README.md"
+          fail: true
+

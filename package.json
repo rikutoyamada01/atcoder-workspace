@@ -1,16 +1,21 @@
 {
   "name": "atcoder-workspace",
-  "version": "1.6.4",
+  "version": "1.7.0",
   "description": "Competitive Programming Workspace for AtCoder",
   "private": true,
   "scripts": {
     "setup": "node scripts/setup-monaco.js",
-    "test": "jest",
+    "version:check": "node scripts/sync-version.js --check",
+    "version:sync": "node scripts/sync-version.js",
+    "i18n:check": "node scripts/check-i18n-keys.js && node scripts/check-hardcoded-i18n.js",
+    "test": "npm run i18n:check && jest",
     "lint": "eslint src tests scripts",
+    "lint:fix": "eslint src tests scripts --fix",
     "format": "prettier --write \"src/**/*.{js,css}\" \"tests/**/*.js\" \"scripts/**/*.js\" \"*.json\" \"README.md\"",
     "format:check": "prettier --check \"src/**/*.{js,css}\" \"tests/**/*.js\" \"scripts/**/*.js\" \"*.json\" \"README.md\"",
     "changelog": "node scripts/build-changelog.js",
-    "build": "node scripts/build-release.js"
+    "build": "node scripts/build-release.js",
+    "pre-merge": "npm run version:sync && npm run format && npm run lint:fix && npm test"
   },
   "devDependencies": {
     "eslint": "^8.57.0",

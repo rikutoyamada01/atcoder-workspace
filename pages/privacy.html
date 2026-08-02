@@ -3,73 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AtCoder Workspace - プライバシーポリシー</title>
+  <title>プライバシーポリシー | AtCoder Workspace Pages</title>
+  <link rel="stylesheet" href="site.css?v=1.7.0">
   <style>
-    /* Reset & Clean AtCoder Typography */
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
-      background-color: #ffffff;
-      color: #333333;
-      font-size: 14px;
-      line-height: 1.6;
-      padding-bottom: 80px;
-    }
-    
-    .container { max-width: 1000px; margin: 0 auto; padding: 0 15px; }
-
-    /* Navbar */
-    .navbar {
-      background-color: #222222;
-      min-height: 50px;
-      margin-bottom: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 15px;
-    }
-    .navbar-brand {
-      color: #9d9d9d;
-      font-size: 18px;
-      font-weight: 700;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .navbar-brand::before {
-      content: '';
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      background-color: #5cb85c;
-      border-radius: 50%;
-    }
-    .navbar-links {
-      display: flex;
-      gap: 15px;
-    }
-    .nav-link {
-      color: #9d9d9d;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 500;
-      transition: color 0.2s;
-      padding: 5px 10px;
-    }
-    .nav-link:hover {
-      color: #ffffff;
-    }
-    .nav-link.active {
-      color: #ffffff;
-      font-weight: bold;
-    }
-    
-    /* Page Header */
     .page-header {
       padding-bottom: 9px;
-      margin: 40px 0 20px;
+      margin: 30px 0 20px;
       border-bottom: 1px solid #eeeeee;
       display: flex;
       justify-content: space-between;
@@ -81,35 +20,30 @@
       font-size: 26px;
       font-weight: 700;
       color: #333333;
-      line-height: 1.2;
     }
-    .page-header .lang-jump {
+    .lang-jump {
       display: flex;
       gap: 10px;
       font-size: 13px;
     }
-    .page-header .lang-jump a {
+    .lang-jump a {
       color: #337ab7;
       text-decoration: none;
     }
-    .page-header .lang-jump a:hover {
-      text-decoration: underline;
-    }
-    
-    /* Content Layout */
+
     .policy-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 30px;
       margin-top: 20px;
     }
-    
+
     @media (max-width: 768px) {
       .policy-grid {
         grid-template-columns: 1fr;
       }
     }
-    
+
     .policy-section {
       background-color: #ffffff;
       border: 1px solid #dddddd;
@@ -117,7 +51,7 @@
       padding: 24px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
-    
+
     .policy-section.en {
       border-left: 4px solid #337ab7;
     }
@@ -133,28 +67,28 @@
       border-bottom: 2px solid #333333;
       color: #333333;
     }
-    
+
     h3 {
       font-size: 15px;
       font-weight: 700;
       margin: 20px 0 10px;
       color: #333333;
     }
-    
+
     p, ul {
       margin-bottom: 15px;
       color: #555555;
       font-size: 13.5px;
     }
-    
+
     ul {
       padding-left: 20px;
     }
-    
+
     li {
       margin-bottom: 8px;
     }
-    
+
     .highlight-box {
       background-color: #f9f9f9;
       border: 1px dashed #cccccc;
@@ -162,33 +96,16 @@
       border-radius: 4px;
       margin-bottom: 15px;
     }
-    
+
     .highlight-box p {
       margin-bottom: 0;
       font-weight: bold;
       color: #333333;
     }
-    
-    footer {
-      margin-top: 60px;
-      padding: 20px 0;
-      border-top: 1px solid #eeeeee;
-      color: #999999;
-      font-size: 12px;
-      text-align: center;
-    }
   </style>
 </head>
 <body>
-
-  <nav class="navbar">
-    <a class="navbar-brand" href="#">AtCoder Workspace</a>
-    <div class="navbar-links">
-      <a class="nav-link" href="presentation.html">コンセプト</a>
-      <a class="nav-link" href="roadmap.html">開発ロードマップ</a>
-      <a class="nav-link active" href="privacy.html">プライバシーポリシー</a>
-    </div>
-  </nav>
+  <div id="site-header"></div>
 
   <div class="container">
     <div class="page-header">
@@ -260,16 +177,12 @@
 
         <h3>4. Contact & Support</h3>
         <p>If you have any questions or reports regarding privacy, please feel free to create an issue on our GitHub repository.</p>
-        <p><a href="https://github.com/rikutoyamada01/atcoder-workspace" target="_blank">AtCoder Workspace GitHub Repository</a></p>
       </section>
     </div>
   </div>
 
-  <footer>
-    <div class="container">
-      &copy; 2026 AtCoder Workspace. Open source under the MIT License.
-    </div>
-  </footer>
+  <div id="site-footer"></div>
 
+  <script src="components.js?v=1.7.0"></script>
 </body>
 </html>

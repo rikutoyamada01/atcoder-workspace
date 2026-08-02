@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>競プロ初心者向け アルゴリズム & 用語解説ガイド | AtCoder Workspace Articles</title>
+  <meta name="description" content="競プロ（AtCoder）初心者必見！二分探索、DP、尺取り法などの主要アルゴリズムから、コーナーケース、オーバーフロー、TLEなどのエラー要因までわかりやすく解説した用語ガイド。">
+  <meta name="keywords" content="AtCoder,競プロ,二分探索,DP,動的計画法,尺取り法,累積和,コーナーケース,オーバーフロー,TLE,アルゴリズム,初心者">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="競プロ初心者向け アルゴリズム & 用語解説ガイド | AtCoder Workspace">
+  <meta property="og:description" content="二分探索、DP、コーナーケース、オーバーフローなど、競プロで出会う必須用語・解法・バグ要因を初心者向けに徹底解説！">
+  <meta property="og:url" content="https://rikutoyamada01.github.io/atcoder-workspace/article/glossary.html">
+
+  <link rel="stylesheet" href="../site.css?v=1.7.0">
+
+  <style>
+    :root {
+      --navbar-bg: #222222;
+      --body-bg: #ffffff;
+      --text-main: #333333;
+      --text-muted: #777777;
+      --border-color: #dddddd;
+      --btn-primary: #337ab7;
+      --btn-warning: #f0ad4e;
+      --font-family: "Helvetica Neue", Helvetica, Arial, "Meiryo", sans-serif;
+      --font-mono: Monaco, Menlo, Consolas, "Courier New", monospace;
+    }
+
+    /* Hero Banner */
+    .hero {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border-color);
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: 28px;
+      font-weight: bold;
+      color: #222222;
+      margin-bottom: 12px;
+    }
+
+    .hero p {
+      font-size: 15px;
+      color: var(--text-muted);
+      max-width: 700px;
+      margin: 0 auto 24px auto;
+    }
+
+    /* Search & Filter Container */
+    .search-container {
+      max-width: 600px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .search-box {
+      width: 100%;
+      padding: 10px 14px;
+      font-size: 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-box:focus {
+      border-color: var(--btn-primary);
+      box-shadow: 0 0 5px rgba(51, 122, 183, 0.3);
+    }
+
+    .filter-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .filter-btn {
+      background-color: #ffffff;
+      border: 1px solid var(--border-color);
+      padding: 6px 14px;
+      font-size: 13px;
+      border-radius: 20px;
+      cursor: pointer;
+      color: var(--text-main);
+      transition: all 0.2s;
+    }
+
+    .filter-btn:hover {
+      background-color: #f0f0f0;
+    }
+
+    .filter-btn.active {
+      background-color: var(--btn-primary);
+      color: #ffffff;
+      border-color: var(--btn-primary);
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--btn-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title.cause-title {
+      border-bottom-color: var(--btn-warning);
+    }
+
+    .glossary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    @media (max-width: 550px) {
+      .glossary-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .glossary-card {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .glossary-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #222222;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .card-tag {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: bold;
+    }
+
+    .card-tag.method {
+      background-color: #e8f4ff;
+      color: #1e6bb8;
+      border: 1px solid #b6d4f5;
+    }
+
+    .card-tag.cause {
+      background-color: #fcf8e3;
+      color: #8a6d3b;
+      border: 1px solid #faebcc;
+    }
+
+    .card-complexity {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      background-color: #f5f5f5;
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: #555555;
+      margin-bottom: 12px;
+      display: inline-block;
+    }
+
+    .card-body {
+      font-size: 14px;
+      color: #444444;
+      line-height: 1.6;
+    }
+
+    .card-body p {
+      margin-bottom: 10px;
+    }
+
+    .card-body ul {
+      margin-left: 20px;
+      margin-bottom: 10px;
+    }
+
+    .code-block {
+      background-color: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 4px;
+      padding: 8px 12px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #333333;
+      margin-top: 8px;
+      white-space: pre-wrap;
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 40px;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-muted);
+      font-size: 15px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <!-- Hero Section -->
+  <header class="hero">
+    <h1>📖 競プロ初心者向け アルゴリズム & 用語解説ガイド</h1>
+    <p>AtCoder Workspace の学習タグ機能に対応した用語辞書です。「二分探索ってなに？」「なぜオーバーフローで落とされるの？」といった疑問をスッキリ解決します。</p>
+
+    <div class="search-container">
+      <input type="text" id="searchInput" class="search-box" placeholder="キーワードで検索 (例: 二分探索, DP, TLE, 10^9)...">
+      <div class="filter-tabs">
+        <button class="filter-btn active" data-filter="all">すべて表示</button>
+        <button class="filter-btn" data-filter="method">💡 解法・手法</button>
+        <button class="filter-btn" data-filter="cause">⚠️ ミス・原因</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="container">
+
+    <!-- Section 1: Methods -->
+    <section id="methods-section">
+      <h2 class="section-title">💡 解法・アルゴリズム編 (Method Tags)</h2>
+      <div class="glossary-grid" id="methodsGrid">
+
+        <!-- Card: 二分探索 -->
+        <article class="glossary-card" data-category="method" data-keywords="二分探索 binary search ソート オーダー log">
+          <div class="card-header">
+            <h3 class="card-title">二分探索 (Binary Search)</h3>
+            <span class="card-tag method">#二分探索</span>
+          </div>
+          <div class="card-complexity">計算量: O(log N)</div>
+          <div class="card-body">
+            <p>ソート（昇順）されたデータの中から、目的の値を範囲を半分ずつ絞り込みながら超高速に探すアルゴリズムです。</p>
+            <ul>
+              <li><strong>特徴:</strong> 100万個のデータからでも、たった約20回の比較で見つけ出せます。</li>
+              <li><strong>出題パターン:</strong> 「条件を満たす最小値/最大値を求めよ（答え二分探索）」で非常に頻出します。</li>
+            </ul>
+            <div class="code-block">// C++標準ライブラリ例
+auto it = std::lower_bound(a.begin(), a.end(), target);</div>
+          </div>
+        </article>
+
+        <!-- Card: DP -->
+        <article class="glossary-card" data-category="method" data-keywords="DP 動的計画法 dynamic programming メモ化 ナップサック">
+          <div class="card-header">
+            <h3 class="card-title">DP (動的計画法 / Dynamic Programming)</h3>
+            <span class="card-tag method">#DP</span>
+          </div>
+          <div class="card-complexity">計算量: 状態数 × 遷移コスト</div>
+          <div class="card-body">
+            <p>大きな問題を小さな部分問題に分解し、同じ計算を二度行わないように計算結果を配列にメモ（保存）しながら順に解いていく手法です。</p>
+            <ul>
+              <li><strong>特徴:</strong> 再帰関数＋メモ化、または表埋め（ループ）で解きます。</li>
+              <li><strong>出題パターン:</strong> ナップサック問題、グリッドの移動経路数、文字列の編集距離など。</li>
+            </ul>
+            <div class="code-block">dp[i][j] = max(dp[i-1][j], dp[i-1][j - weight[i]] + value[i]);</div>
+          </div>
+        </article>
+
+        <!-- Card: 累積和 -->
+        <article class="glossary-card" data-category="method" data-keywords="累積和 prefix sum 区間和 和">
+          <div class="card-header">
+            <h3 class="card-title">累積和 (Prefix Sum)</h3>
+            <span class="card-tag method">#累積和</span>
+          </div>
+          <div class="card-complexity">前計算: O(N) / クエリ: O(1)</div>
+          <div class="card-body">
+            <p>配列の先頭からの合計値をあらかじめ前計算しておくことで、任意の区間 [L, R] の要素の和を一瞬で求める手法です。</p>
+            <ul>
+              <li><strong>特徴:</strong> 通常のループだと毎回 <i>O</i>(<i>N</i>) かかる区間和計算を <i>O</i>(1) に削減できます。</li>
+              <li><strong>応用:</strong> 2次元に拡張した「2次元累積和」はグリッド問題で大活躍します。</li>
+            </ul>
+            <div class="code-block">// 区間 [L, R] の和
+long long sum = S[R + 1] - S[L];</div>
+          </div>
+        </article>
+
+        <!-- Card: BFS / DFS -->
+        <article class="glossary-card" data-category="method" data-keywords="BFS DFS 幅優先探索 深さ優先探索 グラフ 迷路 最短経路">
+          <div class="card-header">
+            <h3 class="card-title">BFS / DFS (幅優先・深さ優先探索)</h3>
+            <span class="card-tag method">#BFS/DFS</span>
+          </div>
+          <div class="card-complexity">計算量: O(V + E)</div>
+          <div class="card-body">
+            <p>迷路やグラフ（頂点と辺）を探索する2大アルゴリズムです。</p>
+            <ul>
+              <li><strong>BFS (幅優先):</strong> キュー(Queue)を使い、スタート地点から近い順に波状に探索。<strong>迷路の最短手数</strong>を求めるのに最適。</li>
+              <li><strong>DFS (深さ優先):</strong> 再帰関数を使い、行けるところまで奥深くまで進んで戻る。<strong>全パターンの探索</strong>や<strong>島・グループの連結判定</strong>に最適。</li>
+            </ul>
+            <div class="code-block">// BFS (キューを用いた最短手数計算例)
+queue&lt;int&gt; q; q.push(start); dist[start] = 0;
+while (!q.empty()) {
+  int u = q.front(); q.pop();
+  for (int v : graph[u]) {
+    if (dist[v] == -1) { dist[v] = dist[u] + 1; q.push(v); }
+  }
+}</div>
+          </div>
+        </article>
+
+        <!-- Card: 尺取り法 -->
+        <article class="glossary-card" data-category="method" data-keywords="尺取り法 two pointers 連続部分列 しゃくとり">
+          <div class="card-header">
+            <h3 class="card-title">尺取り法 (Two Pointers)</h3>
+            <span class="card-tag method">#尺取り法</span>
+          </div>
+          <div class="card-complexity">計算量: O(N)</div>
+          <div class="card-body">
+            <p>条件を満たす区間の左端 L と右端 R を、芋虫（尺取り虫）のように右方向へすべらせて探索する手法です。</p>
+            <ul>
+              <li><strong>特徴:</strong> 二重ループ <i>O</i>(<i>N</i><sup>2</sup>) を <i>O</i>(<i>N</i>) に大幅に高速化できます。</li>
+              <li><strong>出題パターン:</strong> 「和が K 以下となる連続部分列の最長長さ」など、区間を広げると単調に条件が変化する場合に有効。</li>
+            </ul>
+            <div class="code-block">// 尺取り法 (和が K 以下の最長区間)
+int R = 0, sum = 0, ans = 0;
+for (int L = 0; L &lt; N; L++) {
+  while (R &lt; N &amp;&amp; sum + a[R] &lt;= K) { sum += a[R]; R++; }
+  ans = max(ans, R - L);
+  if (R == L) R++; else sum -= a[L];
+}</div>
+          </div>
+        </article>
+
+        <!-- Card: Union-Find -->
+        <article class="glossary-card" data-category="method" data-keywords="UnionFind 素集合データ構造 グループ 連結">
+          <div class="card-header">
+            <h3 class="card-title">Union-Find (素集合データ構造)</h3>
+            <span class="card-tag method">#UnionFind</span>
+          </div>
+          <div class="card-complexity">計算量: ほぼ O(1) (α(N))</div>
+          <div class="card-body">
+            <p>要素同士を「同じグループに統合する (Union)」処理と、「2つが同じグループか調べる (Same/Find)」処理を爆速で行うデータ構造です。</p>
+            <ul>
+              <li><strong>特徴:</strong> 経路圧縮により実質ほぼ定数時間で動作します。</li>
+              <li><strong>用途:</strong> 友達グループの管理、無向グラフの閉路検出、最小全域木（クラスカル法）。</li>
+            </ul>
+            <div class="code-block">// AtCoder Library (ac-library) での使用例
+#include &lt;atcoder/dsu&gt;
+atcoder::dsu d(N);
+d.merge(u, v);           // 頂点 u と v をグループ統合
+bool same = d.same(u, v); // 同じグループか判定</div>
+          </div>
+        </article>
+
+        <!-- Card: 貪欲法 -->
+        <article class="glossary-card" data-category="method" data-keywords="貪欲法 greedy その場その場 最適">
+          <div class="card-header">
+            <h3 class="card-title">貪欲法 (Greedy Algorithm)</h3>
+            <span class="card-tag method">#貪欲法</span>
+          </div>
+          <div class="card-complexity">計算量: 問題のソート順等に依存 (O(N log N))</div>
+          <div class="card-body">
+            <p>先のことを細かく考慮せず、「その瞬間に最も有利な選択」を繰り返すことで全体の最適解を得る手法です。</p>
+            <ul>
+              <li><strong>ポイント:</strong> コードはシンプルになりますが、「本当に貪欲法で最適解になるか（証明）」を意識することが大切です。</li>
+              <li><strong>例:</strong> コインの枚数を最小にするお釣り、区間スケジュール問題。</li>
+            </ul>
+            <div class="code-block">// 区間スケジューリング問題 (終了時刻で昇順ソートして選ぶ)
+sort(tasks.begin(), tasks.end(), [](auto &amp;a, auto &amp;b) {
+  return a.end_time &lt; b.end_time;
+});
+int last_end = 0, count = 0;
+for (auto &amp;t : tasks) {
+  if (t.start_time &gt;= last_end) { count++; last_end = t.end_time; }
+}</div>
+          </div>
+        </article>
+
+        <!-- Card: 全探索 -->
+        <article class="glossary-card" data-category="method" data-keywords="全探索 brute force ビット全探索 順列">
+          <div class="card-header">
+            <h3 class="card-title">全探索 (Brute-Force Search)</h3>
+            <span class="card-tag method">#全探索</span>
+          </div>
+          <div class="card-complexity">計算量: パターン数 (O(2^N), O(N!))</div>
+          <div class="card-body">
+            <p>考えられるすべての可能性を漏れなく1つずつ試す、最も確実で基本となる解法です。</p>
+            <ul>
+              <li><strong>ポイント:</strong> <i>N</i> が小さい（<i>N</i> ≤ 15 ～ 20）場合は全探索が正解になります。</li>
+              <li><strong>バリエーション:</strong> ループ全探索、ビット全探索（<code>1 &lt;&lt; N</code>）、順列全探索（<code>next_permutation</code>）。</li>
+            </ul>
+            <div class="code-block">// ビット全探索 (2^N 通りの組み合わせを全試行)
+for (int bit = 0; bit &lt; (1 &lt;&lt; N); bit++) {
+  for (int i = 0; i &lt; N; i++) {
+    if (bit &amp; (1 &lt;&lt; i)) { /* i 番目の要素を選ぶ */ }
+  }
+}</div>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- Section 2: Causes -->
+    <section id="causes-section">
+      <h2 class="section-title cause-title">⚠️ ミス・原因・バグ編 (Cause Tags)</h2>
+      <div class="glossary-grid" id="causesGrid">
+
+        <!-- Card: コーナーケース -->
+        <article class="glossary-card" data-category="cause" data-keywords="コーナーケース corner case 端 例外 N=1 N=0 境界">
+          <div class="card-header">
+            <h3 class="card-title">コーナーケース (Edge Cases)</h3>
+            <span class="card-tag cause">#コーナーケース</span>
+          </div>
+          <div class="card-body">
+            <p>問題の境界値（端の入力例）でプログラムが予期せぬ挙動をするバグです。提出後の WA（誤答）の最大の原因です。</p>
+            <ul>
+              <li><strong>代表例:</strong> <i>N</i> = 1 や <i>N</i> = 0 のとき、要素が全て同じ時、負の数が含まれる時、配列の先頭/末尾。</li>
+              <li><strong>対策:</strong> 「<i>N</i> = 1 でも正しく動くか？」を意識して手動テストを追加しましょう。</li>
+            </ul>
+            <div class="code-block">// N = 1 の特例判定例
+if (N == 1) {
+  cout &lt;&lt; 0 &lt;&lt; endl; // 特例として即座に出力して終了
+  return 0;
+}</div>
+          </div>
+        </article>
+
+        <!-- Card: オーバーフロー -->
+        <article class="glossary-card" data-category="cause" data-keywords="オーバーフロー overflow int long long 21億 10^9 10^18">
+          <div class="card-header">
+            <h3 class="card-title">オーバーフロー (Integer Overflow)</h3>
+            <span class="card-tag cause">#オーバーフロー</span>
+          </div>
+          <div class="card-body">
+            <p>型が扱える数値の上限を超えてしまい、数値がマイナスの大きな値に反転してしまう現象です。</p>
+            <ul>
+              <li><strong>数値の壁:</strong> C++の <code>int</code> 型は最高で約 <strong>21億 (2 × 10<sup>9</sup>)</strong> までしか入りません。掛け算 <i>N</i> × <i>M</i> や累積和で簡単に溢れます。</li>
+              <li><strong>対策:</strong> 迷ったら <code>long long</code> 型（約 9 × 10<sup>18</sup> までOK）を使いましょう。</li>
+            </ul>
+            <div class="code-block">// BAD: int 同士の掛け算で溢れて負の値になる
+int a = 1000000, b = 1000000;
+long long ans1 = a * b; // × (a * b は int 型で溢れる)
+
+// GOOD: long long 型で計算する
+long long ans2 = (long long)a * b; // ○ (10^12 が正しく入る)</div>
+          </div>
+        </article>
+
+        <!-- Card: TLE -->
+        <article class="glossary-card" data-category="cause" data-keywords="TLE time limit exceeded 2秒 計算量 オーダー 10^8">
+          <div class="card-header">
+            <h3 class="card-title">TLE (実行時間制限超過)</h3>
+            <span class="card-tag cause">#TLE(計算量)</span>
+          </div>
+          <div class="card-body">
+            <p>プログラムの計算に時間がかかりすぎ、制限時間（通常2秒）を超過したエラーです。</p>
+            <ul>
+              <li><strong>目安:</strong> AtCoder の 2 秒制限は、おおむね <strong>10<sup>8</sup> 回（1億回）の計算</strong>が限界です。</li>
+              <li><strong>例:</strong> <i>N</i> = 10<sup>5</sup> のときに <i>O</i>(<i>N</i><sup>2</sup>) = 10<sup>10</sup> 回の二重ループを書くと確定で TLE します。<i>O</i>(<i>N</i> log <i>N</i>) などに改善しましょう。</li>
+            </ul>
+            <div class="code-block">// TLE 例: N = 10^5 のときに 10^10 回計算してタイムアウト
+for (int i = 0; i &lt; N; i++) {
+  for (int j = 0; j &lt; N; j++) { ... } // TLE! (2秒オーバー)
+}
+
+// AC 例: 二分探索で O(N log N) に改善してクリア
+for (int i = 0; i &lt; N; i++) {
+  binary_search(...); // AC! (約 10^5 * 17 回で約 0.01 秒)
+}</div>
+          </div>
+        </article>
+
+        <!-- Card: 配列外参照 / RE -->
+        <article class="glossary-card" data-category="cause" data-keywords="配列外参照 RE runtime error クラッシュ インデックス">
+          <div class="card-header">
+            <h3 class="card-title">配列外参照 / RE (Runtime Error)</h3>
+            <span class="card-tag cause">#配列外参照/RE</span>
+          </div>
+          <div class="card-body">
+            <p>確保した配列のサイズを超えてアクセスした際（例: サイズ <i>N</i> に <code>a[N]</code> や <code>a[-1]</code> でアクセス）にプログラムが異常終了するエラーです。</p>
+            <ul>
+              <li><strong>対策:</strong> 1-indexed（1始まり）の問題では、配列サイズを <code>N + 5</code> など多めに確保しておくと安心です。</li>
+            </ul>
+            <div class="code-block">// BAD: 1-indexed (a[N]) でアクセスすると宣言サイズオーバー
+int a[N]; // 0 ~ N-1 しか確保されないため a[N] でクラッシュ!
+
+// GOOD: N + 5 など余裕をもって多めに確保する
+vector&lt;int&gt; a(N + 5); // 安全!</div>
+          </div>
+        </article>
+
+        <!-- Card: 初期化忘れ -->
+        <article class="glossary-card" data-category="cause" data-keywords="初期化忘れ clear reset ゴミデータ リセット">
+          <div class="card-header">
+            <h3 class="card-title">初期化忘れ (Uninitialized Variables)</h3>
+            <span class="card-tag cause">#初期化忘れ</span>
+          </div>
+          <div class="card-body">
+            <p>複数のテストケースやループ処理の中で、変数や配列の値を 0 や初期値に戻し忘れたことで生じるバグです。</p>
+            <ul>
+              <li><strong>症状:</strong> 手元のサンプルテスト1個目は通るのに、連続実行すると値がおかしくなる場合、初期化忘れを疑いましょう。</li>
+            </ul>
+            <div class="code-block">// ループの先頭で必ず初期化
+for (int t = 0; t &lt; T; t++) {
+  int sum = 0; // ループ内でリセットを忘れずに!
+  vector&lt;int&gt; counts(N, 0); // 配列も毎回 0 で初期化
+  ...
+}</div>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- No Results Message -->
+    <div id="noResults" class="no-results">
+      🔍 該当するキーワードの用語が見つかりませんでした。「二分探索」「DP」「TLE」などで試してみてください。
+    </div>
+
+  </main>
+
+  <div id="site-footer"></div>
+
+  <!-- Shared Component JS -->
+  <script src="../components.js?v=1.7.0"></script>
+  <!-- Instant Search Filter JS -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInput = document.getElementById('searchInput');
+      const filterBtns = document.querySelectorAll('.filter-btn');
+      const cards = document.querySelectorAll('.glossary-card');
+      const noResults = document.getElementById('noResults');
+      const methodsSection = document.getElementById('methods-section');
+      const causesSection = document.getElementById('causes-section');
+
+      let currentFilter = 'all';
+
+      function filterCards() {
+        const query = searchInput.value.toLowerCase().trim();
+        let visibleCount = 0;
+        let visibleMethods = 0;
+        let visibleCauses = 0;
+
+        cards.forEach(card => {
+          const category = card.getAttribute('data-category');
+          const keywords = card.getAttribute('data-keywords').toLowerCase();
+          const title = card.querySelector('.card-title').textContent.toLowerCase();
+          const body = card.querySelector('.card-body').textContent.toLowerCase();
+
+          const matchesCategory = (currentFilter === 'all' || category === currentFilter);
+          const matchesQuery = query === '' || keywords.includes(query) || title.includes(query) || body.includes(query);
+
+          if (matchesCategory && matchesQuery) {
+            card.style.display = 'block';
+            visibleCount++;
+            if (category === 'method') visibleMethods++;
+            if (category === 'cause') visibleCauses++;
+          } else {
+            card.style.display = 'none';
+          }
+        });
+
+        methodsSection.style.display = (visibleMethods > 0 || (currentFilter === 'all' && query === '')) ? 'block' : 'none';
+        causesSection.style.display = (visibleCauses > 0 || (currentFilter === 'all' && query === '')) ? 'block' : 'none';
+        noResults.style.display = (visibleCount === 0) ? 'block' : 'none';
+      }
+
+      searchInput.addEventListener('input', filterCards);
+
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          filterBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentFilter = btn.getAttribute('data-filter');
+          filterCards();
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>

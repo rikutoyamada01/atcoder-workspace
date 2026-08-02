@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>「小数で解くな、整数で解け！」競プロにおける浮動小数点数・切り捨て罠の完全回避ガイド | AtCoder Workspace Articles</title>
+  <meta name="description" content="AtCoder等の競技プログラミングで頻出する「整数除算による切り捨て」や「double型の精度誤差」の罠を完全解説。式全体を1000倍・定数倍して整数（long long）だけで安全に解くテクニックを紹介。">
+  <meta name="keywords" content="AtCoder,競プロ,浮動小数点数,double,精度誤差,切り捨て,型キャスト,ABC113B,定数倍,整数化">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="「小数で解くな、整数で解け！」競プロにおける浮動小数点数・切り捨て罠の完全回避ガイド">
+  <meta property="og:description" content="なぜ 6 / 1000 は 0 になるのか？double 型の罠を回避し、式全体を定数倍して整数型だけで 100% 安全に解く最強の実践テクニック。">
+  <meta property="og:url" content="https://rikutoyamada01.github.io/atcoder-workspace/article/integerization-tips.html">
+
+  <link rel="stylesheet" href="../site.css?v=1.7.0">
+
+  <style>
+    .article-container {
+      background: #ffffff;
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 36px;
+      margin-bottom: 40px;
+      line-height: 1.8;
+      color: #333333;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .article-hero {
+      border-bottom: 2px solid var(--btn-primary);
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+
+    .article-hero h1 {
+      font-size: 24px;
+      font-weight: bold;
+      color: #222222;
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+
+    .article-meta-info {
+      font-size: 13px;
+      color: #777777;
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .badge-target {
+      background: #337ab7;
+      color: #ffffff;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 11px;
+    }
+
+    .article-container h2 {
+      font-size: 19px;
+      font-weight: bold;
+      color: #222222;
+      margin: 32px 0 16px 0;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #eeeeee;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .article-container h3 {
+      font-size: 16px;
+      font-weight: bold;
+      color: #333333;
+      margin: 24px 0 12px 0;
+    }
+
+    .tip-box {
+      background-color: #f8f9fa;
+      border-left: 4px solid var(--btn-primary);
+      padding: 16px 20px;
+      border-radius: 0 6px 6px 0;
+      margin: 20px 0;
+    }
+
+    .tip-box.warning {
+      background-color: #fff8f8;
+      border-left-color: #d9534f;
+    }
+
+    .tip-box.success {
+      background-color: #f4fff4;
+      border-left-color: #5cb85c;
+    }
+
+    .tip-box h4 {
+      font-size: 15px;
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: #222222;
+    }
+
+    .code-snippet {
+      background: #252526;
+      color: #d4d4d4;
+      padding: 14px 18px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      margin: 12px 0;
+      white-space: pre-wrap;
+      overflow-x: auto;
+    }
+
+    .formula-card {
+      background: #f0f4f8;
+      border: 1px solid #cce0f1;
+      padding: 16px 20px;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: bold;
+      color: #1d4ed8;
+      margin: 16px 0;
+    }
+
+    .checklist {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .checklist li {
+      position: relative;
+      padding-left: 28px;
+      margin-bottom: 10px;
+    }
+
+    .checklist li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: var(--brand-green);
+      font-weight: bold;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="site-header"></div>
+
+  <main class="container">
+
+    <article class="article-container">
+
+      <header class="article-hero">
+        <h1>「小数で解くな、整数で解け！」競プロにおける浮動小数点数・切り捨て罠の完全回避ガイド</h1>
+        <div class="article-meta-info">
+          <span>対象: <span class="badge-target">灰〜緑コーダー (Rating 0 ~ 1199)</span></span>
+          <span>分野: 競プロテクニック / 数値計算</span>
+          <span>読了時間: 約 7 分</span>
+        </div>
+      </header>
+
+      <p>
+        AtCoder などの競技プログラミングにおいて、アルゴリズムの考え方は合っているのに「なぜか想定と違う値になる」「テストケースの特定の値で WA（誤答）が出る」という経験はありませんか？
+      </p>
+      <p>
+        その最大の原因の 1 つが<strong>「小数・浮動小数点数の扱い」</strong>です。<br>
+        コンピュータの数値表現の仕組み上、小数を含む計算には<strong>「整数割り算によるゼロ切り捨て」</strong>や<strong>「浮動小数点数（double型）の丸め誤差」</strong>という危険な罠が潜んでいます。
+      </p>
+      <p>
+        この記事では、小数が引き起こすバグの仕組みをわかりやすく整理した上で、競プロで最も安全・強力な回避テクニックである<strong>「式全体を定数倍して整数化する（整数だけで解く）」</strong>手法を徹底解説します！
+      </p>
+
+      <h2>1. 小数が引き起こすバグの 2 大原因</h2>
+
+      <h3>① 整数同士の割り算による「切り捨て (Truncation)」</h3>
+      <p>
+        C++ や Java、Python などの多くの言語では、<strong>整数型同士の除算 `/` は「小数点以下が切り捨てられた整数」</strong>になります。
+      </p>
+      <div class="code-snippet">// C++ での計算例
+int a = 6 / 1000;   // 0.006 ではなく「0」になる！
+int b = 9 / 10;     // 0.9 ではなく「0」になる！</div>
+
+      <div class="tip-box warning">
+        <h4>🚨 実際の競プロでの被弾例: ABC113 B - Palace</h4>
+        <p>
+          標高 $H_i$ での気温が $T - H_i \times 0.006$ と与えられ、目標気温 $A$ に最も近い地点を探す問題です。<br>
+          $0.006 = \frac{6}{1000}$ なので、コードに以下のように書いたとします。
+        </p>
+        <div class="code-snippet">// 誤ったコード例 (C++)
+double temp = T - H[i] * (6 / 1000); // (6 / 1000) が 0 に評価されてしまう！</div>
+        <p>
+          `(6 / 1000)` が `0` に計算されるため、`H[i]` が何であれ `temp = T - 0 = T` となります。<br>
+          結果として<strong>すべての地点で温度が全く同じ（T）に判定され、答えが一意に定まらず WA</strong> になります。
+        </p>
+      </div>
+
+      <h3>② 浮動小数点数 (`double`) の「丸め誤差・精度限界」</h3>
+      <p>
+        コンピュータ内部では数値を 2 進数で管理するため、`0.1` や `0.006` といった小数は 2 進数で無限小数になり、<strong>正確な値を保持できません</strong>。
+      </p>
+      <div class="code-snippet">// 浮動小数点数の精度落ちの例
+double x = 0.1 + 0.2;
+// x は 0.3 ではなく「0.30000000000000004...」になる！
+
+if (x == 0.3) {
+  // ここは実行されない（一致しない）！
+}</div>
+      <p>
+        また、`floor` や `ceil` などの関数を使った後で `(int)` にキャストする際、内部で `4.99999999999` になっていた場合、キャストにより `4` に切り捨てられて予想外のバグになります。
+      </p>
+
+      <h2>2. 最強の回避策: 「式全体を定数倍して整数化する」</h2>
+
+      <p>
+        競プロにおける小数の罠を 100% 回避する最強の原則、それが<strong>「小数を使わず、式全体を定数倍して整数（long long）だけで計算する」</strong>ことです。
+      </p>
+
+      <div class="tip-box success">
+        <h4>✨ 定数倍による整数化の原理</h4>
+        <p>
+          値の大小関係の比較や最小値のインデックス探索において、<strong>正の定数 $K$ を式全体に掛け合わせても、大小関係や最小値を与える位置は一切変わりません</strong>。
+        </p>
+      </div>
+
+      <h3>【実践例 1】 ABC113 B - Palace を 1000 倍して整数化する</h3>
+      <p>
+        目標気温 $A$ と地点 $i$ の気温 $T - 0.006 \times H_i$ の差の絶対値を最小化したい問題です。
+      </p>
+
+      <p>元の最小化対象の式:</p>
+      <div class="formula-card">
+        $|A - (T - 0.006 \times H_i)|$
+      </div>
+
+      <p>ここで $0.006 = \frac{6}{1000}$ なので、<strong>式全体を 1000 倍</strong>します:</p>
+
+      <div class="formula-card">
+        $1000 \times \left|A - \left(T - \frac{6 H_i}{1000}\right)\right| = |1000 \times A - (1000 \times T - 6 \times H_i)|$
+      </div>
+
+      <p>さらに整理すると、以下の美しい整数式になります:</p>
+
+      <div class="formula-card">
+        $|1000 \times (T - A) - 6 \times H_i|$
+      </div>
+
+      <p>
+        この値が最小となる地点 $i$ を探せば、<strong>`double` や小数を一切使わずに整数（`long long`）演算だけで 100% 誤差ゼロ・切り捨てゼロで AC できます</strong>！
+      </p>
+
+      <div class="code-snippet">// 1000倍して整数化（完全ACコード例: C++）
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;cmath&gt;
+using namespace std;
+
+int main() {
+  int N;
+  long long T, A;
+  cin &gt;&gt; N &gt;&gt; T &gt;&gt; A;
+
+  long long min_diff = 1e18; // 非常に大きな初期値
+  int best_index = 1;
+
+  for (int i = 1; i &lt;= N; i++) {
+    long long H;
+    cin &gt;&gt; H;
+
+    // 1000倍して整数化した絶対値差を計算
+    long long diff = abs(1000 * (T - A) - 6 * H);
+
+    if (diff &lt; min_diff) {
+      min_diff = diff;
+      best_index = i;
+    }
+  }
+
+  cout &lt;&lt; best_index &lt;&lt; endl;
+  return 0;
+}</div>
+
+      <h3>【実践例 2】 分数の比較 $A / B < C / D$ を通分して整数化</h3>
+      <p>
+        2 つの割合や平均値を比較したい時、`(double)A / B < (double)C / D` と計算するのは精度落ちの危険があります。
+      </p>
+      <p>
+        両辺に正の数 $B \times D$ を掛けて<strong>通分（クロス掛け算）</strong>しましょう:
+      </p>
+      <div class="formula-card">
+        $A \times D < C \times B$
+      </div>
+      <p>
+        これにより、割り算を一度も使わずに整数のみで正確に比較できます。
+      </p>
+
+      <h3>【実践例 3】 平均値 $\sum A_i / N \ge X$ の判定</h3>
+      <p>
+        平均値が $X$ 以上かを判定する場合も、両辺に $N$ を掛けます:
+      </p>
+      <div class="formula-card">
+        $\sum A_i \ge X \times N$
+      </div>
+      <p>
+        合計値 $\sum A_i$ と $X \times N$ を比べることで、割り算なしで一瞬で判定できます。
+      </p>
+
+      <h2>3. どうしても `double` を使う場合の鉄則（補足知識）</h2>
+
+      <p>
+        問題の出力自体が小数を要求している場合など、どうしても `double` を使わなければならない場合は以下の鉄則を守りましょう。
+      </p>
+
+      <ul class="checklist">
+        <li><strong>定数は `.0` を付ける:</strong> `6 / 1000` ではなく `6.0 / 1000.0` と書き、小数演算であることを明示する</li>
+        <li><strong>桁数指定を出力する:</strong> C++ では `cout << fixed << setprecision(10) << ans;` で十分な精度（10桁以上）を出力する</li>
+        <li><strong>`EPS`（微小値）の考慮:</strong> `floor(x)` などの前に `floor(x + 1e-9)` と微小値を加えて丸め誤差を防ぐ</li>
+      </ul>
+
+      <h2>4. まとめ & ポカミス防止チェックリスト</h2>
+
+      <div class="tip-box warning">
+        <h4>📌 今日の要点まとめ</h4>
+        <ol style="margin-left: 20px; padding-left: 0;">
+          <li><strong>整数同士の割り算 `/` は切捨て（ゼロ）になる</strong>ことに注意（例: `6 / 1000 = 0`）</li>
+          <li><strong>比較や最小化では「式全体を定数倍」して整数（long long）だけで解くのが最強</strong></li>
+          <li>分数の比較 $A / B < C / D$ は **通分して $A \times D < C \times B$** に変換する</li>
+        </ol>
+      </div>
+
+    </article>
+
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="../components.js?v=1.7.0"></script>
+</body>
+</html>

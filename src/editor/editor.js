@@ -72,12 +72,52 @@
     updateSaveStatusText();
   }
 
+  let testSummaryState = null; // { type: 'running', count, total } | { type: 'all_ac', acCount, total } | { type: 'non_ac', displayStatus, acCount, total } | { type: 'error', message }
+
+  function updateTestSummaryText() {
+    if (!testSummary || !testSummaryState) return;
+    if (testSummaryState.type === 'running') {
+      testSummary.textContent = i18nProvider
+        ? i18nProvider.t('editor_runner_running_cases', [
+            testSummaryState.count,
+            testSummaryState.total,
+          ])
+        : `実行中... (${testSummaryState.count}/${testSummaryState.total})`;
+      testSummary.className = 'summary-running';
+    } else if (testSummaryState.type === 'all_ac') {
+      testSummary.textContent = i18nProvider
+        ? i18nProvider.t('editor_runner_all_ac', [testSummaryState.acCount, testSummaryState.total])
+        : `すべてAC (${testSummaryState.acCount}/${testSummaryState.total})`;
+      testSummary.className = 'summary-ac';
+    } else if (testSummaryState.type === 'non_ac') {
+      testSummary.textContent = i18nProvider
+        ? i18nProvider.t('editor_runner_non_ac', [
+            testSummaryState.displayStatus,
+            testSummaryState.acCount,
+            testSummaryState.total,
+          ])
+        : `${testSummaryState.displayStatus}あり (${testSummaryState.acCount}/${testSummaryState.total} AC)`;
+      testSummary.className = 'summary-wa';
+    } else if (testSummaryState.type === 'error') {
+      const errorText = i18nProvider ? i18nProvider.t('editor_label_error') : 'エラー';
+      testSummary.textContent = `${errorText}: ${testSummaryState.message}`;
+      testSummary.className = 'summary-wa';
+    }
+  }
+
   function applyTranslations() {
     if (i18nProvider && typeof i18n !== 'undefined' && i18n.translatePage) {
       i18n.translatePage(i18nProvider);
+      if (consoleResults) {
+        i18n.translatePage(i18nProvider, consoleResults);
+      }
     }
     updateSaveStatusText();
     updateEditorLanguageState();
+    updateTestSummaryText();
+    if (typeof renderLearningNotesAndTags === 'function') {
+      renderLearningNotesAndTags();
+    }
   }
 
   async function initI18n() {
@@ -588,7 +628,7 @@ impl UnionFind {
     // Open console drawer
     toggleConsole(true);
     const prepText = i18nProvider ? i18nProvider.t('editor_console_preparing') : '準備中...';
-    consoleResults.innerHTML = `<div style="font-size: 12px; color: #777;">${escapeHtml(prepText)}</div>`;
+    setConsoleHTML(`<div style="font-size: 12px; color: #777;">${escapeHtml(prepText)}</div>`);
 
     console.log('[AtCoder Workspace] Editor: Sending run-tests message to parent', {
       languageId: currentLanguageId,
@@ -614,7 +654,9 @@ impl UnionFind {
     const prepSubmitText = i18nProvider
       ? i18nProvider.t('editor_console_preparing_submit')
       : '提出準備中...';
-    consoleResults.innerHTML = `<div style="font-size: 12px; color: #777;">${escapeHtml(prepSubmitText)}</div>`;
+    setConsoleHTML(
+      `<div style="font-size: 12px; color: #777;">${escapeHtml(prepSubmitText)}</div>`
+    );
 
     console.log('[AtCoder Workspace] Editor: Sending submit-code message to parent', {
       languageId: currentLanguageId,
@@ -649,6 +691,104 @@ impl UnionFind {
   consoleToggleBtn.onclick = () => {
     toggleConsole();
   };
+
+  // --- Console Panel Drag Resizing Logic ---
+  const consoleHeader = document.querySelector('#console-panel .console-header');
+  let isResizingConsole = false;
+  let resizeStartY = 0;
+  let resizeStartHeight = 200;
+
+  // Helper to trigger Monaco Editor layout resize safely
+  function triggerEditorLayout() {
+    const ed = editor || window.editor;
+    if (ed && typeof ed.layout === 'function') {
+      ed.layout();
+    }
+  }
+
+  if (chrome.storage && chrome.storage.local) {
+    chrome.storage.local.get(['settings:console_panel_height'], (res) => {
+      if (res && res['settings:console_panel_height']) {
+        const savedHeight = parseInt(res['settings:console_panel_height'], 10);
+        if (!isNaN(savedHeight) && savedHeight >= 80 && savedHeight <= window.innerHeight - 100) {
+          consolePanel.style.height = `${savedHeight}px`;
+          triggerEditorLayout();
+        }
+      }
+    });
+  }
+
+  function startConsoleResize(e) {
+    if (
+      e.target &&
+      e.target.closest &&
+      (e.target.closest('#console-info-icon') ||
+        e.target.closest('button') ||
+        e.target.closest('a'))
+    ) {
+      return;
+    }
+    e.preventDefault();
+    isResizingConsole = true;
+    resizeStartY = e.clientY;
+    resizeStartHeight = consolePanel.offsetHeight;
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'ns-resize';
+    if (consoleHeader) consoleHeader.classList.add('resizing');
+  }
+
+  function doConsoleResize(e) {
+    if (!isResizingConsole) return;
+    const dy = resizeStartY - e.clientY;
+    const newHeight = Math.max(80, Math.min(window.innerHeight - 100, resizeStartHeight + dy));
+    consolePanel.style.height = `${newHeight}px`;
+
+    triggerEditorLayout();
+  }
+
+  function stopConsoleResize() {
+    if (!isResizingConsole) return;
+    isResizingConsole = false;
+    document.body.style.userSelect = '';
+    document.body.style.cursor = '';
+    if (consoleHeader) consoleHeader.classList.remove('resizing');
+
+    const currentHeight = consolePanel.offsetHeight;
+    if (chrome.storage && chrome.storage.local) {
+      chrome.storage.local.set({ 'settings:console_panel_height': currentHeight });
+    }
+
+    triggerEditorLayout();
+  }
+
+  if (consoleHeader) {
+    consoleHeader.addEventListener('mousedown', startConsoleResize);
+  }
+  document.addEventListener('mousemove', doConsoleResize);
+  document.addEventListener('mouseup', stopConsoleResize);
+  window.addEventListener('resize', triggerEditorLayout);
+
+  function getTurnstileStatusText(key) {
+    if (!key) return i18nProvider ? i18nProvider.t('editor_turnstile_unknown') : '不明';
+    const turnstileMap = {
+      'force-rendered': i18nProvider
+        ? i18nProvider.t('editor_turnstile_force_rendered')
+        : '強制レンダリング起動',
+      'auto-rendered': i18nProvider
+        ? i18nProvider.t('editor_turnstile_auto_rendered')
+        : '自動レンダリング検出',
+      token_already_present: i18nProvider
+        ? i18nProvider.t('editor_turnstile_token_present')
+        : '既存トークン再利用',
+      no_container: i18nProvider ? i18nProvider.t('editor_turnstile_no_container') : '認証不要',
+      implicit: i18nProvider ? i18nProvider.t('editor_turnstile_implicit') : '暗黙的ロード',
+    };
+    return (
+      turnstileMap[key] ||
+      key ||
+      (i18nProvider ? i18nProvider.t('editor_turnstile_unknown') : '不明')
+    );
+  }
 
   // Helper to map AtCoder language names to Monaco Editor language IDs
   function getLanguageMode(langText) {
@@ -736,6 +876,8 @@ impl UnionFind {
         }
         // Load console state for this problem
         loadConsoleState(contestId, problemId);
+        // Load learning notes and tags for this problem
+        loadLearningNotesAndTags(contestId, problemId);
         break;
       }
 
@@ -778,7 +920,9 @@ impl UnionFind {
         const submitStartedText = i18nProvider
           ? i18nProvider.t('editor_judge_submitted')
           : '提出処理を開始しました...';
-        consoleResults.innerHTML = `<div style="font-size: 12px; color: #777;">${escapeHtml(submitStartedText)}</div>`;
+        setConsoleHTML(
+          `<div style="font-size: 12px; color: #777;">${escapeHtml(submitStartedText)}</div>`
+        );
         break;
       }
 
@@ -791,14 +935,14 @@ impl UnionFind {
         const captchaDescHtml = i18nProvider
           ? i18nProvider.t('editor_judge_captcha_desc')
           : 'ボット判定（Cloudflare Turnstile）の認証完了を待機しています。<br>画面の左下に表示されたチェックボックス（私は人間です）を手動でクリックして認証を完了させてください。<br>（認証完了後、自動的に提出処理が再開されます）';
-        consoleResults.innerHTML = `
+        setConsoleHTML(`
           <div style="font-size: 12px; color: #333;">
             <div style="margin-bottom: 8px; color: #ff8c00; font-weight: bold;">⚠️ ${escapeHtml(e.data.message)}</div>
             <div style="line-height: 1.6;">
               ${captchaDescHtml}
             </div>
           </div>
-        `;
+        `);
         break;
       }
 
@@ -806,23 +950,7 @@ impl UnionFind {
         isSubmitPhase1 = false;
         setButtonsDisabled(true); // Re-enable navigation if available because Phase 1 is done
 
-        const turnstileMap = {
-          'force-rendered': i18nProvider
-            ? i18nProvider.t('editor_turnstile_force_rendered')
-            : '強制レンダリング起動',
-          'auto-rendered': i18nProvider
-            ? i18nProvider.t('editor_turnstile_auto_rendered')
-            : '自動レンダリング検出',
-          token_already_present: i18nProvider
-            ? i18nProvider.t('editor_turnstile_token_present')
-            : '既存トークン再利用',
-          no_container: i18nProvider ? i18nProvider.t('editor_turnstile_no_container') : '認証不要',
-          implicit: i18nProvider ? i18nProvider.t('editor_turnstile_implicit') : '暗黙的ロード',
-        };
-        const turnstileText =
-          turnstileMap[e.data.turnstileDebug] ||
-          e.data.turnstileDebug ||
-          (i18nProvider ? i18nProvider.t('editor_turnstile_unknown') : '不明');
+        const turnstileText = getTurnstileStatusText(e.data.turnstileDebug);
 
         const statusLabel = i18nProvider ? i18nProvider.t('editor_judge_status') : 'ステータス';
         const timeLabel = i18nProvider ? i18nProvider.t('editor_judge_time') : '実行時間';
@@ -835,7 +963,7 @@ impl UnionFind {
         const targetProblemId = e.data.problemId || problemId;
 
         // Update Console Results
-        consoleResults.innerHTML = `
+        setConsoleHTML(`
           <div style="font-size: 12px; color: #333;">
             <div style="margin-bottom: 8px;">${escapeHtml(statusLabel)}: <span class="case-status status-running">${escapeHtml(e.data.status)}</span></div>
             <div style="margin-bottom: 4px;">${escapeHtml(timeLabel)}: ${escapeHtml(e.data.time)}</div>
@@ -845,7 +973,7 @@ impl UnionFind {
               <a href="https://atcoder.jp/contests/${targetContestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">${escapeHtml(detailLinkLabel)} (ID: ${e.data.submissionId})</a>
             </div>
           </div>
-        `;
+        `);
         consoleResults.scrollTop = consoleResults.scrollHeight;
 
         testSummary.textContent = i18nProvider
@@ -877,23 +1005,7 @@ impl UnionFind {
           playBeepWA();
         }
 
-        const turnstileMap = {
-          'force-rendered': i18nProvider
-            ? i18nProvider.t('editor_turnstile_force_rendered')
-            : '強制レンダリング起動',
-          'auto-rendered': i18nProvider
-            ? i18nProvider.t('editor_turnstile_auto_rendered')
-            : '自動レンダリング検出',
-          token_already_present: i18nProvider
-            ? i18nProvider.t('editor_turnstile_token_present')
-            : '既存トークン再利用',
-          no_container: i18nProvider ? i18nProvider.t('editor_turnstile_no_container') : '認証不要',
-          implicit: i18nProvider ? i18nProvider.t('editor_turnstile_implicit') : '暗黙的ロード',
-        };
-        const turnstileText =
-          turnstileMap[e.data.turnstileDebug] ||
-          e.data.turnstileDebug ||
-          (i18nProvider ? i18nProvider.t('editor_turnstile_unknown') : '不明');
+        const turnstileText = getTurnstileStatusText(e.data.turnstileDebug);
 
         const statusLabel = i18nProvider ? i18nProvider.t('editor_judge_status') : 'ステータス';
         const timeLabel = i18nProvider ? i18nProvider.t('editor_judge_time') : '実行時間';
@@ -907,7 +1019,7 @@ impl UnionFind {
 
         // Update Console Results
         const updateConsole = (celebrationHTML = '') => {
-          consoleResults.innerHTML = `
+          setConsoleHTML(`
             <div style="font-size: 12px; color: #333;">
               <div style="margin-bottom: 8px;">${escapeHtml(statusLabel)}: <span class="case-status status-${e.data.status.toLowerCase()}">${escapeHtml(e.data.status)}</span></div>
               <div style="margin-bottom: 4px;">${escapeHtml(timeLabel)}: ${escapeHtml(e.data.time)}</div>
@@ -918,7 +1030,7 @@ impl UnionFind {
               </div>
               ${celebrationHTML}
             </div>
-          `;
+          `);
           consoleResults.scrollTop = consoleResults.scrollHeight;
         };
 
@@ -994,12 +1106,12 @@ impl UnionFind {
         testSummary.textContent = `${errorLabel}: ${e.data.message}`;
         testSummary.className = 'summary-wa';
 
-        consoleResults.innerHTML = `
+        setConsoleHTML(`
           <div class="case-error-block">
             <div class="case-io-label">${escapeHtml(errorLabel)}:</div>
             <pre class="case-error-content">${escapeHtml(e.data.message)}</pre>
           </div>
-        `;
+        `);
         consoleResults.scrollTop = consoleResults.scrollHeight;
         break;
       }
@@ -1025,7 +1137,7 @@ impl UnionFind {
 
           const targetContestId = e.data.contestId || contestId;
 
-          consoleResults.innerHTML = `
+          setConsoleHTML(`
             <div style="font-size: 12px; color: #333;">
               <div style="margin-bottom: 8px;">${escapeHtml(statusLabel)}: <span class="case-status status-running">${escapeHtml(e.data.status)}</span></div>
               <div style="margin-bottom: 4px;">${escapeHtml(timeLabel)}: ${escapeHtml(e.data.time)}</div>
@@ -1034,7 +1146,7 @@ impl UnionFind {
                 <a href="https://atcoder.jp/contests/${targetContestId}/submissions/${e.data.submissionId}" target="_blank" style="color: #337ab7; text-decoration: underline;">${escapeHtml(detailLinkLabel)} (ID: ${e.data.submissionId})</a>
               </div>
             </div>
-          `;
+          `);
           consoleResults.scrollTop = consoleResults.scrollHeight;
           saveConsoleState(contestId, problemId);
         }
@@ -1135,7 +1247,7 @@ impl UnionFind {
               const html = buildConsoleHTML(celebrationHTML);
 
               if (targetProblemId === problemId) {
-                consoleResults.innerHTML = html;
+                setConsoleHTML(html);
                 consoleResults.scrollTop = consoleResults.scrollHeight;
                 testSummary.textContent = summaryText;
                 testSummary.className = summaryClass;
@@ -1211,10 +1323,8 @@ impl UnionFind {
         totalCount = e.data.total;
         caseStatuses = [];
 
-        testSummary.textContent = i18nProvider
-          ? i18nProvider.t('editor_runner_running_cases', ['0', totalCount])
-          : `実行中... (0/${totalCount})`;
-        testSummary.className = 'summary-running';
+        testSummaryState = { type: 'running', count: 0, total: totalCount };
+        updateTestSummaryText();
 
         consoleResults.innerHTML = '';
         consoleResults.scrollTop = 0; // Reset scroll to top
@@ -1227,13 +1337,17 @@ impl UnionFind {
           row.innerHTML = `
             <div class="case-row-header">
               <span class="case-icon">▶</span>
-              <span class="case-label">${escapeHtml(caseLabel)} ${i + 1}:</span>
-              <span class="case-status status-running">${escapeHtml(caseRunningText)}</span>
+              <span class="case-label"><span data-i18n="editor_runner_case">${escapeHtml(caseLabel)}</span> ${i + 1}:</span>
+              <span class="case-status status-running" data-i18n="editor_runner_running">${escapeHtml(caseRunningText)}</span>
             </div>
             <div class="case-row-body" style="display: none;"></div>
           `;
+          if (i18nProvider && typeof i18n !== 'undefined' && i18n.translatePage) {
+            i18n.translatePage(i18nProvider, row);
+          }
           consoleResults.appendChild(row);
         }
+        ensureLearningNotesSection();
         saveConsoleState(contestId, problemId);
         break;
 
@@ -1250,6 +1364,7 @@ impl UnionFind {
           }
 
           const statusBadge = row.querySelector('.case-status');
+          statusBadge.removeAttribute('data-i18n'); // Status codes (AC/WA/TLE) are universal
           statusBadge.textContent = status;
           statusBadge.className = `case-status status-${status.toLowerCase()}`;
 
@@ -1280,11 +1395,11 @@ impl UnionFind {
             bodyHtml = `
               <div class="case-io-grid">
                 <div class="case-io-block">
-                  <div class="case-io-label">${escapeHtml(expectedLabel)}:</div>
+                  <div class="case-io-label"><span data-i18n="editor_runner_expected">${escapeHtml(expectedLabel)}</span>:</div>
                   <pre class="case-io-content">${escapeHtml(e.data.expected)}</pre>
                 </div>
                 <div class="case-io-block">
-                  <div class="case-io-label">${escapeHtml(actualLabel)}:</div>
+                  <div class="case-io-label"><span data-i18n="editor_runner_actual">${escapeHtml(actualLabel)}</span>:</div>
                   <pre class="case-io-content">${escapeHtml(e.data.output)}</pre>
                 </div>
               </div>
@@ -1292,6 +1407,18 @@ impl UnionFind {
           } else if (status === 'RE' || status === 'ERR' || status === 'TLE' || status === 'MLE') {
             body.style.display = 'block';
             icon.textContent = '▼';
+            const labelKey =
+              status === 'TLE'
+                ? 'editor_runner_timeout'
+                : status === 'MLE'
+                  ? 'editor_runner_mle'
+                  : 'editor_runner_stderr';
+            const descKey =
+              status === 'TLE'
+                ? 'editor_runner_timeout_desc'
+                : status === 'MLE'
+                  ? 'editor_runner_mle_desc'
+                  : 'editor_runner_error_desc';
             const labelText =
               status === 'TLE'
                 ? i18nProvider
@@ -1320,29 +1447,20 @@ impl UnionFind {
                     : 'エラーが発生しました。');
             bodyHtml = `
               <div class="case-error-block">
-                <div class="case-io-label">${escapeHtml(labelText)}</div>
-                <pre class="case-error-content">${escapeHtml(errMsg)}</pre>
+                <div class="case-io-label" data-i18n="${labelKey}">${escapeHtml(labelText)}</div>
+                <pre class="case-error-content" ${!e.data.stderr && !e.data.message ? `data-i18n="${descKey}"` : ''}>${escapeHtml(errMsg)}</pre>
               </div>
             `;
           }
           body.innerHTML = bodyHtml;
-
-          // Add click listener on header to toggle body visibility & icon
-          const header = row.querySelector('.case-row-header');
-          header.onclick = () => {
-            const isVisible = body.style.display === 'block';
-            body.style.display = isVisible ? 'none' : 'block';
-            icon.textContent = isVisible ? '▶' : '▼';
-            saveConsoleState(contestId, problemId);
-          };
+          if (i18nProvider && typeof i18n !== 'undefined' && i18n.translatePage) {
+            i18n.translatePage(i18nProvider, body);
+          }
         }
 
-        testSummary.textContent = i18nProvider
-          ? i18nProvider.t('editor_runner_running_cases', [resultsCount, totalCount])
-          : `実行中... (${resultsCount}/${totalCount})`;
+        testSummaryState = { type: 'running', count: resultsCount, total: totalCount };
+        updateTestSummaryText();
 
-        // Auto-scroll to the bottom of the console results
-        consoleResults.scrollTop = consoleResults.scrollHeight;
         saveConsoleState(contestId, problemId);
         break;
       }
@@ -1352,10 +1470,7 @@ impl UnionFind {
         setButtonsDisabled(false);
 
         if (acCount === totalCount) {
-          testSummary.textContent = i18nProvider
-            ? i18nProvider.t('editor_runner_all_ac', [acCount, totalCount])
-            : `すべてAC (${acCount}/${totalCount})`;
-          testSummary.className = 'summary-ac';
+          testSummaryState = { type: 'all_ac', acCount, total: totalCount };
         } else {
           // Priority of statuses to display in the overall summary
           const uniqueNonAcStatuses = [...new Set(caseStatuses)].filter((s) => s !== 'AC');
@@ -1374,11 +1489,9 @@ impl UnionFind {
             displayStatus = uniqueNonAcStatuses[0];
           }
 
-          testSummary.textContent = i18nProvider
-            ? i18nProvider.t('editor_runner_non_ac', [displayStatus, acCount, totalCount])
-            : `${displayStatus}あり (${acCount}/${totalCount} AC)`;
-          testSummary.className = 'summary-wa';
+          testSummaryState = { type: 'non_ac', displayStatus, acCount, total: totalCount };
         }
+        updateTestSummaryText();
         saveConsoleState(contestId, problemId);
         break;
 
@@ -1387,7 +1500,8 @@ impl UnionFind {
         setButtonsDisabled(false);
 
         const errorText = i18nProvider ? i18nProvider.t('editor_label_error') : 'エラー';
-        testSummary.textContent = `${errorText}: ${e.data.message}`;
+        testSummaryState = { type: 'error', message: e.data.message };
+        updateTestSummaryText();
         testSummary.className = 'summary-wa';
 
         consoleResults.innerHTML = `
@@ -1580,6 +1694,7 @@ impl UnionFind {
               bottom: 100, // Adds a 100px padding (approx. 5 lines) at the bottom
             },
           });
+          window.editor = editor;
 
           // Add Monaco shortcut key for toggling console (Ctrl+J)
           editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyJ, () => {
@@ -1697,10 +1812,24 @@ impl UnionFind {
     });
   }
 
+  function setConsoleHTML(html) {
+    if (!consoleResults) return;
+    consoleResults.innerHTML = html;
+    ensureLearningNotesSection();
+  }
+
   function saveConsoleState(cId, pId) {
     if (!cId || !pId) return;
+    const learningNotesSection = document.getElementById('learning-notes-section');
+    if (learningNotesSection && learningNotesSection.parentElement === consoleResults) {
+      learningNotesSection.remove();
+    }
+    const htmlToSave = consoleResults.innerHTML;
+    if (learningNotesSection) {
+      consoleResults.appendChild(learningNotesSection);
+    }
     const state = {
-      html: consoleResults.innerHTML,
+      html: htmlToSave,
       summaryText: testSummary.textContent,
       summaryClass: testSummary.className,
       visible: consolePanel.style.display !== 'none',
@@ -1717,7 +1846,7 @@ impl UnionFind {
     if (stateStr) {
       try {
         const state = JSON.parse(stateStr);
-        consoleResults.innerHTML = state.html;
+        setConsoleHTML(state.html);
         testSummary.textContent = state.summaryText;
         testSummary.className = state.summaryClass;
         toggleConsole(state.visible);
@@ -1731,7 +1860,7 @@ impl UnionFind {
   }
 
   function clearConsoleState() {
-    consoleResults.innerHTML = '';
+    setConsoleHTML('');
     testSummary.textContent = '';
     testSummary.className = '';
     toggleConsole(false);
@@ -2122,7 +2251,390 @@ impl UnionFind {
         if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
           chrome.storage.local.set({ 'stats:has_reviewed': true });
         }
+        return;
+      }
+
+      const caseHeader = e.target.closest('.case-row-header');
+      if (caseHeader) {
+        const row = caseHeader.closest('.case-row');
+        if (row) {
+          const body = row.querySelector('.case-row-body');
+          const icon = row.querySelector('.case-icon');
+          if (body) {
+            const isHidden = body.style.display === 'none' || body.style.display === '';
+            body.style.display = isHidden ? 'block' : 'none';
+            if (icon) {
+              icon.textContent = isHidden ? '▼' : '▶';
+            }
+            saveConsoleState(contestId, problemId);
+          }
+        }
       }
     });
   }
+
+  // --- Learning Notes & Tags Module ---
+  const PRESET_METHOD_TAGS =
+    (typeof TagConstants !== 'undefined' && TagConstants.PRESET_METHOD_TAGS) || [];
+  const PRESET_CAUSE_TAGS =
+    (typeof TagConstants !== 'undefined' && TagConstants.PRESET_CAUSE_TAGS) || [];
+
+  function getTagDisplayName(tagName) {
+    if (
+      typeof TagConstants !== 'undefined' &&
+      typeof TagConstants.getTagDisplayName === 'function'
+    ) {
+      return TagConstants.getTagDisplayName(tagName, i18nProvider);
+    }
+    return tagName;
+  }
+
+  function getTagDescription(tagName) {
+    if (!tagName) return '';
+    const methodItem = PRESET_METHOD_TAGS.find((t) => t.id === tagName);
+    if (methodItem) {
+      return (i18nProvider && i18nProvider.t(methodItem.descKey)) || '';
+    }
+    const causeItem = PRESET_CAUSE_TAGS.find((t) => t.id === tagName);
+    if (causeItem) {
+      return (i18nProvider && i18nProvider.t(causeItem.descKey)) || '';
+    }
+    return '';
+  }
+
+  let currentProblemNotes = { tags: [], note: '' };
+  let noteDebounceTimer = null;
+  let isDropdownClickListenerAdded = false;
+
+  function autoResizeTextarea(textarea) {
+    if (!textarea) return;
+    textarea.style.height = 'auto';
+    textarea.style.height = `${Math.max(32, textarea.scrollHeight)}px`;
+  }
+
+  function getNoteStorageKey(cId, pId) {
+    if (!pId) return null;
+    return `problem_notes:${cId || 'global'}:${pId}`;
+  }
+
+  function createLearningNotesSectionDOM() {
+    const div = document.createElement('div');
+    div.id = 'learning-notes-section';
+    div.className = 'learning-notes-section';
+    div.innerHTML = `
+      <div class="learning-tags-bar">
+        <span class="tags-label" data-i18n="editor_learning_tags_label">🏷️ タグ:</span>
+        <div id="selected-tags-container" class="selected-tags-container"></div>
+        <button id="toggle-tag-dropdown-btn" class="btn btn-default btn-xs tag-select-btn" data-i18n="editor_learning_tags_select_btn">＋ タグを選択 ▾</button>
+      </div>
+      <div id="tag-dropdown-panel" class="tag-dropdown-panel" style="display: none;">
+        <div class="tag-group">
+          <span class="tag-group-title" data-i18n="editor_learning_tags_group_method">💡 解法・手法</span>
+          <div class="tag-chips-wrapper" id="method-tags-wrapper"></div>
+        </div>
+        <div class="tag-group">
+          <span class="tag-group-title" data-i18n="editor_learning_tags_group_cause">⚠️ 詰まった原因</span>
+          <div class="tag-chips-wrapper" id="cause-tags-wrapper"></div>
+        </div>
+        <div class="custom-tag-input-wrapper">
+          <input type="text" id="custom-tag-input" class="form-control input-xs" data-i18n-placeholder="editor_learning_tags_custom_placeholder" placeholder="カスタムタグを追加 (Enterで確定)">
+        </div>
+      </div>
+      <div class="learning-note-container">
+        <div class="note-header">
+          <span class="note-label" data-i18n="editor_learning_note_label">📝 補足メモ (任意):</span>
+        </div>
+        <textarea id="learning-note-textarea" class="form-control note-textarea" rows="1" data-i18n-placeholder="editor_learning_note_placeholder" placeholder="N=1の例外処理、計算量オーバーの注意点など..."></textarea>
+      </div>
+    `;
+    if (i18nProvider && typeof i18n !== 'undefined' && i18n.translatePage) {
+      i18n.translatePage(i18nProvider, div);
+    }
+    return div;
+  }
+
+  function ensureLearningNotesSection() {
+    if (!consoleResults) return;
+    let section = document.getElementById('learning-notes-section');
+    if (!section) {
+      section = createLearningNotesSectionDOM();
+    }
+    if (section.parentElement !== consoleResults || consoleResults.lastElementChild !== section) {
+      consoleResults.appendChild(section);
+    }
+    initLearningNotesUI();
+  }
+
+  function migrateTags(rawTags) {
+    if (!Array.isArray(rawTags)) return { tags: [], isMigrated: false };
+    const legacyMap = (typeof TagConstants !== 'undefined' && TagConstants.LEGACY_TAG_MAP) || {};
+    let isMigrated = false;
+    const cleanTags = rawTags.map((tag) => {
+      if (legacyMap[tag]) {
+        isMigrated = true;
+        return legacyMap[tag];
+      }
+      return tag;
+    });
+    return { tags: cleanTags, isMigrated };
+  }
+
+  function loadLearningNotesAndTags(cId, pId) {
+    const key = getNoteStorageKey(cId, pId);
+    currentProblemNotes = { tags: [], note: '' };
+    if (!key || !isContextValid()) {
+      renderLearningNotesAndTags();
+      return;
+    }
+
+    try {
+      chrome.storage.local.get([key], (result) => {
+        if (result && result[key]) {
+          const rawTags = Array.isArray(result[key].tags) ? result[key].tags : [];
+          const { tags: cleanTags, isMigrated } = migrateTags(rawTags);
+
+          currentProblemNotes = {
+            tags: cleanTags,
+            note: typeof result[key].note === 'string' ? result[key].note : '',
+          };
+
+          if (isMigrated) {
+            saveLearningNotesAndTags();
+          }
+        }
+        renderLearningNotesAndTags();
+      });
+    } catch (e) {
+      console.error('[AtCoder Workspace] Failed to load learning notes/tags', e);
+      renderLearningNotesAndTags();
+    }
+  }
+
+  function saveLearningNotesAndTags() {
+    const key = getNoteStorageKey(contestId, problemId);
+    if (!key || !isContextValid()) return;
+
+    const dataToSave = {
+      tags: currentProblemNotes.tags,
+      note: currentProblemNotes.note,
+      updatedAt: Date.now(),
+    };
+
+    try {
+      chrome.storage.local.set({ [key]: dataToSave });
+    } catch (e) {
+      console.error('[AtCoder Workspace] Failed to save learning notes/tags', e);
+    }
+  }
+
+  function toggleTag(tagName) {
+    if (!tagName) return;
+    const index = currentProblemNotes.tags.indexOf(tagName);
+
+    if (index >= 0) {
+      currentProblemNotes.tags.splice(index, 1);
+    } else {
+      currentProblemNotes.tags.push(tagName);
+    }
+    renderLearningNotesAndTags();
+    saveLearningNotesAndTags();
+  }
+
+  function renderLearningNotesAndTags() {
+    ensureLearningNotesSection();
+
+    const selectedTagsContainer = document.getElementById('selected-tags-container');
+    const methodTagsWrapper = document.getElementById('method-tags-wrapper');
+    const causeTagsWrapper = document.getElementById('cause-tags-wrapper');
+    const learningNoteTextarea = document.getElementById('learning-note-textarea');
+    const tagsLabel = document.querySelector('.tags-label');
+
+    if (tagsLabel && !tagsLabel.classList.contains('has-article-link')) {
+      tagsLabel.classList.add('has-article-link');
+      tagsLabel.title =
+        (i18nProvider && i18nProvider.t('editor_learning_tags_label_title')) ||
+        'クリックで競プロ用語解説ガイド記事を開く';
+      tagsLabel.addEventListener('click', () => {
+        window.open(
+          'https://rikutoyamada01.github.io/atcoder-workspace/article/glossary.html',
+          '_blank'
+        );
+      });
+    }
+
+    if (selectedTagsContainer) {
+      selectedTagsContainer.innerHTML = '';
+      currentProblemNotes.tags.forEach((tag) => {
+        const chip = document.createElement('span');
+        chip.className = 'tag-chip';
+        const displayName = getTagDisplayName(tag);
+        chip.textContent = `#${displayName}`;
+
+        const desc = getTagDescription(tag);
+        if (desc) {
+          chip.title = desc;
+        }
+
+        const removeBtn = document.createElement('span');
+        removeBtn.className = 'tag-chip-remove';
+        removeBtn.textContent = '×';
+        removeBtn.onclick = (e) => {
+          e.stopPropagation();
+          toggleTag(tag);
+        };
+
+        chip.appendChild(removeBtn);
+        selectedTagsContainer.appendChild(chip);
+      });
+    }
+
+    if (methodTagsWrapper) {
+      methodTagsWrapper.innerHTML = '';
+      PRESET_METHOD_TAGS.forEach((tagObj) => {
+        const tagId = tagObj.id;
+        const displayName = getTagDisplayName(tagId);
+        const desc = getTagDescription(tagId);
+        const option = document.createElement('span');
+        const isActive = currentProblemNotes.tags.includes(tagId);
+        option.className = `tag-option-chip ${isActive ? 'active' : ''}`;
+        option.textContent = `#${displayName}`;
+        option.title = desc;
+        option.onclick = (e) => {
+          e.stopPropagation();
+          toggleTag(tagId);
+        };
+        methodTagsWrapper.appendChild(option);
+      });
+    }
+
+    if (causeTagsWrapper) {
+      causeTagsWrapper.innerHTML = '';
+      PRESET_CAUSE_TAGS.forEach((tagObj) => {
+        const tagId = tagObj.id;
+        const displayName = getTagDisplayName(tagId);
+        const desc = getTagDescription(tagId);
+        const option = document.createElement('span');
+        const isActive = currentProblemNotes.tags.includes(tagId);
+        option.className = `tag-option-chip ${isActive ? 'active' : ''}`;
+        option.textContent = `#${displayName}`;
+        option.title = desc;
+        option.onclick = (e) => {
+          e.stopPropagation();
+          toggleTag(tagId);
+        };
+        causeTagsWrapper.appendChild(option);
+      });
+
+      // Render custom tags not in presets
+      const presetKeys = new Set([
+        ...PRESET_METHOD_TAGS.map((t) => t.id),
+        ...PRESET_CAUSE_TAGS.map((t) => t.id),
+      ]);
+      currentProblemNotes.tags.forEach((tag) => {
+        if (!presetKeys.has(tag)) {
+          const option = document.createElement('span');
+          option.className = 'tag-option-chip active';
+          option.textContent = `#${getTagDisplayName(tag)}`;
+          option.onclick = (e) => {
+            e.stopPropagation();
+            toggleTag(tag);
+          };
+          causeTagsWrapper.appendChild(option);
+        }
+      });
+    }
+
+    if (learningNoteTextarea && document.activeElement !== learningNoteTextarea) {
+      learningNoteTextarea.value = currentProblemNotes.note || '';
+      autoResizeTextarea(learningNoteTextarea);
+    }
+  }
+
+  let isLearningNotesUIInitialized = false;
+
+  function initLearningNotesUI() {
+    if (isLearningNotesUIInitialized) return;
+    isLearningNotesUIInitialized = true;
+
+    const toggleTagDropdownBtn = document.getElementById('toggle-tag-dropdown-btn');
+    const tagDropdownPanel = document.getElementById('tag-dropdown-panel');
+    const customTagInput = document.getElementById('custom-tag-input');
+    const learningNoteTextarea = document.getElementById('learning-note-textarea');
+
+    if (toggleTagDropdownBtn && tagDropdownPanel) {
+      const selectBtnText =
+        (i18nProvider && i18nProvider.t('editor_learning_tags_select_btn')) || '＋ タグを選択 ▾';
+      const closeBtnText =
+        (i18nProvider && i18nProvider.t('editor_learning_tags_close_btn')) || '▲ タグを閉じる';
+
+      toggleTagDropdownBtn.onclick = (e) => {
+        e.stopPropagation();
+        const isHidden = tagDropdownPanel.style.display === 'none';
+        tagDropdownPanel.style.display = isHidden ? 'flex' : 'none';
+        toggleTagDropdownBtn.textContent = isHidden ? closeBtnText : selectBtnText;
+      };
+
+      if (!isDropdownClickListenerAdded) {
+        isDropdownClickListenerAdded = true;
+        document.addEventListener('click', (e) => {
+          const panel = document.getElementById('tag-dropdown-panel');
+          const btn = document.getElementById('toggle-tag-dropdown-btn');
+          if (panel && panel.style.display !== 'none') {
+            if (!panel.contains(e.target) && e.target !== btn) {
+              panel.style.display = 'none';
+              if (btn) {
+                const sText =
+                  (i18nProvider && i18nProvider.t('editor_learning_tags_select_btn')) ||
+                  '＋ タグを選択 ▾';
+                btn.textContent = sText;
+              }
+            }
+          }
+        });
+      }
+    }
+
+    if (customTagInput) {
+      customTagInput.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const val = customTagInput.value.trim().replace(/^#/, '');
+          if (val && !currentProblemNotes.tags.includes(val)) {
+            toggleTag(val);
+            customTagInput.value = '';
+          }
+        }
+      };
+    }
+
+    if (learningNoteTextarea) {
+      learningNoteTextarea.oninput = () => {
+        autoResizeTextarea(learningNoteTextarea);
+        currentProblemNotes.note = learningNoteTextarea.value;
+        if (noteDebounceTimer) clearTimeout(noteDebounceTimer);
+        noteDebounceTimer = setTimeout(() => {
+          saveLearningNotesAndTags();
+        }, 500);
+      };
+
+      const flushAndSave = () => {
+        currentProblemNotes.note = learningNoteTextarea.value;
+        if (noteDebounceTimer) {
+          clearTimeout(noteDebounceTimer);
+          noteDebounceTimer = null;
+        }
+        saveLearningNotesAndTags();
+      };
+
+      learningNoteTextarea.onblur = flushAndSave;
+      learningNoteTextarea.onchange = flushAndSave;
+    }
+  }
+
+  window.addEventListener('beforeunload', () => {
+    saveLearningNotesAndTags();
+  });
+
+  initLearningNotesUI();
+  renderLearningNotesAndTags();
 })();

@@ -319,12 +319,15 @@
   },
   "editor_save_status_error": {
     "message": "保存エラー"
-  },
+},
   "editor_console_title": {
     "message": "テスト結果"
   },
   "editor_console_slider_title": {
-    "message": "コンソール表示切り替え (Ctrl+J)"
+    "message": "クリックでコンソールの開閉を切り替え"
+  },
+  "editor_console_resizer_title": {
+    "message": "ドラッグしてターミナルの高さを調整"
   },
   "editor_judge_not_logged_in": {
     "message": "未ログイン"
@@ -536,6 +539,9 @@
   "options_status_col_problem": {
     "message": "問題"
   },
+  "options_status_col_tags": {
+    "message": "タグ"
+  },
   "options_status_col_status": {
     "message": "ステータス"
   },
@@ -608,11 +614,160 @@
   "editor_console_warning_note": {
     "message": "※ 浮動小数点数を出力する問題や、解が複数存在する問題（スペシャルジャッジ）では、実際の提出結果（AC/WA）と異なる場合があります。"
   },
+  "options_whats_new_banner_text": {
+    "message": "AtCoder Workspace が v$1 にアップデートされました！",
+    "placeholders": {
+      "version": { "content": "$1" }
+    }
+  },
+  "options_whats_new_btn_view": {
+    "message": "新機能・変更内容を見る"
+  },
+  "options_changelog_btn": {
+    "message": "🎉 リリースノートを見る"
+  },
+  "options_changelog_modal_title": {
+    "message": "🎉 リリースノート / 更新履歴"
+  },
+  "options_changelog_version_label": {
+    "message": "バージョン選択:"
+  },
+  "options_changelog_modal_close": {
+    "message": "閉じる"
+  },
   "options_backup_mode_merge": {
-    "message": "マージ（既存データを保持）"
+    "message": "マージ（既存データを保持）",
+    "description": "Backup import merge mode"
   },
   "options_backup_mode_overwrite": {
-    "message": "完全に上書き（既存データを消去）"
+    "message": "完全に上書き（既存データを消去）",
+    "description": "Backup import overwrite mode"
+  },
+  "editor_learning_tags_label": {
+    "message": "🏷️ タグ:",
+    "description": "Label for learning tags bar"
+  },
+  "editor_learning_tags_select_btn": {
+    "message": "＋ タグを選択 ▾",
+    "description": "Button to toggle tag dropdown"
+  },
+  "editor_learning_tags_close_btn": {
+    "message": "▲ タグを閉じる",
+    "description": "Button to close tag dropdown"
+  },
+  "editor_learning_tags_group_method": {
+    "message": "💡 解法・手法",
+    "description": "Group title for method tags"
+  },
+  "editor_learning_tags_group_cause": {
+    "message": "⚠️ 詰まった原因",
+    "description": "Group title for cause tags"
+  },
+  "editor_learning_tags_custom_placeholder": {
+    "message": "カスタムタグを追加 (Enterで確定)",
+    "description": "Placeholder for custom tag input"
+  },
+  "editor_learning_note_label": {
+    "message": "📝 補足メモ (任意):",
+    "description": "Label for learning note textarea"
+  },
+  "editor_learning_note_placeholder": {
+    "message": "N=1の例外処理、計算量オーバーの注意点など...",
+    "description": "Placeholder for learning note textarea"
+  },
+  "editor_learning_tags_label_title": {
+    "message": "クリックで競プロ用語解説ガイド記事を開く",
+    "description": "Tooltip for tags label"
+  },
+  "tag_name_binary_search": { "message": "二分探索" },
+  "tag_name_dp": { "message": "DP" },
+  "tag_name_prefix_sum": { "message": "累積和" },
+  "tag_name_bfs_dfs": { "message": "BFS/DFS" },
+  "tag_name_two_pointers": { "message": "尺取り法" },
+  "tag_name_union_find": { "message": "UnionFind" },
+  "tag_name_greedy": { "message": "貪欲法" },
+  "tag_name_math": { "message": "数学・考察" },
+  "tag_name_full_search": { "message": "全探索" },
+  "tag_name_graph": { "message": "グラフ" },
+  "tag_name_corner_case": { "message": "コーナーケース" },
+  "tag_name_overflow": { "message": "オーバーフロー" },
+  "tag_name_tle": { "message": "TLE(計算量)" },
+  "tag_name_re": { "message": "配列外参照/RE" },
+  "tag_name_uninitialized": { "message": "初期化忘れ" },
+  "tag_name_heavy_impl": { "message": "実装重め" },
+  "tag_name_bug_typo": { "message": "バグ埋め込み" },
+  "tag_name_cast_precision": { "message": "型キャスト・精度" },
+  "tag_desc_binary_search": {
+    "message": "ソート済み配列から O(log N) で高速に値を探索する手法",
+    "description": "Description for binary search tag"
+  },
+  "tag_desc_dp": {
+    "message": "動的計画法。小問題の結果をメモして効率的に解を求める手法",
+    "description": "Description for DP tag"
+  },
+  "tag_desc_prefix_sum": {
+    "message": "前計算により任意区間の総和を O(1) で求める手法",
+    "description": "Description for prefix sum tag"
+  },
+  "tag_desc_bfs_dfs": {
+    "message": "幅優先/深さ優先探索。グラフや迷路の最短経路・走査に使用",
+    "description": "Description for BFS/DFS tag"
+  },
+  "tag_desc_two_pointers": {
+    "message": "条件を満たす区間の両端(L, R)をスライドさせて O(N) で探す手法",
+    "description": "Description for two pointers tag"
+  },
+  "tag_desc_union_find": {
+    "message": "要素同士のグループ結合と同一判定を高速に行うデータ構造",
+    "description": "Description for Union-Find tag"
+  },
+  "tag_desc_greedy": {
+    "message": "各ステップで局所的に最も有利な選択を繰り返す手法",
+    "description": "Description for greedy tag"
+  },
+  "tag_desc_math": {
+    "message": "数式変形やパズル的な法則性を見つけ出して解くアプローチ",
+    "description": "Description for math tag"
+  },
+  "tag_desc_full_search": {
+    "message": "すべてのパターンを全通り試す手法 (Nが小さい時に有効)",
+    "description": "Description for full search tag"
+  },
+  "tag_desc_graph": {
+    "message": "頂点と辺のネットワーク構造(木、網状)に関する問題",
+    "description": "Description for graph tag"
+  },
+  "tag_desc_corner_case": {
+    "message": "N=1, N=0, 全て同じ値, 負数など端っこの特殊ケースでの例外",
+    "description": "Description for corner case tag"
+  },
+  "tag_desc_overflow": {
+    "message": "int型の上限(約21億)を超えてオーバーフロー。long long を使用しよう",
+    "description": "Description for overflow tag"
+  },
+  "tag_desc_tle": {
+    "message": "実行時間制限(通常2秒)を超過。O(N^2) を O(N log N) などに改善が必要",
+    "description": "Description for TLE tag"
+  },
+  "tag_desc_re": {
+    "message": "配列の範囲外(例: a[N] や負のインデックス)にアクセスしてクラッシュ",
+    "description": "Description for RE tag"
+  },
+  "tag_desc_uninitialized": {
+    "message": "ループの各回で変数や配列を初期化し忘れたバグ",
+    "description": "Description for uninitialized tag"
+  },
+  "tag_desc_heavy_impl": {
+    "message": "方針は合っているがコード記述量が多くデバッグに時間がかかった状態",
+    "description": "Description for heavy implementation tag"
+  },
+  "tag_desc_bug_typo": {
+    "message": "タイポや不等号の向きミスなど、単純な記述ミスによる誤答",
+    "description": "Description for bug/typo tag"
+  },
+  "tag_desc_cast_precision": {
+    "message": "整数除算による切り捨てや double の精度誤差。整数化や適切なキャストで回避",
+    "description": "Description for type cast & precision tag"
   },
   "settings_storage_cache_details_toggle": {
     "message": "キャッシュの内訳を表示"

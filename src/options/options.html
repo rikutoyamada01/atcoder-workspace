@@ -26,7 +26,7 @@
       <div class="banner-content">
         <span class="banner-icon">🎉</span>
         <span class="banner-text" id="whats-new-banner-text">AtCoder Workspace が新しいバージョンにアップデートされました！</span>
-        <button id="view-release-notes-btn" class="btn btn-sm btn-banner-action">新機能・変更内容を見る / Release Notes</button>
+        <button id="view-release-notes-btn" class="btn btn-sm btn-banner-action" data-i18n="options_whats_new_btn_view">新機能・変更内容を見る</button>
       </div>
       <button id="dismiss-banner-btn" class="banner-close-btn">&times;</button>
     </div>
@@ -116,6 +116,7 @@
                       <th data-i18n="options_status_col_contest">コンテスト</th>
                       <th data-i18n="options_status_col_problem">問題</th>
                       <th data-i18n="options_status_col_status">ステータス</th>
+                      <th data-i18n="options_status_col_tags">タグ</th>
                     </tr>
                   </thead>
                   <tbody id="status-table-body">
@@ -371,7 +372,7 @@
             <span class="info-value text-success" data-i18n="settings_info_dataTransmissionValue">送信なし (完全ローカル動作)</span>
           </div>
           <div class="info-item" style="margin-top: 12px;">
-            <button id="options-changelog-btn" class="btn btn-secondary btn-sm" style="width: 100%;">🎉 リリースノート / Release Notes</button>
+            <button id="options-changelog-btn" class="btn btn-secondary btn-sm" style="width: 100%;" data-i18n="options_changelog_btn">🎉 リリースノートを見る</button>
           </div>
         </section>
 
@@ -417,13 +418,13 @@
     <div class="modal-dialog">
       <div class="modal-header">
         <div class="modal-title">
-          <span>🎉 Release Notes / 更新履歴</span>
+          <span data-i18n="options_changelog_modal_title">🎉 リリースノート / 更新履歴</span>
         </div>
         <button id="close-changelog-btn" class="close-btn">&times;</button>
       </div>
       <div class="modal-body">
         <div class="changelog-controls">
-          <label for="changelog-version-select">バージョン選択:</label>
+          <label for="changelog-version-select" data-i18n="options_changelog_version_label">バージョン選択:</label>
           <select id="changelog-version-select" class="form-control">
             <!-- Dynamically populated -->
           </select>
@@ -436,6 +437,7 @@
   </div>
 
   <script src="../lib/i18n.js"></script>
+  <script src="../lib/tag-constants.js"></script>
   <script src="options.js"></script>
 </body>
 </html>

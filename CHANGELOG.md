@@ -5,6 +5,31 @@ All notable changes to the AtCoder Workspace extension will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2026-07-31
+
+### Added
+- **📝 学習ノート & 🏷️ タグ機能**: コンソール領域で問題ごとの解法メモやタグ（`二分探索`, `DP`, `コーナーケース` 等）をローカル保存・管理できる機能を追加
+- **↕️ ターミナルパネルのドラッグリサイズ機能**: コンソールヘッダー（「テスト結果」領域）を上下にドラッグすることでターミナルの高さを自在に調整・サイズを自動保存可能に改善
+- **📐 補足メモテキストエリアの高さ自動伸縮**: 補足メモの入力内容・行数に応じてテキストエリアの高さを自動で最適なサイズへ伸縮する機能を追加
+- **🏷️ タグのハイパーリンク機能**: `🏷️ タグ:` ラベルホバー時に下線が表示され、クリックで直感的に『競プロ用語解説ガイド』が開く連携を追加
+- **🏷️ 新規プリセット原因タグ `#型キャスト・精度`**: 整数除算の切り捨てや double 型の精度誤差用のプリセット原因タグを追加
+- **🚀 GitHub Actions 自動デプロイ**: master ブランチへのプッシュで `pages/` を自動デプロイする CI/CD パイプラインを統合
+
+### Fixed
+- **⚡ AtCoder テストランナーの HTTP 429 (Rate Limit) エラー回避**: リクエスト間隔の最適化、`Retry-After` ヘッダー対応および指数バックオフ付き自動再試行機能（最大3回）を導入し、テスト実行時のアクセス制限エラーを防止
+- **📜 コンソールの自動スクロール制御の改善**: サンプルテスト判定時（AC/WA）にコンソール領域が毎回最下部へ強制自動スクロールされる挙動を解除し、選択中のスクロール位置を維持可能に修正
+- **🌐 学習ノート領域の多言語 (i18n) サポート修正**: 動的 DOM 生成時のタグ名・説明キーの不一致を修正し、多言語表示を適正化
+
+### Changed
+- Web サイトの階層構造を `pages/` ディレクトリ配下に完全整理・一元化
+- MathJax v3 を組み込み、数式 (LaTeX) の描画品質を向上
+
+### 📚 New Articles & Guides (新着記事)
+- 🔢 [「小数で解くな、整数で解け！」競プロにおける浮動小数点数・切り捨て罠の完全回避ガイド](https://rikutoyamada01.github.io/atcoder-workspace/article/integerization-tips.html)
+- 🎯 [灰レーティング脱出！茶色になるまでに絶対に押さえるべき解法 & 実践Tips](https://rikutoyamada01.github.io/atcoder-workspace/article/gray-to-brown-tips.html)
+- 📖 [競プロ初心者向け アルゴリズム & 用語解説ガイド](https://rikutoyamada01.github.io/atcoder-workspace/article/glossary.html)
+- 🧮 [計算量・TLEシミュレーター & 10⁸の壁突破ガイド](https://rikutoyamada01.github.io/atcoder-workspace/article/complexity.html)
+
 ## [1.6.4] - 2026-07-21
 
 ### Changed

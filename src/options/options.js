@@ -747,6 +747,16 @@ func main() {
   const statusSearchBtn = document.getElementById('status-search-btn');
   const statusFilterSelect = document.getElementById('status-filter-select');
 
+  const getTagDisplayName = (tagName) => {
+    if (
+      typeof TagConstants !== 'undefined' &&
+      typeof TagConstants.getTagDisplayName === 'function'
+    ) {
+      return TagConstants.getTagDisplayName(tagName, i18nProvider);
+    }
+    return tagName;
+  };
+
   // Memory cache for fetched contest problems
   let temporaryProblems = [];
 
@@ -768,12 +778,46 @@ func main() {
         const data = items || {};
         const acProblems = data['stats:ac_problems'] || [];
 
-        // Extract all problems that have manually configured status keys
+        const legacyMap =
+          (typeof TagConstants !== 'undefined' && TagConstants.LEGACY_TAG_MAP) || {};
+
+        // Auto-migrate legacy Japanese tags to unique i18n keys
+        const updates = {};
+        Object.keys(data).forEach((key) => {
+          if (key.startsWith('problem_notes:')) {
+            const item = data[key];
+            if (item && Array.isArray(item.tags)) {
+              let isModified = false;
+              const cleanTags = item.tags.map((t) => {
+                const mappedKey = legacyMap[t];
+                if (mappedKey && mappedKey !== t) {
+                  isModified = true;
+                  return mappedKey;
+                }
+                return t;
+              });
+              if (isModified) {
+                item.tags = cleanTags;
+                updates[key] = item;
+              }
+            }
+          }
+        });
+        if (Object.keys(updates).length > 0) {
+          chrome.storage.local.set(updates);
+        }
+
+        // Extract all problems that have manually configured status or learning note/tag keys
         const configuredProblems = [];
         Object.keys(data).forEach((key) => {
           if (key.startsWith('status:')) {
             const parts = key.split(':');
             if (parts.length === 3) {
+              configuredProblems.push(`${parts[1]}:${parts[2]}`);
+            }
+          } else if (key.startsWith('problem_notes:')) {
+            const parts = key.split(':');
+            if (parts.length === 3 && parts[1] !== 'global') {
               configuredProblems.push(`${parts[1]}:${parts[2]}`);
             }
           }
@@ -807,12 +851,21 @@ func main() {
     const filter = statusFilterSelect ? statusFilterSelect.value : 'all';
     let filteredProblems = [...allProblems];
 
-    // Apply normalized filter query (ignores spaces and underscores for smooth "abc 300 a" match on abc300_a)
+    // Apply normalized filter query (supports contest/problem ID and tag name match)
     if (query) {
       filteredProblems = filteredProblems.filter((p) => {
         const cleanP = p.toLowerCase().replace(/[\s_]/g, '');
         const cleanQuery = query.toLowerCase().replace(/[\s_]/g, '');
-        return cleanP.includes(cleanQuery);
+        const parts = p.split(':');
+        const noteKey = `problem_notes:${parts[0]}:${parts[1]}`;
+        const noteData = statuses[noteKey] || {};
+        const tags = Array.isArray(noteData.tags) ? noteData.tags : [];
+        const tagMatch = tags.some((t) => {
+          const disp = getTagDisplayName(t);
+          return t.toLowerCase().includes(cleanQuery) || disp.toLowerCase().includes(cleanQuery);
+        });
+
+        return cleanP.includes(cleanQuery) || tagMatch;
       });
     }
 
@@ -896,14 +949,25 @@ func main() {
 
       const formattedProblem = problemId.toUpperCase().replace(contestId.toUpperCase() + '_', '');
       const formattedContest = contestId.toUpperCase();
-      const contestUrl = `https://atcoder.jp/contests/${contestId}`;
-      const problemUrl = `https://atcoder.jp/contests/${contestId}/tasks/${problemId}`;
+      const contestUrl = `https://atcoder.jp/contests/${encodeURIComponent(contestId)}`;
+      const problemUrl = `https://atcoder.jp/contests/${encodeURIComponent(contestId)}/tasks/${encodeURIComponent(problemId)}`;
 
       const row = document.createElement('tr');
 
       let dotClass = 'dot-unsolved';
       if (currentStatus === 'self_ac') dotClass = 'dot-self';
       if (currentStatus === 'editorial_ac') dotClass = 'dot-editorial';
+
+      const noteKey = `problem_notes:${contestId}:${problemId}`;
+      const noteData = statuses[noteKey] || {};
+      const tags = Array.isArray(noteData.tags) ? noteData.tags : [];
+
+      let tagsHtml = '<span style="color: #999; font-size: 11px;">-</span>';
+      if (tags.length > 0) {
+        tagsHtml = `<div class="status-tags-container">${tags
+          .map((t) => `<span class="status-tag-chip">#${escapeHtml(getTagDisplayName(t))}</span>`)
+          .join('')}</div>`;
+      }
 
       row.innerHTML = `
         <td style="font-weight: 600;"><a href="${contestUrl}" target="_blank" class="status-table-link">${escapeHtml(formattedContest)}</a></td>
@@ -918,6 +982,7 @@ func main() {
             </select>
           </div>
         </td>
+        <td class="status-tags-cell">${tagsHtml}</td>
       `;
 
       const select = row.querySelector('.status-select');
@@ -1258,6 +1323,15 @@ func main() {
   function renderMarkdownSimple(text) {
     if (!text) return '';
     let html = text.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, title, rawUrl) => {
+      const cleanUrl = rawUrl.trim();
+      const escapedTitle = escapeHtml(title);
+      if (/^(https?:\/\/|\/|#)/i.test(cleanUrl)) {
+        return `<a href="${escapeHtml(cleanUrl)}" target="_blank" rel="noopener noreferrer" style="color: #337ab7; font-weight: bold; text-decoration: underline;">${escapedTitle}</a>`;
+      }
+      return escapedTitle;
+    });
     html = html.replace(/^- (.*$)/gim, '<li>$1</li>');
     html = html.replace(/(<li>.*<\/li>)/gms, '<ul>$1</ul>');
     html = html.replace(/<\/ul>\s*<ul>/g, '');
@@ -1295,7 +1369,9 @@ func main() {
             if (res.whats_new_unread) {
               if (whatsNewBanner) whatsNewBanner.style.display = 'flex';
               if (whatsNewBannerText) {
-                whatsNewBannerText.textContent = `AtCoder Workspace が v${version} にアップデートされました！`;
+                whatsNewBannerText.textContent = i18nProvider
+                  ? i18nProvider.t('options_whats_new_banner_text', [version])
+                  : `AtCoder Workspace が v${version} にアップデートされました！`;
               }
             }
           });

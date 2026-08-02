@@ -326,6 +326,9 @@
   "editor_console_slider_title": {
     "message": "Toggle Console (Ctrl+J)"
   },
+  "editor_console_resizer_title": {
+    "message": "Drag to resize terminal height"
+  },
   "editor_judge_not_logged_in": {
     "message": "Not logged in"
   },
@@ -536,6 +539,9 @@
   "options_status_col_problem": {
     "message": "Problem"
   },
+  "options_status_col_tags": {
+    "message": "Tags"
+  },
   "options_status_col_status": {
     "message": "Status"
   },
@@ -608,11 +614,160 @@
   "editor_console_warning_note": {
     "message": "* For problems involving floating-point outputs or multiple valid solutions (special judge), local test results may differ from the actual submission results (AC/WA)."
   },
+  "options_whats_new_banner_text": {
+    "message": "AtCoder Workspace updated to v$1!",
+    "placeholders": {
+      "version": { "content": "$1" }
+    }
+  },
+  "options_whats_new_btn_view": {
+    "message": "View What's New"
+  },
+  "options_changelog_btn": {
+    "message": "🎉 View Release Notes"
+  },
+  "options_changelog_modal_title": {
+    "message": "🎉 Release Notes & Changelog"
+  },
+  "options_changelog_version_label": {
+    "message": "Select Version:"
+  },
+  "options_changelog_modal_close": {
+    "message": "Close"
+  },
   "options_backup_mode_merge": {
-    "message": "Merge (keep existing data)"
+    "message": "Merge (Keep existing data)",
+    "description": "Backup import merge mode"
   },
   "options_backup_mode_overwrite": {
-    "message": "Overwrite (clear existing data)"
+    "message": "Overwrite (Clear existing data)",
+    "description": "Backup import overwrite mode"
+  },
+  "editor_learning_tags_label": {
+    "message": "🏷️ Tags:",
+    "description": "Label for learning tags bar"
+  },
+  "editor_learning_tags_select_btn": {
+    "message": "＋ Select Tags ▾",
+    "description": "Button to toggle tag dropdown"
+  },
+  "editor_learning_tags_close_btn": {
+    "message": "▲ Close Tags",
+    "description": "Button to close tag dropdown"
+  },
+  "editor_learning_tags_group_method": {
+    "message": "💡 Method / Technique",
+    "description": "Group title for method tags"
+  },
+  "editor_learning_tags_group_cause": {
+    "message": "⚠️ Root Cause",
+    "description": "Group title for cause tags"
+  },
+  "editor_learning_tags_custom_placeholder": {
+    "message": "Add custom tag (Press Enter)",
+    "description": "Placeholder for custom tag input"
+  },
+  "editor_learning_note_label": {
+    "message": "📝 Notes (Optional):",
+    "description": "Label for learning note textarea"
+  },
+  "editor_learning_note_placeholder": {
+    "message": "Corner cases (N=1), complexity limits, or edge case notes...",
+    "description": "Placeholder for learning note textarea"
+  },
+  "editor_learning_tags_label_title": {
+    "message": "Click to open Competitive Programming Glossary Guide",
+    "description": "Tooltip for tags label"
+  },
+  "tag_name_binary_search": { "message": "Binary Search" },
+  "tag_name_dp": { "message": "DP" },
+  "tag_name_prefix_sum": { "message": "Prefix Sum" },
+  "tag_name_bfs_dfs": { "message": "BFS/DFS" },
+  "tag_name_two_pointers": { "message": "Two Pointers" },
+  "tag_name_union_find": { "message": "UnionFind (DSU)" },
+  "tag_name_greedy": { "message": "Greedy" },
+  "tag_name_math": { "message": "Math & Logic" },
+  "tag_name_full_search": { "message": "Exhaustive Search" },
+  "tag_name_graph": { "message": "Graph" },
+  "tag_name_corner_case": { "message": "Corner Cases" },
+  "tag_name_overflow": { "message": "Integer Overflow" },
+  "tag_name_tle": { "message": "TLE (Time Limit)" },
+  "tag_name_re": { "message": "Out of Bounds / RE" },
+  "tag_name_uninitialized": { "message": "Uninitialized Vars" },
+  "tag_name_heavy_impl": { "message": "Heavy Implementation" },
+  "tag_name_bug_typo": { "message": "Typo / Bug" },
+  "tag_name_cast_precision": { "message": "Type Cast & Precision" },
+  "tag_desc_binary_search": {
+    "message": "Search in sorted arrays in O(log N) time",
+    "description": "Description for binary search tag"
+  },
+  "tag_desc_dp": {
+    "message": "Dynamic Programming. Solve problems by memoizing subproblem results",
+    "description": "Description for DP tag"
+  },
+  "tag_desc_prefix_sum": {
+    "message": "Precompute prefix sums to query range sum in O(1)",
+    "description": "Description for prefix sum tag"
+  },
+  "tag_desc_bfs_dfs": {
+    "message": "Breadth-First / Depth-First Search for graphs and shortest paths",
+    "description": "Description for BFS/DFS tag"
+  },
+  "tag_desc_two_pointers": {
+    "message": "Slide two pointers (L, R) to find valid range in O(N)",
+    "description": "Description for two pointers tag"
+  },
+  "tag_desc_union_find": {
+    "message": "Data structure to merge and query sets efficiently (DSU)",
+    "description": "Description for Union-Find tag"
+  },
+  "tag_desc_greedy": {
+    "message": "Make locally optimal choices at each step",
+    "description": "Description for greedy tag"
+  },
+  "tag_desc_math": {
+    "message": "Solve via mathematical formulas, parity, or pattern insights",
+    "description": "Description for math tag"
+  },
+  "tag_desc_full_search": {
+    "message": "Exhaustive search testing all combinations (for small N)",
+    "description": "Description for full search tag"
+  },
+  "tag_desc_graph": {
+    "message": "Problems involving nodes, edges, trees, and network structures",
+    "description": "Description for graph tag"
+  },
+  "tag_desc_corner_case": {
+    "message": "Edge cases like N=1, N=0, all equal values, or negative inputs",
+    "description": "Description for corner case tag"
+  },
+  "tag_desc_overflow": {
+    "message": "Integer overflow exceeding 32-bit int limit (~2x10^9). Use long long",
+    "description": "Description for overflow tag"
+  },
+  "tag_desc_tle": {
+    "message": "Time Limit Exceeded (~2s). Need to optimize O(N^2) to O(N log N)",
+    "description": "Description for TLE tag"
+  },
+  "tag_desc_re": {
+    "message": "Runtime Error due to out-of-bounds array access (e.g. a[N])",
+    "description": "Description for RE tag"
+  },
+  "tag_desc_uninitialized": {
+    "message": "Bug caused by forgetting to reset variables inside loops",
+    "description": "Description for uninitialized tag"
+  },
+  "tag_desc_heavy_impl": {
+    "message": "Correct idea but high implementation complexity / tedious code",
+    "description": "Description for heavy implementation tag"
+  },
+  "tag_desc_bug_typo": {
+    "message": "Simple mistake like typos or inverted comparison operators",
+    "description": "Description for typo bug tag"
+  },
+  "tag_desc_cast_precision": {
+    "message": "Truncation from integer division or double precision loss. Avoid by integerization or proper casting",
+    "description": "Description for type cast & precision tag"
   },
   "settings_storage_cache_details_toggle": {
     "message": "Show cache details"
