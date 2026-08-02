@@ -293,7 +293,7 @@ function updateRoadmapProgress() {
   const earnedPts = completedSkills.reduce((sum, id) => sum + (skillsDb[id] ? skillsDb[id].pts : 0), 0);
   const pct = totalFeatures > 0 ? Math.round((completedSkills.length / totalFeatures) * 100) : 0;
 
-  document.getElementById('scoreCompleted').textContent = completedSkills.length;
+  document.getElementById('scoreCompleted').textContent = `${completedSkills.length} / ${totalFeatures}`;
   document.getElementById('scorePoints').textContent = earnedPts + ' pts';
   document.getElementById('progressBar').style.width = pct + '%';
 

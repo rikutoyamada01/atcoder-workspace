@@ -1326,10 +1326,11 @@ func main() {
     html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, title, rawUrl) => {
       const cleanUrl = rawUrl.trim();
+      const escapedTitle = escapeHtml(title);
       if (/^(https?:\/\/|\/|#)/i.test(cleanUrl)) {
-        return `<a href="${escapeHtml(cleanUrl)}" target="_blank" rel="noopener noreferrer" style="color: #337ab7; font-weight: bold; text-decoration: underline;">${title}</a>`;
+        return `<a href="${escapeHtml(cleanUrl)}" target="_blank" rel="noopener noreferrer" style="color: #337ab7; font-weight: bold; text-decoration: underline;">${escapedTitle}</a>`;
       }
-      return title;
+      return escapedTitle;
     });
     html = html.replace(/^- (.*$)/gim, '<li>$1</li>');
     html = html.replace(/(<li>.*<\/li>)/gms, '<ul>$1</ul>');

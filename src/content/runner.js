@@ -344,14 +344,21 @@
               .catch((err) => {
                 console.warn(`[AtCoder Workspace] Case ${index + 1} submission error:`, err);
 
+                const isNetworkErr =
+                  err &&
+                  err.name === 'TypeError' &&
+                  err.message &&
+                  err.message.toLowerCase().includes('fetch');
+                const is429 = err && err.status === 429;
+
                 if (err.message && err.message.includes('LockError')) {
                   // Retry same case on lock
                   console.log(`[AtCoder Workspace] Retrying case ${index + 1} due to lock...`);
                   setTimeout(() => runNext(caseRetryCount), LOCK_RETRY_DELAY_MS);
-                } else if (err.status === 429 && caseRetryCount < MAX_HTTP_RETRIES) {
+                } else if ((is429 || isNetworkErr) && caseRetryCount < MAX_HTTP_RETRIES) {
                   const delay = this._getRetryDelay(err.response, caseRetryCount + 1);
                   console.warn(
-                    `[AtCoder Workspace] Case ${index + 1} hit HTTP 429. Retrying submission (${caseRetryCount + 1}/${MAX_HTTP_RETRIES}) in ${delay}ms...`
+                    `[AtCoder Workspace] Case ${index + 1} hit HTTP 429 or NetworkError. Retrying submission (${caseRetryCount + 1}/${MAX_HTTP_RETRIES}) in ${delay}ms...`
                   );
                   setTimeout(() => runNext(caseRetryCount + 1), delay);
                 } else {

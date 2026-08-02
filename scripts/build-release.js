@@ -18,14 +18,16 @@ console.log(`Starting release build for version ${version}...`);
 try {
   require('./sync-version');
 } catch (err) {
-  console.warn('Failed to sync version:', err.message);
+  console.error('Failed to sync version:', err.message);
+  process.exit(1);
 }
 
 // Generate changelog.json from CHANGELOG.md
 try {
   require('./build-changelog');
 } catch (err) {
-  console.warn('Failed to build changelog.json:', err.message);
+  console.error('Failed to build changelog.json:', err.message);
+  process.exit(1);
 }
 
 // 2. クリーンアップと一時ディレクトリ作成
