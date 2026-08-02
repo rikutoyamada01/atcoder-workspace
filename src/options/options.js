@@ -777,6 +777,27 @@ func main() {
         const data = items || {};
         const acProblems = data['stats:ac_problems'] || [];
 
+        const legacyMap = {
+          '二分探索': 'tag_name_binary_search',
+          'DP': 'tag_name_dp',
+          '累積和': 'tag_name_prefix_sum',
+          'BFS/DFS': 'tag_name_bfs_dfs',
+          '尺取り法': 'tag_name_two_pointers',
+          'UnionFind': 'tag_name_union_find',
+          '貪欲法': 'tag_name_greedy',
+          '数学・考察': 'tag_name_math',
+          '全探索': 'tag_name_full_search',
+          'グラフ': 'tag_name_graph',
+          'コーナーケース': 'tag_name_corner_case',
+          'オーバーフロー': 'tag_name_overflow',
+          '型キャスト・精度': 'tag_name_cast_precision',
+          'TLE(計算量)': 'tag_name_tle',
+          '配列外参照/RE': 'tag_name_re',
+          '初期化忘れ': 'tag_name_uninitialized',
+          '実装重め': 'tag_name_heavy_impl',
+          'バグ埋め込み': 'tag_name_bug_typo',
+        };
+
         // Auto-migrate legacy Japanese tags to unique i18n keys
         const updates = {};
         Object.keys(data).forEach((key) => {
@@ -785,7 +806,7 @@ func main() {
             if (item && Array.isArray(item.tags)) {
               let isModified = false;
               const cleanTags = item.tags.map((t) => {
-                const mappedKey = PRESET_TAG_KEY_MAP[t];
+                const mappedKey = legacyMap[t];
                 if (mappedKey && mappedKey !== t) {
                   isModified = true;
                   return mappedKey;
