@@ -556,7 +556,9 @@ body.vs-dark-theme .snippet-tag-custom {
   background-color: #cccccc;
   border-radius: 2px;
   opacity: 0.6;
-  transition: opacity 0.2s ease, background-color 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .console-header:hover,
@@ -1025,29 +1027,28 @@ body.vs-dark-theme .ac-btn-share-x-icon:hover {
 }
 
 /* Learning Notes & Tags Section */
-.learning-notes-section {
-  margin-top: 14px;
+#console-results .learning-notes-section {
   padding: 10px 8px 4px 8px;
   border-top: 1px dashed #dddddd;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  width: 100% !important;
-  max-width: none !important;
+  width: 100%;
+  max-width: none;
   box-sizing: border-box;
 }
 
-body.vs-dark-theme .learning-notes-section {
+body.vs-dark-theme #console-results .learning-notes-section {
   border-top-color: #383838;
 }
 
-.learning-tags-bar {
+#console-results .learning-tags-bar {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-  width: 100% !important;
-  max-width: none !important;
+  width: 100%;
+  max-width: none;
 }
 
 .tags-label {
@@ -1119,7 +1120,7 @@ body.vs-dark-theme .tag-chip:hover {
   align-items: center;
 }
 
-.tag-dropdown-panel {
+#console-results .tag-dropdown-panel {
   padding: 8px;
   background-color: #ffffff;
   border: 1px solid #cccccc;
@@ -1129,12 +1130,12 @@ body.vs-dark-theme .tag-chip:hover {
   flex-direction: column;
   gap: 8px;
   margin-top: 2px;
-  width: 100% !important;
-  max-width: none !important;
+  width: 100%;
+  max-width: none;
   box-sizing: border-box;
 }
 
-body.vs-dark-theme .tag-dropdown-panel {
+body.vs-dark-theme #console-results .tag-dropdown-panel {
   background-color: #1e1e1e;
   border-color: #444444;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
@@ -1203,37 +1204,37 @@ body.vs-dark-theme .tag-option-chip.active {
   border-color: #007acc;
 }
 
-.custom-tag-input-wrapper {
+#console-results .custom-tag-input-wrapper {
   margin-top: 2px;
-  width: 100% !important;
-  max-width: none !important;
+  width: 100%;
+  max-width: none;
 }
 
 /* Linkable tags/labels: Default looks normal, underline on hover */
 .has-article-link {
-  cursor: pointer !important;
+  cursor: pointer;
 }
 
 .has-article-link:hover {
-  text-decoration: underline !important;
+  text-decoration: underline;
 }
 
-.custom-tag-input-wrapper input {
+#console-results .custom-tag-input-wrapper input {
   font-size: 10px;
   padding: 2px 6px;
   height: 22px;
   border-radius: 3px;
-  width: 100% !important;
-  max-width: none !important;
+  width: 100%;
+  max-width: none;
   box-sizing: border-box;
 }
 
-.learning-note-container {
+#console-results .learning-note-container {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  width: 100% !important;
-  max-width: none !important;
+  width: 100%;
+  max-width: none;
 }
 
 .note-header {
@@ -1251,7 +1252,7 @@ body.vs-dark-theme .note-label {
   color: #aaaaaa;
 }
 
-.note-textarea {
+#console-results .note-textarea {
   font-size: 11px;
   font-family: inherit;
   padding: 4px 6px;
@@ -1259,7 +1260,7 @@ body.vs-dark-theme .note-label {
   min-height: 32px;
   overflow-y: hidden;
   border-radius: 3px;
-  width: 100% !important;
-  max-width: none !important;
+  width: 100%;
+  max-width: none;
   box-sizing: border-box;
 }

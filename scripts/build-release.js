@@ -14,6 +14,13 @@ const zipFilePath = path.join(distDir, zipFileName);
 
 console.log(`Starting release build for version ${version}...`);
 
+// Synchronize version across repository
+try {
+  require('./sync-version');
+} catch (err) {
+  console.warn('Failed to sync version:', err.message);
+}
+
 // Generate changelog.json from CHANGELOG.md
 try {
   require('./build-changelog');

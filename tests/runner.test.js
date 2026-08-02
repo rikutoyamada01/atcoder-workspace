@@ -585,4 +585,99 @@ describe('Runner Module Tests', () => {
     expect(runner._getRetryDelay(null, 3)).toBe(8000);
     expect(runner._getRetryDelay(null, 4)).toBe(10000); // capped at 10s
   });
+
+  test('runSampleTests returns WA status when output does not match expected', async () => {
+    document.body.innerHTML = '<input name="csrf_token" value="dummy-csrf-token" />';
+
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ Result: { Status: 3 } }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        text: () => Promise.resolve(''),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            Result: {
+              Status: 3,
+              Output: btoa('wrong_output\n'),
+              ExitCode: 0,
+              TimeConsumption: 100,
+              MemoryConsumption: 2000,
+            },
+          }),
+      });
+
+    const onCaseResult = jest.fn();
+    const onComplete = jest.fn();
+
+    const samples = [{ input: 'in1', expected: 'correct_output' }];
+    runner.runSampleTests('abc100', 'code', 'cpp', samples, onCaseResult, onComplete);
+
+    await flushPromises(); // ensureIdle
+    await flushPromises(); // submit
+    await flushPromises(); // pollResult
+
+    expect(onCaseResult).toHaveBeenCalledWith({
+      index: 0,
+      status: 'WA',
+      time: 100,
+      memory: 2000,
+      output: 'wrong_output\n',
+      expected: 'correct_output',
+      stderr: '',
+    });
+  });
+
+  test('runSampleTests returns RE status when ExitCode is non-zero or stderr is present', async () => {
+    document.body.innerHTML = '<input name="csrf_token" value="dummy-csrf-token" />';
+
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ Result: { Status: 3 } }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        text: () => Promise.resolve(''),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            Result: {
+              Status: 3,
+              Output: btoa(''),
+              Error: btoa('Segmentation fault\n'),
+              ExitCode: 139,
+              TimeConsumption: 50,
+              MemoryConsumption: 1000,
+            },
+          }),
+      });
+
+    const onCaseResult = jest.fn();
+    const onComplete = jest.fn();
+
+    const samples = [{ input: 'in1', expected: 'out1' }];
+    runner.runSampleTests('abc100', 'code', 'cpp', samples, onCaseResult, onComplete);
+
+    await flushPromises(); // ensureIdle
+    await flushPromises(); // submit
+    await flushPromises(); // pollResult
+
+    expect(onCaseResult).toHaveBeenCalledWith({
+      index: 0,
+      status: 'RE',
+      time: 50,
+      memory: 1000,
+      output: '',
+      expected: 'out1',
+      stderr: 'Segmentation fault\n',
+    });
+  });
 });

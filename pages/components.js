@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Footer Component HTML
   const footerHTML = `
     <footer>
-      <p>AtCoder Workspace - MIT License | <a href="${basePages}article.html">記事一覧</a> | <a href="${baseArticle}glossary.html">用語辞典</a> | <a href="${baseArticle}complexity.html">計算量ツール</a> | <a href="${basePages}presentation.html">製品紹介</a> | <a href="${basePages}roadmap.html">ロードマップ</a> | <a href="${basePages}privacy.html">プライバシー</a> | <a href="https://github.com/rikutoyamada01/atcoder-workspace" target="_blank">GitHub</a></p>
+      <p>AtCoder Workspace - MIT License | <a href="${basePages}article.html">記事一覧</a> | <a href="${baseArticle}glossary.html">用語辞典</a> | <a href="${baseArticle}complexity.html">計算量ツール</a> | <a href="${basePages}presentation.html">製品紹介</a> | <a href="${basePages}roadmap.html">ロードマップ</a> | <a href="${basePages}privacy.html">プライバシー</a> | <a href="https://github.com/rikutoyamada01/atcoder-workspace" target="_blank" rel="noopener noreferrer">GitHub</a></p>
     </footer>
   `;
 

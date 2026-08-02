@@ -748,10 +748,11 @@ func main() {
   const statusFilterSelect = document.getElementById('status-filter-select');
 
   const getTagDisplayName = (tagName) => {
-    if (!tagName) return '';
-    if (i18nProvider) {
-      const translated = i18nProvider.t(tagName);
-      if (translated && translated !== tagName) return translated;
+    if (
+      typeof TagConstants !== 'undefined' &&
+      typeof TagConstants.getTagDisplayName === 'function'
+    ) {
+      return TagConstants.getTagDisplayName(tagName, i18nProvider);
     }
     return tagName;
   };
@@ -777,26 +778,8 @@ func main() {
         const data = items || {};
         const acProblems = data['stats:ac_problems'] || [];
 
-        const legacyMap = {
-          '二分探索': 'tag_name_binary_search',
-          'DP': 'tag_name_dp',
-          '累積和': 'tag_name_prefix_sum',
-          'BFS/DFS': 'tag_name_bfs_dfs',
-          '尺取り法': 'tag_name_two_pointers',
-          'UnionFind': 'tag_name_union_find',
-          '貪欲法': 'tag_name_greedy',
-          '数学・考察': 'tag_name_math',
-          '全探索': 'tag_name_full_search',
-          'グラフ': 'tag_name_graph',
-          'コーナーケース': 'tag_name_corner_case',
-          'オーバーフロー': 'tag_name_overflow',
-          '型キャスト・精度': 'tag_name_cast_precision',
-          'TLE(計算量)': 'tag_name_tle',
-          '配列外参照/RE': 'tag_name_re',
-          '初期化忘れ': 'tag_name_uninitialized',
-          '実装重め': 'tag_name_heavy_impl',
-          'バグ埋め込み': 'tag_name_bug_typo',
-        };
+        const legacyMap =
+          (typeof TagConstants !== 'undefined' && TagConstants.LEGACY_TAG_MAP) || {};
 
         // Auto-migrate legacy Japanese tags to unique i18n keys
         const updates = {};
@@ -966,8 +949,8 @@ func main() {
 
       const formattedProblem = problemId.toUpperCase().replace(contestId.toUpperCase() + '_', '');
       const formattedContest = contestId.toUpperCase();
-      const contestUrl = `https://atcoder.jp/contests/${contestId}`;
-      const problemUrl = `https://atcoder.jp/contests/${contestId}/tasks/${problemId}`;
+      const contestUrl = `https://atcoder.jp/contests/${encodeURIComponent(contestId)}`;
+      const problemUrl = `https://atcoder.jp/contests/${encodeURIComponent(contestId)}/tasks/${encodeURIComponent(problemId)}`;
 
       const row = document.createElement('tr');
 
@@ -1341,7 +1324,13 @@ func main() {
     if (!text) return '';
     let html = text.replace(/^### (.*$)/gim, '<h3>$1</h3>');
     html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color: #337ab7; font-weight: bold; text-decoration: underline;">$1</a>');
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, title, rawUrl) => {
+      const cleanUrl = rawUrl.trim();
+      if (/^(https?:\/\/|\/|#)/i.test(cleanUrl)) {
+        return `<a href="${escapeHtml(cleanUrl)}" target="_blank" rel="noopener noreferrer" style="color: #337ab7; font-weight: bold; text-decoration: underline;">${title}</a>`;
+      }
+      return title;
+    });
     html = html.replace(/^- (.*$)/gim, '<li>$1</li>');
     html = html.replace(/(<li>.*<\/li>)/gms, '<ul>$1</ul>');
     html = html.replace(/<\/ul>\s*<ul>/g, '');

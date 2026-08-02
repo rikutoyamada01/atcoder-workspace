@@ -652,7 +652,7 @@
     "description": "Button to toggle tag dropdown"
   },
   "editor_learning_tags_close_btn": {
-    "message": "▲ Close Tags ▾",
+    "message": "▲ Close Tags",
     "description": "Button to close tag dropdown"
   },
   "editor_learning_tags_group_method": {

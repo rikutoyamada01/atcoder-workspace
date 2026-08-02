@@ -62,7 +62,8 @@
               if (m) {
                 const idx = parseInt(m[1], 10) - 1;
                 if (placeholders[idx] !== undefined) {
-                  message = message.replace(new RegExp(`\\$${pName.toUpperCase()}\\$`, 'gi'), placeholders[idx]);
+                  const escapedPName = pName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                  message = message.replace(new RegExp(`\\$${escapedPName.toUpperCase()}\\$`, 'gi'), placeholders[idx]);
                 }
               }
             }

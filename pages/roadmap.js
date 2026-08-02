@@ -285,7 +285,7 @@ const skillsDb = {
   }
 };
 
-const completedSkills = ["monaco", "submit", "test", "template", "ac_distinction"];
+const completedSkills = ["monaco", "submit", "test", "template", "ac_distinction", "notes"];
 
 function updateRoadmapProgress() {
   const totalFeatures = Object.keys(skillsDb).length;

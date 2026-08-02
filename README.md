@@ -12,15 +12,16 @@ AtCoderの問題ページを、エディタ・ローカルテスト・提出が�
 
 本プロジェクトの詳細なビジョンや技術仕様については、以下のドキュメントを参照してください。
 
-- [AtCoder Workspace 記事ポータル](https://rikutoyamada01.github.io/atcoder-workspace/pages/article.html) ([ローカル](pages/article.html)): 競プロ初心者向け解説記事・ツールの集約ポータル。
+- [AtCoder Workspace 記事ポータル](https://rikutoyamada01.github.io/atcoder-workspace/article.html) ([ローカル](pages/article.html)): 競プロ初心者向け解説記事・ツールの集約ポータル。
 - [製品ビジョンとコアコンセプト](docs/core_idea.md): 本拡張機能が解決する課題、ターゲットユーザー、開発ロードマップについて。
 - [要件定義書 (MVP)](docs/requirements.md): 具体的な機能要件、非機能要件、データストレージの設計スキーマについて。
-- [開発ロードマップ](https://rikutoyamada01.github.io/atcoder-workspace/pages/roadmap.html) ([ローカル](pages/roadmap.html)): 各機能の実装状況と、進行中のタスクの進捗ステータス。
-- [プロダクト紹介プレゼンテーション](https://rikutoyamada01.github.io/atcoder-workspace/pages/presentation.html) ([ローカル](pages/presentation.html)): 本プロジェクトの強みや導入メリットをまとめたビジュアル資料。
-- [競プロ初心者向け 用語解説ガイド](https://rikutoyamada01.github.io/atcoder-workspace/pages/article/glossary.html) ([ローカル](pages/article/glossary.html)): 二分探索、DP、コーナーケース等の意味と計算量をまとめたオンライン解説辞典。
-- [計算量・TLEシミュレーター](https://rikutoyamada01.github.io/atcoder-workspace/pages/article/complexity.html) ([ローカル](pages/article/complexity.html)): Nの入力値から計算ステップ数とTLE危険度を自動判定するインタラクティブツール。
+- [開発ロードマップ](https://rikutoyamada01.github.io/atcoder-workspace/roadmap.html) ([ローカル](pages/roadmap.html)): 各機能の実装状況と、進行中のタスクの進捗ステータス。
+- [プロダクト紹介プレゼンテーション](https://rikutoyamada01.github.io/atcoder-workspace/presentation.html) ([ローカル](pages/presentation.html)): 本プロジェクトの強みや導入メリットをまとめたビジュアル資料。
+- [競プロ初心者向け 用語解説ガイド](https://rikutoyamada01.github.io/atcoder-workspace/article/glossary.html) ([ローカル](pages/article/glossary.html)): 二分探索、DP、コーナーケース等の意味と計算量をまとめたオンライン解説辞典。
+- [計算量・TLEシミュレーター](https://rikutoyamada01.github.io/atcoder-workspace/article/complexity.html) ([ローカル](pages/article/complexity.html)): Nの入力値から計算ステップ数とTLE危険度を自動判定するインタラクティブツール。
 
 ### GitHub Pages の設定について
+
 リポジトリの **Settings > Pages > Build and deployment** にて、ソース元を `/pages` または GitHub Actions 経由に切り替えることで、WEB サイトおよびドキュメントが自動デプロイ・一般公開されます。
 
 _(※ ローカルエディタのMarkdownプレビューからは、セキュリティ制限により一部のHTMLリンクへの遷移がブロックされる場合があります。ローカル環境で閲覧する際は、該当のHTMLファイルを直接ブラウザで開いてください)_

@@ -78,7 +78,10 @@
     if (!testSummary || !testSummaryState) return;
     if (testSummaryState.type === 'running') {
       testSummary.textContent = i18nProvider
-        ? i18nProvider.t('editor_runner_running_cases', [testSummaryState.count, testSummaryState.total])
+        ? i18nProvider.t('editor_runner_running_cases', [
+            testSummaryState.count,
+            testSummaryState.total,
+          ])
         : `実行中... (${testSummaryState.count}/${testSummaryState.total})`;
       testSummary.className = 'summary-running';
     } else if (testSummaryState.type === 'all_ac') {
@@ -88,7 +91,11 @@
       testSummary.className = 'summary-ac';
     } else if (testSummaryState.type === 'non_ac') {
       testSummary.textContent = i18nProvider
-        ? i18nProvider.t('editor_runner_non_ac', [testSummaryState.displayStatus, testSummaryState.acCount, testSummaryState.total])
+        ? i18nProvider.t('editor_runner_non_ac', [
+            testSummaryState.displayStatus,
+            testSummaryState.acCount,
+            testSummaryState.total,
+          ])
         : `${testSummaryState.displayStatus}あり (${testSummaryState.acCount}/${testSummaryState.total} AC)`;
       testSummary.className = 'summary-wa';
     } else if (testSummaryState.type === 'error') {
@@ -712,7 +719,13 @@ impl UnionFind {
   }
 
   function startConsoleResize(e) {
-    if (e.target && e.target.closest && (e.target.closest('#console-info-icon') || e.target.closest('button') || e.target.closest('a'))) {
+    if (
+      e.target &&
+      e.target.closest &&
+      (e.target.closest('#console-info-icon') ||
+        e.target.closest('button') ||
+        e.target.closest('a'))
+    ) {
       return;
     }
     e.preventDefault();
@@ -754,6 +767,28 @@ impl UnionFind {
   document.addEventListener('mousemove', doConsoleResize);
   document.addEventListener('mouseup', stopConsoleResize);
   window.addEventListener('resize', triggerEditorLayout);
+
+  function getTurnstileStatusText(key) {
+    if (!key) return i18nProvider ? i18nProvider.t('editor_turnstile_unknown') : '不明';
+    const turnstileMap = {
+      'force-rendered': i18nProvider
+        ? i18nProvider.t('editor_turnstile_force_rendered')
+        : '強制レンダリング起動',
+      'auto-rendered': i18nProvider
+        ? i18nProvider.t('editor_turnstile_auto_rendered')
+        : '自動レンダリング検出',
+      token_already_present: i18nProvider
+        ? i18nProvider.t('editor_turnstile_token_present')
+        : '既存トークン再利用',
+      no_container: i18nProvider ? i18nProvider.t('editor_turnstile_no_container') : '認証不要',
+      implicit: i18nProvider ? i18nProvider.t('editor_turnstile_implicit') : '暗黙的ロード',
+    };
+    return (
+      turnstileMap[key] ||
+      key ||
+      (i18nProvider ? i18nProvider.t('editor_turnstile_unknown') : '不明')
+    );
+  }
 
   // Helper to map AtCoder language names to Monaco Editor language IDs
   function getLanguageMode(langText) {
@@ -915,23 +950,7 @@ impl UnionFind {
         isSubmitPhase1 = false;
         setButtonsDisabled(true); // Re-enable navigation if available because Phase 1 is done
 
-        const turnstileMap = {
-          'force-rendered': i18nProvider
-            ? i18nProvider.t('editor_turnstile_force_rendered')
-            : '強制レンダリング起動',
-          'auto-rendered': i18nProvider
-            ? i18nProvider.t('editor_turnstile_auto_rendered')
-            : '自動レンダリング検出',
-          token_already_present: i18nProvider
-            ? i18nProvider.t('editor_turnstile_token_present')
-            : '既存トークン再利用',
-          no_container: i18nProvider ? i18nProvider.t('editor_turnstile_no_container') : '認証不要',
-          implicit: i18nProvider ? i18nProvider.t('editor_turnstile_implicit') : '暗黙的ロード',
-        };
-        const turnstileText =
-          turnstileMap[e.data.turnstileDebug] ||
-          e.data.turnstileDebug ||
-          (i18nProvider ? i18nProvider.t('editor_turnstile_unknown') : '不明');
+        const turnstileText = getTurnstileStatusText(e.data.turnstileDebug);
 
         const statusLabel = i18nProvider ? i18nProvider.t('editor_judge_status') : 'ステータス';
         const timeLabel = i18nProvider ? i18nProvider.t('editor_judge_time') : '実行時間';
@@ -986,23 +1005,7 @@ impl UnionFind {
           playBeepWA();
         }
 
-        const turnstileMap = {
-          'force-rendered': i18nProvider
-            ? i18nProvider.t('editor_turnstile_force_rendered')
-            : '強制レンダリング起動',
-          'auto-rendered': i18nProvider
-            ? i18nProvider.t('editor_turnstile_auto_rendered')
-            : '自動レンダリング検出',
-          token_already_present: i18nProvider
-            ? i18nProvider.t('editor_turnstile_token_present')
-            : '既存トークン再利用',
-          no_container: i18nProvider ? i18nProvider.t('editor_turnstile_no_container') : '認証不要',
-          implicit: i18nProvider ? i18nProvider.t('editor_turnstile_implicit') : '暗黙的ロード',
-        };
-        const turnstileText =
-          turnstileMap[e.data.turnstileDebug] ||
-          e.data.turnstileDebug ||
-          (i18nProvider ? i18nProvider.t('editor_turnstile_unknown') : '不明');
+        const turnstileText = getTurnstileStatusText(e.data.turnstileDebug);
 
         const statusLabel = i18nProvider ? i18nProvider.t('editor_judge_status') : 'ステータス';
         const timeLabel = i18nProvider ? i18nProvider.t('editor_judge_time') : '実行時間';
@@ -1418,18 +1421,30 @@ impl UnionFind {
                   : 'editor_runner_error_desc';
             const labelText =
               status === 'TLE'
-                ? (i18nProvider ? i18nProvider.t('editor_runner_timeout') : 'タイムアウト検出 (TLE):')
+                ? i18nProvider
+                  ? i18nProvider.t('editor_runner_timeout')
+                  : 'タイムアウト検出 (TLE):'
                 : status === 'MLE'
-                  ? (i18nProvider ? i18nProvider.t('editor_runner_mle') : 'メモリ制限超過 (MLE):')
-                  : (i18nProvider ? i18nProvider.t('editor_runner_stderr') : 'エラー詳細 (stderr):');
+                  ? i18nProvider
+                    ? i18nProvider.t('editor_runner_mle')
+                    : 'メモリ制限超過 (MLE):'
+                  : i18nProvider
+                    ? i18nProvider.t('editor_runner_stderr')
+                    : 'エラー詳細 (stderr):';
             const errMsg =
               e.data.stderr ||
               e.data.message ||
               (status === 'TLE'
-                ? (i18nProvider ? i18nProvider.t('editor_runner_timeout_desc') : '実行制限時間（TLE）を超過しました。')
+                ? i18nProvider
+                  ? i18nProvider.t('editor_runner_timeout_desc')
+                  : '実行制限時間（TLE）を超過しました。'
                 : status === 'MLE'
-                  ? (i18nProvider ? i18nProvider.t('editor_runner_mle_desc') : 'メモリ制限（MLE）を超過しました。')
-                  : (i18nProvider ? i18nProvider.t('editor_runner_error_desc') : 'エラーが発生しました。'));
+                  ? i18nProvider
+                    ? i18nProvider.t('editor_runner_mle_desc')
+                    : 'メモリ制限（MLE）を超過しました。'
+                  : i18nProvider
+                    ? i18nProvider.t('editor_runner_error_desc')
+                    : 'エラーが発生しました。');
             bodyHtml = `
               <div class="case-error-block">
                 <div class="case-io-label" data-i18n="${labelKey}">${escapeHtml(labelText)}</div>
@@ -1484,9 +1499,9 @@ impl UnionFind {
         isTesting = false;
         setButtonsDisabled(false);
 
+        const errorText = i18nProvider ? i18nProvider.t('editor_label_error') : 'エラー';
         testSummaryState = { type: 'error', message: e.data.message };
         updateTestSummaryText();
-        testSummary.textContent = `${errorText}: ${e.data.message}`;
         testSummary.className = 'summary-wa';
 
         consoleResults.innerHTML = `
@@ -2259,35 +2274,17 @@ impl UnionFind {
   }
 
   // --- Learning Notes & Tags Module ---
-  const PRESET_METHOD_TAGS = [
-    { id: 'tag_name_binary_search', descKey: 'tag_desc_binary_search' },
-    { id: 'tag_name_dp', descKey: 'tag_desc_dp' },
-    { id: 'tag_name_prefix_sum', descKey: 'tag_desc_prefix_sum' },
-    { id: 'tag_name_bfs_dfs', descKey: 'tag_desc_bfs_dfs' },
-    { id: 'tag_name_two_pointers', descKey: 'tag_desc_two_pointers' },
-    { id: 'tag_name_union_find', descKey: 'tag_desc_union_find' },
-    { id: 'tag_name_greedy', descKey: 'tag_desc_greedy' },
-    { id: 'tag_name_math', descKey: 'tag_desc_math' },
-    { id: 'tag_name_full_search', descKey: 'tag_desc_full_search' },
-    { id: 'tag_name_graph', descKey: 'tag_desc_graph' },
-  ];
-
-  const PRESET_CAUSE_TAGS = [
-    { id: 'tag_name_corner_case', descKey: 'tag_desc_corner_case' },
-    { id: 'tag_name_overflow', descKey: 'tag_desc_overflow' },
-    { id: 'tag_name_cast_precision', descKey: 'tag_desc_cast_precision' },
-    { id: 'tag_name_tle', descKey: 'tag_desc_tle' },
-    { id: 'tag_name_re', descKey: 'tag_desc_re' },
-    { id: 'tag_name_uninitialized', descKey: 'tag_desc_uninitialized' },
-    { id: 'tag_name_heavy_impl', descKey: 'tag_desc_heavy_impl' },
-    { id: 'tag_name_bug_typo', descKey: 'tag_desc_bug_typo' },
-  ];
+  const PRESET_METHOD_TAGS =
+    (typeof TagConstants !== 'undefined' && TagConstants.PRESET_METHOD_TAGS) || [];
+  const PRESET_CAUSE_TAGS =
+    (typeof TagConstants !== 'undefined' && TagConstants.PRESET_CAUSE_TAGS) || [];
 
   function getTagDisplayName(tagName) {
-    if (!tagName) return '';
-    if (i18nProvider) {
-      const translated = i18nProvider.t(tagName);
-      if (translated && translated !== tagName) return translated;
+    if (
+      typeof TagConstants !== 'undefined' &&
+      typeof TagConstants.getTagDisplayName === 'function'
+    ) {
+      return TagConstants.getTagDisplayName(tagName, i18nProvider);
     }
     return tagName;
   }
@@ -2370,26 +2367,7 @@ impl UnionFind {
 
   function migrateTags(rawTags) {
     if (!Array.isArray(rawTags)) return { tags: [], isMigrated: false };
-    const legacyMap = {
-      '二分探索': 'tag_name_binary_search',
-      'DP': 'tag_name_dp',
-      '累積和': 'tag_name_prefix_sum',
-      'BFS/DFS': 'tag_name_bfs_dfs',
-      '尺取り法': 'tag_name_two_pointers',
-      'UnionFind': 'tag_name_union_find',
-      '貪欲法': 'tag_name_greedy',
-      '数学・考察': 'tag_name_math',
-      '全探索': 'tag_name_full_search',
-      'グラフ': 'tag_name_graph',
-      'コーナーケース': 'tag_name_corner_case',
-      'オーバーフロー': 'tag_name_overflow',
-      '型キャスト・精度': 'tag_name_cast_precision',
-      'TLE(計算量)': 'tag_name_tle',
-      '配列外参照/RE': 'tag_name_re',
-      '初期化忘れ': 'tag_name_uninitialized',
-      '実装重め': 'tag_name_heavy_impl',
-      'バグ埋め込み': 'tag_name_bug_typo',
-    };
+    const legacyMap = (typeof TagConstants !== 'undefined' && TagConstants.LEGACY_TAG_MAP) || {};
     let isMigrated = false;
     const cleanTags = rawTags.map((tag) => {
       if (legacyMap[tag]) {
@@ -2473,9 +2451,14 @@ impl UnionFind {
 
     if (tagsLabel && !tagsLabel.classList.contains('has-article-link')) {
       tagsLabel.classList.add('has-article-link');
-      tagsLabel.title = (i18nProvider && i18nProvider.t('editor_learning_tags_label_title')) || 'クリックで競プロ用語解説ガイド記事を開く';
+      tagsLabel.title =
+        (i18nProvider && i18nProvider.t('editor_learning_tags_label_title')) ||
+        'クリックで競プロ用語解説ガイド記事を開く';
       tagsLabel.addEventListener('click', () => {
-        window.open('https://rikutoyamada01.github.io/atcoder-workspace/pages/article/glossary.html', '_blank');
+        window.open(
+          'https://rikutoyamada01.github.io/atcoder-workspace/article/glossary.html',
+          '_blank'
+        );
       });
     }
 
@@ -2485,7 +2468,7 @@ impl UnionFind {
         const chip = document.createElement('span');
         chip.className = 'tag-chip';
         const displayName = getTagDisplayName(tag);
-        chip.textContent = `#${displayName} `;
+        chip.textContent = `#${displayName}`;
 
         const desc = getTagDescription(tag);
         if (desc) {
@@ -2567,15 +2550,22 @@ impl UnionFind {
     }
   }
 
+  let isLearningNotesUIInitialized = false;
+
   function initLearningNotesUI() {
+    if (isLearningNotesUIInitialized) return;
+    isLearningNotesUIInitialized = true;
+
     const toggleTagDropdownBtn = document.getElementById('toggle-tag-dropdown-btn');
     const tagDropdownPanel = document.getElementById('tag-dropdown-panel');
     const customTagInput = document.getElementById('custom-tag-input');
     const learningNoteTextarea = document.getElementById('learning-note-textarea');
 
     if (toggleTagDropdownBtn && tagDropdownPanel) {
-      const selectBtnText = (i18nProvider && i18nProvider.t('editor_learning_tags_select_btn')) || '＋ タグを選択 ▾';
-      const closeBtnText = (i18nProvider && i18nProvider.t('editor_learning_tags_close_btn')) || '▲ タグを閉じる';
+      const selectBtnText =
+        (i18nProvider && i18nProvider.t('editor_learning_tags_select_btn')) || '＋ タグを選択 ▾';
+      const closeBtnText =
+        (i18nProvider && i18nProvider.t('editor_learning_tags_close_btn')) || '▲ タグを閉じる';
 
       toggleTagDropdownBtn.onclick = (e) => {
         e.stopPropagation();
@@ -2593,7 +2583,9 @@ impl UnionFind {
             if (!panel.contains(e.target) && e.target !== btn) {
               panel.style.display = 'none';
               if (btn) {
-                const sText = (i18nProvider && i18nProvider.t('editor_learning_tags_select_btn')) || '＋ タグを選択 ▾';
+                const sText =
+                  (i18nProvider && i18nProvider.t('editor_learning_tags_select_btn')) ||
+                  '＋ タグを選択 ▾';
                 btn.textContent = sText;
               }
             }

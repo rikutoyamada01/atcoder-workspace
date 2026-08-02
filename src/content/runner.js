@@ -121,7 +121,14 @@
           }
         })
         .catch((err) => {
-          if ((err.status === 429 || !err.status) && retryCount < MAX_HTTP_RETRIES) {
+          const isNetworkErr =
+            err &&
+            err.name === 'TypeError' &&
+            err.message &&
+            err.message.toLowerCase().includes('fetch');
+          const is429 = err && err.status === 429;
+
+          if ((is429 || isNetworkErr) && retryCount < MAX_HTTP_RETRIES) {
             const delay = this._getRetryDelay(err.response, retryCount + 1);
             console.warn(
               `[AtCoder Workspace] pollResult error (${err.status || 'NetworkError'}). Retrying (${retryCount + 1}/${MAX_HTTP_RETRIES}) in ${delay}ms...`
@@ -190,10 +197,7 @@
             console.warn(
               `[AtCoder Workspace] Idle check received 429. Retrying (${retryCount + 1}/${MAX_HTTP_RETRIES}) in ${delay}ms...`
             );
-            setTimeout(
-              () => this.ensureIdle(contestId, onIdle, startTime, retryCount + 1),
-              delay
-            );
+            setTimeout(() => this.ensureIdle(contestId, onIdle, startTime, retryCount + 1), delay);
           } else {
             console.warn('[AtCoder Workspace] Idle check failed:', err, ', proceeding anyway.');
             onIdle();
