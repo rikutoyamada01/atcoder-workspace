@@ -5,6 +5,7 @@ on:
     branches:
       - master
     paths:
+      - 'package.json'
       - 'manifest.json'
 
 jobs:
@@ -19,12 +20,12 @@ jobs:
         with:
           fetch-depth: 0 # すべてのタグを取得するために必要
 
-      - name: Get version from manifest.json
+      - name: Get version from package.json
         id: get_version
         run: |
-          VERSION=$(node -p "require('./manifest.json').version")
+          VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Current manifest version: $VERSION"
+          echo "Current package version: $VERSION"
 
       - name: Check if tag exists
         id: check_tag

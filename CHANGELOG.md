@@ -5,6 +5,12 @@ All notable changes to the AtCoder Workspace extension will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.2] - 2026-08-03
+
+### Fixed
+- **📦 リリースビルドの ZIP 空・破損問題の修正**: CI (Linux) 上での ZIP パッケージ作成コマンドを標準 `zip -r` へ置換し、Windows 展開ウィザードで空/破損と判定される問題を完全解消。
+- **🚀 自動リリースワークフローのトリガー最適化**: `package.json` のバージョン変更時にもリリースが正しくトリガーされるよう CI 条件を更新。
+
 ## [1.7.1] - 2026-08-03
 
 ### Fixed
