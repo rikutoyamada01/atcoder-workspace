@@ -2347,6 +2347,9 @@ impl UnionFind {
         <textarea id="learning-note-textarea" class="form-control note-textarea" rows="1" data-i18n-placeholder="editor_learning_note_placeholder" placeholder="N=1の例外処理、計算量オーバーの注意点など..."></textarea>
       </div>
     `;
+
+    bindLearningNotesSectionEvents(div);
+
     if (i18nProvider && typeof i18n !== 'undefined' && i18n.translatePage) {
       i18n.translatePage(i18nProvider, div);
     }
@@ -2362,7 +2365,7 @@ impl UnionFind {
     if (section.parentElement !== consoleResults || consoleResults.lastElementChild !== section) {
       consoleResults.appendChild(section);
     }
-    initLearningNotesUI();
+    initLearningNotesGlobalListeners();
   }
 
   function migrateTags(rawTags) {
@@ -2550,16 +2553,13 @@ impl UnionFind {
     }
   }
 
-  let isLearningNotesUIInitialized = false;
+  function bindLearningNotesSectionEvents(section) {
+    if (!section) return;
 
-  function initLearningNotesUI() {
-    if (isLearningNotesUIInitialized) return;
-    isLearningNotesUIInitialized = true;
-
-    const toggleTagDropdownBtn = document.getElementById('toggle-tag-dropdown-btn');
-    const tagDropdownPanel = document.getElementById('tag-dropdown-panel');
-    const customTagInput = document.getElementById('custom-tag-input');
-    const learningNoteTextarea = document.getElementById('learning-note-textarea');
+    const toggleTagDropdownBtn = section.querySelector('#toggle-tag-dropdown-btn');
+    const tagDropdownPanel = section.querySelector('#tag-dropdown-panel');
+    const customTagInput = section.querySelector('#custom-tag-input');
+    const learningNoteTextarea = section.querySelector('#learning-note-textarea');
 
     if (toggleTagDropdownBtn && tagDropdownPanel) {
       const selectBtnText =
@@ -2573,25 +2573,6 @@ impl UnionFind {
         tagDropdownPanel.style.display = isHidden ? 'flex' : 'none';
         toggleTagDropdownBtn.textContent = isHidden ? closeBtnText : selectBtnText;
       };
-
-      if (!isDropdownClickListenerAdded) {
-        isDropdownClickListenerAdded = true;
-        document.addEventListener('click', (e) => {
-          const panel = document.getElementById('tag-dropdown-panel');
-          const btn = document.getElementById('toggle-tag-dropdown-btn');
-          if (panel && panel.style.display !== 'none') {
-            if (!panel.contains(e.target) && e.target !== btn) {
-              panel.style.display = 'none';
-              if (btn) {
-                const sText =
-                  (i18nProvider && i18nProvider.t('editor_learning_tags_select_btn')) ||
-                  '＋ タグを選択 ▾';
-                btn.textContent = sText;
-              }
-            }
-          }
-        });
-      }
     }
 
     if (customTagInput) {
@@ -2631,10 +2612,30 @@ impl UnionFind {
     }
   }
 
+  function initLearningNotesGlobalListeners() {
+    if (isDropdownClickListenerAdded) return;
+    isDropdownClickListenerAdded = true;
+
+    document.addEventListener('click', (e) => {
+      const panel = document.getElementById('tag-dropdown-panel');
+      const btn = document.getElementById('toggle-tag-dropdown-btn');
+      if (panel && panel.style.display !== 'none') {
+        if (!panel.contains(e.target) && e.target !== btn) {
+          panel.style.display = 'none';
+          if (btn) {
+            const sText =
+              (i18nProvider && i18nProvider.t('editor_learning_tags_select_btn')) ||
+              '＋ タグを選択 ▾';
+            btn.textContent = sText;
+          }
+        }
+      }
+    });
+  }
+
   window.addEventListener('beforeunload', () => {
     saveLearningNotesAndTags();
   });
 
-  initLearningNotesUI();
   renderLearningNotesAndTags();
 })();

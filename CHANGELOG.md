@@ -5,6 +5,11 @@ All notable changes to the AtCoder Workspace extension will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.1] - 2026-08-03
+
+### Fixed
+- **🏷️ タグ選択ボタンのイベントバインド修正**: テスト実行やコンソール再描画により DOM が再生成された際、「タグを選択」ボタンが反応しなくなる不具合を修正。DOM 再生成時にもイベントリスナーが確実に再バインドされる構造へ修正。
+
 ## [1.7.0] - 2026-07-31
 
 ### Added
