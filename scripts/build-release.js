@@ -78,11 +78,11 @@ if (isWindows) {
   }
 } else {
   try {
-    // macOS/Linux - tar を使用
-    execSync(`tar -a -c -f "${zipFilePath}" -C "${tempDir}" .`, { stdio: 'inherit' });
-    console.log(`ZIP archive created successfully using tar at: ${zipFilePath}`);
+    // macOS/Linux - zip コマンドを使用
+    execSync(`cd "${tempDir}" && zip -r "${zipFilePath}" .`, { stdio: 'inherit' });
+    console.log(`ZIP archive created successfully using zip at: ${zipFilePath}`);
   } catch (error) {
-    console.error('Tar build failed:', error.message);
+    console.error('Zip build failed:', error.message);
     process.exit(1);
   }
 }
