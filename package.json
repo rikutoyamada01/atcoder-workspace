@@ -1,6 +1,6 @@
 {
   "name": "atcoder-workspace",
-  "version": "1.7.1",
+  "version": "1.7.2",
   "description": "Competitive Programming Workspace for AtCoder",
   "private": true,
   "scripts": {
@@ -15,7 +15,7 @@
     "format:check": "prettier --check \"src/**/*.{js,css}\" \"tests/**/*.js\" \"scripts/**/*.js\" \"*.json\" \"README.md\"",
     "changelog": "node scripts/build-changelog.js",
     "build": "node scripts/build-release.js",
-    "pre-merge": "npm run version:sync && npm run format && npm run lint:fix && npm test"
+    "pre-merge": "npm run version:sync && npm run format && npm run lint:fix && npm test && npm run build"
   },
   "devDependencies": {
     "eslint": "^8.57.0",
