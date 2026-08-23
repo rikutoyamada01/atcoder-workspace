@@ -139,11 +139,46 @@ describe('DashboardStats Module', () => {
       const ahc = stats.contestDistribution.find((c) => c.type === 'ahc');
       const other = stats.contestDistribution.find((c) => c.type === 'other');
 
-      expect(abc).toEqual({ type: 'abc', label: 'ABC', total: 2, ac: 2, selfAc: 1, editorialAc: 1 });
-      expect(arc).toEqual({ type: 'arc', label: 'ARC', total: 1, ac: 1, selfAc: 1, editorialAc: 0 });
-      expect(agc).toEqual({ type: 'agc', label: 'AGC', total: 1, ac: 1, selfAc: 1, editorialAc: 0 });
-      expect(ahc).toEqual({ type: 'ahc', label: 'AHC', total: 1, ac: 1, selfAc: 1, editorialAc: 0 });
-      expect(other).toEqual({ type: 'other', label: 'Others', total: 1, ac: 1, selfAc: 1, editorialAc: 0 });
+      expect(abc).toEqual({
+        type: 'abc',
+        label: 'ABC',
+        total: 2,
+        ac: 2,
+        selfAc: 1,
+        editorialAc: 1,
+      });
+      expect(arc).toEqual({
+        type: 'arc',
+        label: 'ARC',
+        total: 1,
+        ac: 1,
+        selfAc: 1,
+        editorialAc: 0,
+      });
+      expect(agc).toEqual({
+        type: 'agc',
+        label: 'AGC',
+        total: 1,
+        ac: 1,
+        selfAc: 1,
+        editorialAc: 0,
+      });
+      expect(ahc).toEqual({
+        type: 'ahc',
+        label: 'AHC',
+        total: 1,
+        ac: 1,
+        selfAc: 1,
+        editorialAc: 0,
+      });
+      expect(other).toEqual({
+        type: 'other',
+        label: 'Others',
+        total: 1,
+        ac: 1,
+        selfAc: 1,
+        editorialAc: 0,
+      });
     });
   });
 });

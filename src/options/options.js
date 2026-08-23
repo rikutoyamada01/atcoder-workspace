@@ -882,9 +882,7 @@ func main() {
 
     if (selfBar && editorialBar) {
       const selfPct =
-        stats.summary.totalAc > 0
-          ? (stats.summary.selfAcCount / stats.summary.totalAc) * 100
-          : 0;
+        stats.summary.totalAc > 0 ? (stats.summary.selfAcCount / stats.summary.totalAc) * 100 : 0;
       const editorialPct =
         stats.summary.totalAc > 0
           ? (stats.summary.editorialAcCount / stats.summary.totalAc) * 100

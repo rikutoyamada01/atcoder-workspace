@@ -1278,7 +1278,7 @@ body.dark-mode .kpi-clickable:hover {
   font-size: 11px;
   color: var(--text-muted);
   margin-top: 2px;
-  font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+  font-family: Monaco, Menlo, Consolas, 'Courier New', monospace;
 }
 
 .hero-ratio-track {
@@ -1427,7 +1427,7 @@ body.dark-mode .dashboard-rank-badge {
 .dashboard-bar-count {
   color: var(--text-muted);
   font-size: 11.5px;
-  font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+  font-family: Monaco, Menlo, Consolas, 'Courier New', monospace;
   font-weight: 600;
 }
 
@@ -1558,11 +1558,21 @@ body.dark-mode .contest-row:hover {
   min-width: 48px;
 }
 
-.contest-badge.badge-abc { background-color: #5cb85c; }
-.contest-badge.badge-arc { background-color: #f0ad4e; }
-.contest-badge.badge-agc { background-color: #d9534f; }
-.contest-badge.badge-ahc { background-color: #5bc0de; }
-.contest-badge.badge-other { background-color: #777777; }
+.contest-badge.badge-abc {
+  background-color: #5cb85c;
+}
+.contest-badge.badge-arc {
+  background-color: #f0ad4e;
+}
+.contest-badge.badge-agc {
+  background-color: #d9534f;
+}
+.contest-badge.badge-ahc {
+  background-color: #5bc0de;
+}
+.contest-badge.badge-other {
+  background-color: #777777;
+}
 
 .contest-table-track {
   display: flex;
@@ -1591,14 +1601,14 @@ body.dark-mode .contest-table-track {
 
 .contest-cell-count {
   text-align: right;
-  font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+  font-family: Monaco, Menlo, Consolas, 'Courier New', monospace;
   font-size: 12px;
   color: var(--text-color);
 }
 
 .contest-cell-rate {
   text-align: right;
-  font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+  font-family: Monaco, Menlo, Consolas, 'Courier New', monospace;
   font-size: 12px;
   font-weight: 700;
 }
