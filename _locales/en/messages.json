@@ -783,6 +783,105 @@
   },
   "options_backup_confirm_merge": {
     "message": "Are you sure you want to restore by merging (adding/updating) the backup into your current data?"
+  },
+  "options_tab_dashboard": {
+    "message": "Dashboard & Progress"
+  },
+  "options_tab_general": {
+    "message": "General Settings"
+  },
+  "options_tab_templates": {
+    "message": "Templates & Snippets"
+  },
+  "options_tab_storage": {
+    "message": "Data & Storage"
+  },
+  "options_dashboard_title": {
+    "message": "Learning Dashboard & Error Trends"
+  },
+  "options_dashboard_desc": {
+    "message": "Visualize your Self/Editorial AC ratios, favorite methods, common struggle causes, and contest progress."
+  },
+  "dashboard_kpi_total_tracked": {
+    "message": "Total Tracked Problems"
+  },
+  "dashboard_kpi_total_ac": {
+    "message": "Total ACs"
+  },
+  "dashboard_kpi_self_ac": {
+    "message": "Self AC Rate"
+  },
+  "dashboard_kpi_editorial_ac": {
+    "message": "Editorial AC Rate"
+  },
+  "dashboard_kpi_notes": {
+    "message": "Notes & Tags"
+  },
+  "dashboard_section_methods": {
+    "message": "💡 Solution Method Trends"
+  },
+  "dashboard_section_causes": {
+    "message": "⚠️ Struggle Causes & Weakness Analysis"
+  },
+  "dashboard_section_contests": {
+    "message": "📈 Contest Category Progress"
+  },
+  "dashboard_ac_quality_title": {
+    "message": "Self AC vs Editorial AC Breakdown"
+  },
+  "dashboard_ac_quality_self": {
+    "message": "Self AC"
+  },
+  "dashboard_ac_quality_editorial": {
+    "message": "Editorial AC"
+  },
+  "dashboard_contest_col_category": {
+    "message": "Category"
+  },
+  "dashboard_contest_col_progress": {
+    "message": "Progress"
+  },
+  "dashboard_contest_col_solved": {
+    "message": "AC / Total"
+  },
+  "dashboard_contest_col_ac_rate": {
+    "message": "AC Rate"
+  },
+  "dashboard_no_tags_message": {
+    "message": "No tags recorded yet. Add tags in problem notes to see breakdown here."
+  },
+  "dashboard_no_causes_message": {
+    "message": "No struggle cause tags recorded yet."
+  },
+  "dashboard_click_to_filter": {
+    "message": "Click to filter problems by this tag"
+  },
+  "dashboard_hint_title": {
+    "message": "Improvement Tip:"
+  },
+  "dashboard_hint_corner_case": {
+    "message": "Test extreme inputs such as N=0, 1, min/max limits, empty strings, disconnected graphs, or self-loops."
+  },
+  "dashboard_hint_overflow": {
+    "message": "Beware of 32-bit integer overflow (~2x10^9). Use 64-bit integers (long long / BigInt) for products and sums."
+  },
+  "dashboard_hint_cast_precision": {
+    "message": "Avoid floating point precision issues by converting formulas into integer calculations (e.g. cross multiplication)."
+  },
+  "dashboard_hint_tle": {
+    "message": "Estimate required time complexity (e.g. O(N) or O(N log N)) from constraints and consider binary search, prefix sums, DP, or fast data structures."
+  },
+  "dashboard_hint_re": {
+    "message": "Check array bounds, division by zero, and recursion depth (stack overflow limits)."
+  },
+  "dashboard_hint_uninitialized": {
+    "message": "For multiple test cases, ensure all global variables, vectors, and state arrays are properly reset."
+  },
+  "dashboard_hint_heavy_impl": {
+    "message": "Break complex logic into smaller helper functions and clarify state transitions before coding."
+  },
+  "dashboard_hint_bug_typo": {
+    "message": "Double-check variable typos (e.g. i vs j, u vs v) and 0-based vs 1-based indexing."
   }
 }
 
