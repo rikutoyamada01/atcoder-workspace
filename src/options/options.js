@@ -1377,12 +1377,19 @@ func main() {
     }
   }
 
+  let changelogPromise = null;
+
   function initChangelog() {
-    fetch('../changelog.json')
-      .then((res) => res.json())
+    if (changelogPromise) return changelogPromise;
+
+    changelogPromise = fetch('../changelog.json')
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to fetch changelog');
+        return res.json();
+      })
       .then((data) => {
-        changelogData = data;
-        if (!Array.isArray(changelogData) || changelogData.length === 0) return;
+        changelogData = Array.isArray(data) ? data : [];
+        if (changelogData.length === 0) return changelogData;
 
         if (changelogVersionSelect) {
           changelogVersionSelect.innerHTML = '';
@@ -1392,6 +1399,8 @@ func main() {
             opt.textContent = `v${rel.version}${rel.date ? ' (' + rel.date + ')' : ''}`;
             changelogVersionSelect.appendChild(opt);
           });
+          changelogVersionSelect.value = changelogData[0].version;
+          displayChangelogVersion(changelogData[0].version);
         }
 
         // Check unread status for Options page banner
@@ -1408,11 +1417,19 @@ func main() {
             }
           });
         }
+        return changelogData;
       })
-      .catch((err) => console.warn('Failed to load changelog.json in options:', err));
+      .catch((err) => {
+        console.warn('Failed to load changelog.json in options:', err);
+        changelogPromise = null;
+        return [];
+      });
+
+    return changelogPromise;
   }
 
   function displayChangelogVersion(ver) {
+    if (!changelogData || changelogData.length === 0) return;
     const rel = changelogData.find((r) => r.version === ver) || changelogData[0];
     if (rel && changelogContent) {
       changelogContent.innerHTML = renderMarkdownSimple(rel.content);
@@ -1421,15 +1438,20 @@ func main() {
 
   function openChangelogModal() {
     if (!changelogModal) return;
-    if (changelogData.length === 0) {
-      initChangelog();
-    }
     changelogModal.style.display = 'flex';
-    if (changelogVersionSelect && changelogData.length > 0) {
+    markChangelogAsRead();
+
+    if (changelogData.length === 0) {
+      initChangelog().then((data) => {
+        if (data && data.length > 0 && changelogVersionSelect) {
+          changelogVersionSelect.value = data[0].version;
+          displayChangelogVersion(data[0].version);
+        }
+      });
+    } else if (changelogVersionSelect && changelogData.length > 0) {
       changelogVersionSelect.value = changelogData[0].version;
       displayChangelogVersion(changelogData[0].version);
     }
-    markChangelogAsRead();
   }
 
   if (optionsChangelogBtn) {

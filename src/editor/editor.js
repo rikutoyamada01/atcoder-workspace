@@ -1348,6 +1348,7 @@ impl UnionFind {
           const html = buildConsoleHTML('');
           if (targetProblemId === problemId) {
             consoleResults.innerHTML = html;
+            renderLearningNotesAndTags();
             consoleResults.scrollTop = consoleResults.scrollHeight;
             testSummary.textContent = summaryText;
             testSummary.className = summaryClass;
@@ -1428,7 +1429,7 @@ impl UnionFind {
           }
           consoleResults.appendChild(row);
         }
-        ensureLearningNotesSection();
+        renderLearningNotesAndTags();
         saveConsoleState(contestId, problemId);
         break;
 
@@ -1591,6 +1592,8 @@ impl UnionFind {
             <pre class="case-error-content">${escapeHtml(e.data.message)}</pre>
           </div>
         `;
+
+        renderLearningNotesAndTags();
 
         // Auto-scroll to the bottom of the console results
         consoleResults.scrollTop = consoleResults.scrollHeight;
@@ -1896,7 +1899,7 @@ impl UnionFind {
   function setConsoleHTML(html) {
     if (!consoleResults) return;
     consoleResults.innerHTML = html;
-    ensureLearningNotesSection();
+    renderLearningNotesAndTags();
   }
 
   function saveConsoleState(cId, pId) {
@@ -2437,16 +2440,24 @@ impl UnionFind {
     return div;
   }
 
+  let isRenderingNotes = false;
+
   function ensureLearningNotesSection() {
     if (!consoleResults) return;
     let section = document.getElementById('learning-notes-section');
+    let isNew = false;
     if (!section) {
       section = createLearningNotesSectionDOM();
+      isNew = true;
     }
     if (section.parentElement !== consoleResults || consoleResults.lastElementChild !== section) {
       consoleResults.appendChild(section);
+      isNew = true;
     }
     initLearningNotesGlobalListeners();
+    if (isNew && !isRenderingNotes) {
+      renderLearningNotesAndTags();
+    }
   }
 
   function migrateTags(rawTags) {
@@ -2525,112 +2536,118 @@ impl UnionFind {
   }
 
   function renderLearningNotesAndTags() {
-    ensureLearningNotesSection();
+    if (isRenderingNotes) return;
+    isRenderingNotes = true;
+    try {
+      ensureLearningNotesSection();
 
-    const selectedTagsContainer = document.getElementById('selected-tags-container');
-    const methodTagsWrapper = document.getElementById('method-tags-wrapper');
-    const causeTagsWrapper = document.getElementById('cause-tags-wrapper');
-    const learningNoteTextarea = document.getElementById('learning-note-textarea');
-    const tagsLabel = document.querySelector('.tags-label');
+      const selectedTagsContainer = document.getElementById('selected-tags-container');
+      const methodTagsWrapper = document.getElementById('method-tags-wrapper');
+      const causeTagsWrapper = document.getElementById('cause-tags-wrapper');
+      const learningNoteTextarea = document.getElementById('learning-note-textarea');
+      const tagsLabel = document.querySelector('.tags-label');
 
-    if (tagsLabel && !tagsLabel.classList.contains('has-article-link')) {
-      tagsLabel.classList.add('has-article-link');
-      tagsLabel.title =
-        (i18nProvider && i18nProvider.t('editor_learning_tags_label_title')) ||
-        'クリックで競プロ用語解説ガイド記事を開く';
-      tagsLabel.addEventListener('click', () => {
-        window.open(
-          'https://rikutoyamada01.github.io/atcoder-workspace/article/glossary.html',
-          '_blank'
-        );
-      });
-    }
+      if (tagsLabel && !tagsLabel.classList.contains('has-article-link')) {
+        tagsLabel.classList.add('has-article-link');
+        tagsLabel.title =
+          (i18nProvider && i18nProvider.t('editor_learning_tags_label_title')) ||
+          'クリックで競プロ用語解説ガイド記事を開く';
+        tagsLabel.addEventListener('click', () => {
+          window.open(
+            'https://rikutoyamada01.github.io/atcoder-workspace/article/glossary.html',
+            '_blank'
+          );
+        });
+      }
 
-    if (selectedTagsContainer) {
-      selectedTagsContainer.innerHTML = '';
-      currentProblemNotes.tags.forEach((tag) => {
-        const chip = document.createElement('span');
-        chip.className = 'tag-chip';
-        const displayName = getTagDisplayName(tag);
-        chip.textContent = `#${displayName}`;
+      if (selectedTagsContainer) {
+        selectedTagsContainer.innerHTML = '';
+        currentProblemNotes.tags.forEach((tag) => {
+          const chip = document.createElement('span');
+          chip.className = 'tag-chip';
+          const displayName = getTagDisplayName(tag);
+          chip.textContent = `#${displayName}`;
 
-        const desc = getTagDescription(tag);
-        if (desc) {
-          chip.title = desc;
-        }
+          const desc = getTagDescription(tag);
+          if (desc) {
+            chip.title = desc;
+          }
 
-        const removeBtn = document.createElement('span');
-        removeBtn.className = 'tag-chip-remove';
-        removeBtn.textContent = '×';
-        removeBtn.onclick = (e) => {
-          e.stopPropagation();
-          toggleTag(tag);
-        };
-
-        chip.appendChild(removeBtn);
-        selectedTagsContainer.appendChild(chip);
-      });
-    }
-
-    if (methodTagsWrapper) {
-      methodTagsWrapper.innerHTML = '';
-      PRESET_METHOD_TAGS.forEach((tagObj) => {
-        const tagId = tagObj.id;
-        const displayName = getTagDisplayName(tagId);
-        const desc = getTagDescription(tagId);
-        const option = document.createElement('span');
-        const isActive = currentProblemNotes.tags.includes(tagId);
-        option.className = `tag-option-chip ${isActive ? 'active' : ''}`;
-        option.textContent = `#${displayName}`;
-        option.title = desc;
-        option.onclick = (e) => {
-          e.stopPropagation();
-          toggleTag(tagId);
-        };
-        methodTagsWrapper.appendChild(option);
-      });
-    }
-
-    if (causeTagsWrapper) {
-      causeTagsWrapper.innerHTML = '';
-      PRESET_CAUSE_TAGS.forEach((tagObj) => {
-        const tagId = tagObj.id;
-        const displayName = getTagDisplayName(tagId);
-        const desc = getTagDescription(tagId);
-        const option = document.createElement('span');
-        const isActive = currentProblemNotes.tags.includes(tagId);
-        option.className = `tag-option-chip ${isActive ? 'active' : ''}`;
-        option.textContent = `#${displayName}`;
-        option.title = desc;
-        option.onclick = (e) => {
-          e.stopPropagation();
-          toggleTag(tagId);
-        };
-        causeTagsWrapper.appendChild(option);
-      });
-
-      // Render custom tags not in presets
-      const presetKeys = new Set([
-        ...PRESET_METHOD_TAGS.map((t) => t.id),
-        ...PRESET_CAUSE_TAGS.map((t) => t.id),
-      ]);
-      currentProblemNotes.tags.forEach((tag) => {
-        if (!presetKeys.has(tag)) {
-          const option = document.createElement('span');
-          option.className = 'tag-option-chip active';
-          option.textContent = `#${getTagDisplayName(tag)}`;
-          option.onclick = (e) => {
+          const removeBtn = document.createElement('span');
+          removeBtn.className = 'tag-chip-remove';
+          removeBtn.textContent = '×';
+          removeBtn.onclick = (e) => {
             e.stopPropagation();
             toggleTag(tag);
           };
-          causeTagsWrapper.appendChild(option);
-        }
-      });
-    }
 
-    if (learningNoteTextarea && document.activeElement !== learningNoteTextarea) {
-      learningNoteTextarea.value = currentProblemNotes.note || '';
-      autoResizeTextarea(learningNoteTextarea);
+          chip.appendChild(removeBtn);
+          selectedTagsContainer.appendChild(chip);
+        });
+      }
+
+      if (methodTagsWrapper) {
+        methodTagsWrapper.innerHTML = '';
+        PRESET_METHOD_TAGS.forEach((tagObj) => {
+          const tagId = tagObj.id;
+          const displayName = getTagDisplayName(tagId);
+          const desc = getTagDescription(tagId);
+          const option = document.createElement('span');
+          const isActive = currentProblemNotes.tags.includes(tagId);
+          option.className = `tag-option-chip ${isActive ? 'active' : ''}`;
+          option.textContent = `#${displayName}`;
+          option.title = desc;
+          option.onclick = (e) => {
+            e.stopPropagation();
+            toggleTag(tagId);
+          };
+          methodTagsWrapper.appendChild(option);
+        });
+      }
+
+      if (causeTagsWrapper) {
+        causeTagsWrapper.innerHTML = '';
+        PRESET_CAUSE_TAGS.forEach((tagObj) => {
+          const tagId = tagObj.id;
+          const displayName = getTagDisplayName(tagId);
+          const desc = getTagDescription(tagId);
+          const option = document.createElement('span');
+          const isActive = currentProblemNotes.tags.includes(tagId);
+          option.className = `tag-option-chip ${isActive ? 'active' : ''}`;
+          option.textContent = `#${displayName}`;
+          option.title = desc;
+          option.onclick = (e) => {
+            e.stopPropagation();
+            toggleTag(tagId);
+          };
+          causeTagsWrapper.appendChild(option);
+        });
+
+        // Render custom tags not in presets
+        const presetKeys = new Set([
+          ...PRESET_METHOD_TAGS.map((t) => t.id),
+          ...PRESET_CAUSE_TAGS.map((t) => t.id),
+        ]);
+        currentProblemNotes.tags.forEach((tag) => {
+          if (!presetKeys.has(tag)) {
+            const option = document.createElement('span');
+            option.className = 'tag-option-chip active';
+            option.textContent = `#${getTagDisplayName(tag)}`;
+            option.onclick = (e) => {
+              e.stopPropagation();
+              toggleTag(tag);
+            };
+            causeTagsWrapper.appendChild(option);
+          }
+        });
+      }
+
+      if (learningNoteTextarea && document.activeElement !== learningNoteTextarea) {
+        learningNoteTextarea.value = currentProblemNotes.note || '';
+        autoResizeTextarea(learningNoteTextarea);
+      }
+    } finally {
+      isRenderingNotes = false;
     }
   }
 
@@ -2650,6 +2667,16 @@ impl UnionFind {
 
       toggleTagDropdownBtn.onclick = (e) => {
         e.stopPropagation();
+        const methodWrapper = section.querySelector('#method-tags-wrapper');
+        const causeWrapper = section.querySelector('#cause-tags-wrapper');
+        if (
+          !methodWrapper ||
+          methodWrapper.children.length === 0 ||
+          !causeWrapper ||
+          causeWrapper.children.length === 0
+        ) {
+          renderLearningNotesAndTags();
+        }
         const isHidden = tagDropdownPanel.style.display === 'none';
         tagDropdownPanel.style.display = isHidden ? 'flex' : 'none';
         toggleTagDropdownBtn.textContent = isHidden ? closeBtnText : selectBtnText;
