@@ -760,19 +760,46 @@ func main() {
     showToast(i18nProvider.t('settings_snippets_export_success'));
   };
 
-  // Check hash redirect for scroll
+  // --- Tab Navigation Logic ---
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  const tabPanels = document.querySelectorAll('.tab-panel');
+
+  const switchTab = (targetTab) => {
+    tabButtons.forEach((b) => {
+      const isActive = b.getAttribute('data-tab') === targetTab;
+      b.classList.toggle('active', isActive);
+      b.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    });
+
+    tabPanels.forEach((panel) => {
+      panel.classList.toggle('active', panel.id === `tab-panel-${targetTab}`);
+    });
+  };
+
+  tabButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const targetTab = btn.getAttribute('data-tab');
+      if (targetTab) switchTab(targetTab);
+    });
+  });
+
+  // Check hash redirect for tab switching & scroll
   const checkHashRedirect = () => {
-    if (window.location.hash === '#custom-snippets-section') {
+    const hash = window.location.hash;
+    if (hash === '#custom-snippets-section') {
+      switchTab('templates');
       setTimeout(() => {
         const section = document.getElementById('custom-snippets-section');
         if (section) {
           section.scrollIntoView({ behavior: 'smooth' });
         }
       }, 300);
+    } else if (hash === '#learning-dashboard-card' || hash === '#dashboard') {
+      switchTab('dashboard');
     }
   };
 
-  // --- Problem Statuses Logic ---
+  // --- Problem Statuses & Learning Dashboard Logic ---
   const statusTableBody = document.getElementById('status-table-body');
   const noStatusMessage = document.getElementById('no-status-message');
   const statusSearchInput = document.getElementById('status-search-input');
@@ -787,6 +814,241 @@ func main() {
       return TagConstants.getTagDisplayName(tagName, i18nProvider);
     }
     return tagName;
+  };
+
+  const applyTagFilterToTable = (tagQuery) => {
+    if (!statusSearchInput) return;
+    statusSearchInput.value = tagQuery;
+    currentPage = 1;
+    loadProblemStatuses();
+
+    const tableContainer = document.querySelector('.status-table-container');
+    if (tableContainer) {
+      tableContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  };
+
+  const renderDashboard = (data) => {
+    if (
+      typeof DashboardStats === 'undefined' ||
+      typeof DashboardStats.calculateDashboardStats !== 'function'
+    ) {
+      return;
+    }
+    const stats = DashboardStats.calculateDashboardStats(data);
+
+    // KPI Summary Cards
+    const kpiTotalTracked = document.getElementById('kpi-total-tracked');
+    const kpiTotalAc = document.getElementById('kpi-total-ac');
+    const kpiSelfRate = document.getElementById('kpi-self-rate');
+    const kpiSelfCount = document.getElementById('kpi-self-count');
+    const kpiEditorialRate = document.getElementById('kpi-editorial-rate');
+    const kpiEditorialCount = document.getElementById('kpi-editorial-count');
+    const kpiNotesCount = document.getElementById('kpi-notes-count');
+    const kpiNotesSub = document.getElementById('kpi-notes-sub');
+
+    const acUnit = i18nProvider.t('settings_support_acUnit') || '';
+
+    if (kpiTotalTracked) kpiTotalTracked.textContent = stats.summary.totalTracked;
+    if (kpiTotalAc) kpiTotalAc.textContent = `${stats.summary.totalAc} AC`;
+    if (kpiSelfRate) kpiSelfRate.textContent = `${stats.summary.selfAcRate}%`;
+    if (kpiSelfCount)
+      kpiSelfCount.textContent =
+        stats.summary.totalAc > 0
+          ? `${stats.summary.selfAcCount} / ${stats.summary.totalAc} AC`
+          : `0 ${acUnit}`.trim();
+    if (kpiEditorialRate) kpiEditorialRate.textContent = `${stats.summary.editorialAcRate}%`;
+    if (kpiEditorialCount)
+      kpiEditorialCount.textContent =
+        stats.summary.totalAc > 0
+          ? `${stats.summary.editorialAcCount} / ${stats.summary.totalAc} AC`
+          : `0 ${acUnit}`.trim();
+    if (kpiNotesCount) kpiNotesCount.textContent = stats.summary.noteProblemCount;
+    if (kpiNotesSub) {
+      const noteRatio =
+        stats.summary.totalTracked > 0
+          ? Math.round((stats.summary.noteProblemCount / stats.summary.totalTracked) * 100)
+          : 0;
+      kpiNotesSub.textContent = `${noteRatio}% (${stats.summary.noteProblemCount}/${stats.summary.totalTracked})`;
+    }
+
+    // AC Quality Composition Bar (Self AC vs Editorial AC)
+    const selfBar = document.getElementById('ac-quality-self-bar');
+    const editorialBar = document.getElementById('ac-quality-editorial-bar');
+    const selfStat = document.getElementById('ac-quality-self-stat');
+    const editorialStat = document.getElementById('ac-quality-editorial-stat');
+    const legendSelf = document.getElementById('legend-self-filter');
+    const legendEditorial = document.getElementById('legend-editorial-filter');
+
+    if (selfBar && editorialBar) {
+      const selfPct =
+        stats.summary.totalAc > 0 ? (stats.summary.selfAcCount / stats.summary.totalAc) * 100 : 0;
+      const editorialPct =
+        stats.summary.totalAc > 0
+          ? (stats.summary.editorialAcCount / stats.summary.totalAc) * 100
+          : 0;
+      selfBar.style.width = `${selfPct}%`;
+      editorialBar.style.width = `${editorialPct}%`;
+      if (selfStat)
+        selfStat.textContent = `${stats.summary.selfAcCount} (${stats.summary.selfAcRate}%)`;
+      if (editorialStat)
+        editorialStat.textContent = `${stats.summary.editorialAcCount} (${stats.summary.editorialAcRate}%)`;
+    }
+
+    if (legendSelf) {
+      legendSelf.onclick = () => {
+        if (statusFilterSelect) {
+          statusFilterSelect.value = 'self_ac';
+          loadProblemStatuses();
+          const tbl = document.getElementById('problem-status-table-container');
+          if (tbl) tbl.scrollIntoView({ behavior: 'smooth' });
+        }
+      };
+    }
+
+    if (legendEditorial) {
+      legendEditorial.onclick = () => {
+        if (statusFilterSelect) {
+          statusFilterSelect.value = 'editorial_ac';
+          loadProblemStatuses();
+          const tbl = document.getElementById('problem-status-table-container');
+          if (tbl) tbl.scrollIntoView({ behavior: 'smooth' });
+        }
+      };
+    }
+
+    // Method Breakdown
+    const methodList = document.getElementById('method-breakdown-list');
+    const methodEmpty = document.getElementById('method-empty-msg');
+    if (methodList && methodEmpty) {
+      if (stats.methodBreakdown.length === 0) {
+        methodList.innerHTML = '';
+        methodEmpty.style.display = 'block';
+      } else {
+        methodEmpty.style.display = 'none';
+        const tooltip = i18nProvider.t('dashboard_click_to_filter') || '';
+        methodList.innerHTML = stats.methodBreakdown
+          .slice(0, 6)
+          .map((item, idx) => {
+            const displayName = getTagDisplayName(item.tagId);
+            const rankLabel = `#${idx + 1}`;
+            return `
+              <div class="dashboard-bar-item" data-tag-filter="${escapeHtml(item.tagId)}" data-tag-display="${escapeHtml(displayName)}" title="${escapeHtml(tooltip)}">
+                <div class="dashboard-bar-header">
+                  <span class="dashboard-tag-name"><span class="dashboard-rank-badge">${rankLabel}</span> #${escapeHtml(displayName)}</span>
+                  <span class="dashboard-bar-count">${item.count} (${item.percentage}%)</span>
+                </div>
+                <div class="dashboard-bar-track">
+                  <div class="dashboard-bar-fill bar-fill-method" style="width: ${item.percentage}%"></div>
+                </div>
+              </div>
+            `;
+          })
+          .join('');
+
+        methodList.querySelectorAll('.dashboard-bar-item').forEach((el) => {
+          el.addEventListener('click', () => {
+            const tagDisplay =
+              el.getAttribute('data-tag-display') || el.getAttribute('data-tag-filter');
+            applyTagFilterToTable(tagDisplay);
+          });
+        });
+      }
+    }
+
+    // Struggle Causes Breakdown & Hints
+    const causeList = document.getElementById('cause-breakdown-list');
+    const causeEmpty = document.getElementById('cause-empty-msg');
+    const hintContainer = document.getElementById('cause-hint-container');
+    const hintText = document.getElementById('cause-hint-text');
+
+    if (causeList && causeEmpty) {
+      if (stats.causeBreakdown.length === 0) {
+        causeList.innerHTML = '';
+        causeEmpty.style.display = 'block';
+        if (hintContainer) hintContainer.style.display = 'none';
+      } else {
+        causeEmpty.style.display = 'none';
+        const tooltip = i18nProvider.t('dashboard_click_to_filter') || '';
+        causeList.innerHTML = stats.causeBreakdown
+          .slice(0, 6)
+          .map((item, idx) => {
+            const displayName = getTagDisplayName(item.tagId);
+            const rankLabel = `#${idx + 1}`;
+            return `
+              <div class="dashboard-bar-item" data-tag-filter="${escapeHtml(item.tagId)}" data-tag-display="${escapeHtml(displayName)}" title="${escapeHtml(tooltip)}">
+                <div class="dashboard-bar-header">
+                  <span class="dashboard-tag-name"><span class="dashboard-rank-badge">${rankLabel}</span> ⚠️ ${escapeHtml(displayName)}</span>
+                  <span class="dashboard-bar-count">${item.count} (${item.percentage}%)</span>
+                </div>
+                <div class="dashboard-bar-track">
+                  <div class="dashboard-bar-fill bar-fill-cause" style="width: ${item.percentage}%"></div>
+                </div>
+              </div>
+            `;
+          })
+          .join('');
+
+        causeList.querySelectorAll('.dashboard-bar-item').forEach((el) => {
+          el.addEventListener('click', () => {
+            const tagDisplay =
+              el.getAttribute('data-tag-display') || el.getAttribute('data-tag-filter');
+            applyTagFilterToTable(tagDisplay);
+          });
+        });
+
+        const topCause = stats.causeBreakdown[0];
+        if (topCause && topCause.hintKey && hintContainer && hintText) {
+          const hintMessage = i18nProvider.t(topCause.hintKey);
+          if (hintMessage) {
+            hintText.textContent = hintMessage;
+            hintContainer.style.display = 'block';
+          } else {
+            hintContainer.style.display = 'none';
+          }
+        } else if (hintContainer) {
+          hintContainer.style.display = 'none';
+        }
+      }
+    }
+
+    // Contest Distribution (AtCoder Problems Table Style)
+    const contestList = document.getElementById('contest-distribution-list');
+    if (contestList) {
+      const tooltip = i18nProvider.t('dashboard_click_to_filter') || '';
+      contestList.innerHTML = stats.contestDistribution
+        .map((c) => {
+          const acPercent = c.total > 0 ? Math.round((c.ac / c.total) * 100) : 0;
+          const selfPercent = c.total > 0 ? (c.selfAc / c.total) * 100 : 0;
+          const editorialPercent = c.total > 0 ? (c.editorialAc / c.total) * 100 : 0;
+          const badgeClass = `badge-${c.type}`;
+          const progressTooltip = `${escapeHtml(i18nProvider.t('dashboard_ac_quality_self') || '')}: ${c.selfAc}, ${escapeHtml(i18nProvider.t('dashboard_ac_quality_editorial') || '')}: ${c.editorialAc}`;
+
+          return `
+            <tr class="contest-row" data-contest-filter="${escapeHtml(c.type)}" title="${escapeHtml(tooltip)}">
+              <td><span class="contest-badge ${badgeClass}">${escapeHtml(c.label)}</span></td>
+              <td>
+                <div class="contest-table-track" title="${progressTooltip}">
+                  <div class="contest-table-self" style="width: ${selfPercent}%;"></div>
+                  <div class="contest-table-editorial" style="width: ${editorialPercent}%;"></div>
+                </div>
+              </td>
+              <td class="contest-cell-count"><strong>${c.ac}</strong> / ${c.total}</td>
+              <td class="contest-cell-rate text-success">${acPercent}%</td>
+            </tr>
+          `;
+        })
+        .join('');
+
+      contestList.querySelectorAll('.contest-row').forEach((el) => {
+        el.addEventListener('click', () => {
+          const cType = el.getAttribute('data-contest-filter');
+          if (cType && cType !== 'other') {
+            applyTagFilterToTable(cType);
+          }
+        });
+      });
+    }
   };
 
   // Memory cache for fetched contest problems
@@ -830,7 +1092,6 @@ func main() {
               });
               if (isModified) {
                 item.tags = cleanTags;
-                updates[key] = item;
               }
             }
           }
@@ -859,6 +1120,7 @@ func main() {
         const allProblems = Array.from(
           new Set([...acProblems, ...configuredProblems, ...temporaryProblems])
         );
+        renderDashboard(data);
         renderProblemStatuses(allProblems, data);
       });
     } else {
@@ -872,6 +1134,7 @@ func main() {
       const allProblems = Array.from(
         new Set([...mockAc, 'abc300:abc300_a', 'abc300:abc300_b', ...temporaryProblems])
       );
+      renderDashboard(mockStatuses);
       renderProblemStatuses(allProblems, mockStatuses);
     }
   };
@@ -1035,6 +1298,7 @@ func main() {
               if (dot) {
                 dot.className = 'status-badge-dot dot-unsolved';
               }
+              chrome.storage.local.get(null, (items) => renderDashboard(items));
             });
           } else {
             showToast(i18nProvider.t('options_status_toast_saved'));
@@ -1052,6 +1316,9 @@ func main() {
             dot.className = 'status-badge-dot';
             if (newStatus === 'self_ac') dot.classList.add('dot-self');
             if (newStatus === 'editorial_ac') dot.classList.add('dot-editorial');
+          }
+          if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+            chrome.storage.local.get(null, (items) => renderDashboard(items));
           }
         }
       });
