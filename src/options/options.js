@@ -318,6 +318,12 @@ int main() {
     
     return 0;
 }`,
+    c: `#include <stdio.h>
+
+int main(void) {
+    // write code here
+    return 0;
+}`,
     python: `import sys
 
 def main():
@@ -357,15 +363,31 @@ func main() {
 	defer writer.Flush()
 	// write code here
 }`,
+    nim: '',
+    zig: '',
+    d: '',
+    julia: '',
+    dart: '',
+    lua: '',
     javascript: '',
     typescript: '',
     csharp: '',
+    fsharp: '',
     kotlin: '',
     swift: '',
     ruby: '',
+    crystal: '',
     php: '',
     scala: '',
+    elixir: '',
+    clojure: '',
     haskell: '',
+    ocaml: '',
+    perl: '',
+    r: '',
+    scheme: '',
+    pascal: '',
+    fortran: '',
     shell: '',
   };
 

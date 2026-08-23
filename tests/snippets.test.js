@@ -260,19 +260,36 @@ describe('Templates and Custom Snippets Integration Tests', () => {
 
       const expectedLanguages = [
         'cpp',
+        'c',
         'python',
         'rust',
         'java',
         'go',
+        'nim',
+        'zig',
+        'd',
+        'julia',
+        'dart',
+        'lua',
         'javascript',
         'typescript',
         'csharp',
+        'fsharp',
         'kotlin',
         'swift',
         'ruby',
+        'crystal',
         'php',
         'scala',
+        'elixir',
+        'clojure',
         'haskell',
+        'ocaml',
+        'perl',
+        'r',
+        'scheme',
+        'pascal',
+        'fortran',
         'shell',
       ];
 
@@ -664,6 +681,54 @@ describe('Templates and Custom Snippets Integration Tests', () => {
       expect(snippetList.innerHTML).not.toContain('CPP Snippet');
 
       jest.useRealTimers();
+    });
+
+    test('C language uses default C template and Monaco cpp highlighting', () => {
+      const configMsg = {
+        type: 'init-config',
+        contestId: 'abc300',
+        problemId: 'abc300_a',
+        selectedLanguageId: '5002',
+        languages: [{ value: '5002', text: 'C (GCC 12.2.0)' }],
+        isDark: false,
+      };
+
+      window.dispatchEvent(new MessageEvent('message', { data: configMsg }));
+
+      expect(global.monaco.editor.create).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          value: expect.stringContaining('#include <stdio.h>'),
+          language: 'cpp',
+        })
+      );
+    });
+
+    test.each([
+      ['Nim (Nim 1.6.14)', 'python'],
+      ['Zig (Zig 0.10.1)', 'rust'],
+      ['Julia (Julia 1.9.2)', 'julia'],
+      ['Dart (Dart 3.0.5)', 'dart'],
+      ['Lua (Lua 5.4.6)', 'lua'],
+      ['D (DMD 2.104.0)', 'cpp'],
+    ])('%s initializes editor with %s syntax highlighter', (langText, expectedMonacoLang) => {
+      const configMsg = {
+        type: 'init-config',
+        contestId: 'abc300',
+        problemId: 'abc300_a',
+        selectedLanguageId: '9999',
+        languages: [{ value: '9999', text: langText }],
+        isDark: false,
+      };
+
+      window.dispatchEvent(new MessageEvent('message', { data: configMsg }));
+
+      expect(global.monaco.editor.create).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          language: expectedMonacoLang,
+        })
+      );
     });
 
     test('Redirection button inside drawer works correctly', () => {

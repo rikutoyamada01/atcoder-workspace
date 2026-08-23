@@ -159,6 +159,12 @@ int main() {
     
     return 0;
 }`,
+    c: `#include <stdio.h>
+
+int main(void) {
+    // write code here
+    return 0;
+}`,
     python: `import sys
 
 def main():
@@ -198,15 +204,31 @@ func main() {
 	defer writer.Flush()
 	// write code here
 }`,
+    nim: '',
+    zig: '',
+    d: '',
+    julia: '',
+    dart: '',
+    lua: '',
     javascript: '',
     typescript: '',
     csharp: '',
+    fsharp: '',
     kotlin: '',
     swift: '',
     ruby: '',
+    crystal: '',
     php: '',
     scala: '',
+    elixir: '',
+    clojure: '',
     haskell: '',
+    ocaml: '',
+    perl: '',
+    r: '',
+    scheme: '',
+    pascal: '',
+    fortran: '',
     shell: '',
   };
 
@@ -800,35 +822,84 @@ impl UnionFind {
     );
   }
 
-  // Helper to map AtCoder language names to Monaco Editor language IDs
+  // Helper to map AtCoder language names to recognized language IDs
   function getLanguageMode(langText) {
     if (!langText) return 'plaintext';
     const lower = langText.toLowerCase();
 
     if (
       lower.includes('c++') ||
-      lower.includes('gcc') ||
       lower.includes('clang++') ||
       lower.includes('g++')
     )
       return 'cpp';
+    if (
+      lower.startsWith('c ') ||
+      lower.startsWith('c(') ||
+      lower === 'c' ||
+      lower.includes('gcc') ||
+      lower.includes('clang')
+    )
+      return 'c';
     if (lower.includes('python') || lower.includes('pypy')) return 'python';
     if (lower.includes('rust')) return 'rust';
-    if (lower.includes('java')) return 'java';
+    if (lower.includes('java') && !lower.includes('javascript')) return 'java';
     if (lower.includes('go') || lower.includes('golang')) return 'go';
+    if (lower.includes('nim')) return 'nim';
+    if (lower.includes('zig')) return 'zig';
+    if (
+      lower.startsWith('d ') ||
+      lower.startsWith('d(') ||
+      lower.includes('dmd') ||
+      lower.includes('ldc')
+    )
+      return 'd';
+    if (lower.includes('julia')) return 'julia';
+    if (lower.includes('dart')) return 'dart';
+    if (lower.includes('lua')) return 'lua';
     if (lower.includes('haskell')) return 'haskell';
     if (lower.includes('javascript') || lower.includes('node') || lower.includes('js'))
       return 'javascript';
     if (lower.includes('typescript') || lower.includes('ts')) return 'typescript';
     if (lower.includes('ruby')) return 'ruby';
+    if (lower.includes('crystal')) return 'crystal';
     if (lower.includes('c#') || lower.includes('mono')) return 'csharp';
+    if (lower.includes('f#') || lower.includes('fsharp')) return 'fsharp';
     if (lower.includes('php')) return 'php';
     if (lower.includes('kotlin')) return 'kotlin';
     if (lower.includes('swift')) return 'swift';
     if (lower.includes('scala')) return 'scala';
+    if (lower.includes('elixir')) return 'elixir';
+    if (lower.includes('clojure')) return 'clojure';
+    if (lower.includes('perl') || lower.includes('raku')) return 'perl';
+    if (lower.startsWith('r ') || lower.startsWith('r(') || lower.includes('rscript')) return 'r';
+    if (
+      lower.includes('scheme') ||
+      lower.includes('gauche') ||
+      lower.includes('lisp') ||
+      lower.includes('sbcl')
+    )
+      return 'scheme';
+    if (lower.includes('pascal') || lower.includes('fpc')) return 'pascal';
+    if (lower.includes('ocaml')) return 'ocaml';
+    if (lower.includes('fortran')) return 'fortran';
     if (lower.includes('bash') || lower.includes('shell')) return 'shell';
 
     return 'plaintext';
+  }
+
+  // Map internal language mode to Monaco syntax highlighter ID
+  function getMonacoLanguage(mode) {
+    const map = {
+      c: 'cpp',
+      nim: 'python',
+      zig: 'rust',
+      d: 'cpp',
+      crystal: 'ruby',
+      ocaml: 'fsharp',
+      fortran: 'plaintext',
+    };
+    return map[mode] || mode;
   }
 
   // Notify parent content script that editor is ready
@@ -1309,7 +1380,7 @@ impl UnionFind {
           if (code) {
             console.log('[AtCoder Workspace] Editor: Applying loaded past submission code');
             const oldModel = editor.getModel();
-            const newModel = monaco.editor.createModel(code, mode);
+            const newModel = monaco.editor.createModel(code, getMonacoLanguage(mode));
             editor.setModel(newModel);
             if (oldModel) oldModel.dispose();
             saveCodeSync();
@@ -1667,7 +1738,7 @@ impl UnionFind {
         const createEditorWithCode = (codeValue) => {
           editor = monaco.editor.create(document.getElementById('editor-container'), {
             value: codeValue,
-            language: mode,
+            language: getMonacoLanguage(mode),
             theme: isDark ? 'vs-dark' : 'vs',
             readOnly: !currentLanguageId, // Read-only if no language selected
             automaticLayout: false, // We control it via message events
@@ -1956,7 +2027,7 @@ impl UnionFind {
     // Helper: Set model with code value and bind listener
     const applyModelWithCode = (codeValue) => {
       const oldModel = editor.getModel();
-      const newModel = monaco.editor.createModel(codeValue, mode);
+      const newModel = monaco.editor.createModel(codeValue, getMonacoLanguage(mode));
       editor.setModel(newModel);
       if (oldModel) oldModel.dispose();
 
