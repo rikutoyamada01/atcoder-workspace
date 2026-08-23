@@ -198,6 +198,16 @@ func main() {
 	defer writer.Flush()
 	// write code here
 }`,
+    javascript: '',
+    typescript: '',
+    csharp: '',
+    kotlin: '',
+    swift: '',
+    ruby: '',
+    php: '',
+    scala: '',
+    haskell: '',
+    shell: '',
   };
 
   // Preset snippets database
