@@ -882,7 +882,62 @@
   },
   "dashboard_hint_bug_typo": {
     "message": "Double-check variable typos (e.g. i vs j, u vs v) and 0-based vs 1-based indexing."
+  },
+  "editor_custom_case_title": {
+    "message": "🧪 Custom Test Cases"
+  },
+  "editor_custom_case_add_btn": {
+    "message": "＋ Add Custom Case"
+  },
+  "editor_custom_case_name_label": {
+    "message": "Case Name (optional):"
+  },
+  "editor_custom_case_name_placeholder": {
+    "message": "Case name (optional, e.g. N=1)"
+  },
+  "editor_custom_case_input_label": {
+    "message": "Input (stdin):"
+  },
+  "editor_custom_case_input_placeholder": {
+    "message": "Enter input data..."
+  },
+  "editor_custom_case_expected_label": {
+    "message": "Expected output (optional):"
+  },
+  "editor_custom_case_expected_placeholder": {
+    "message": "Enter expected output (optional, skipped if empty)..."
+  },
+  "editor_custom_case_btn_save": {
+    "message": "Save"
+  },
+  "editor_custom_case_btn_cancel": {
+    "message": "Cancel"
+  },
+  "editor_custom_case_btn_edit": {
+    "message": "✏️ Edit"
+  },
+  "editor_custom_case_btn_delete": {
+    "message": "🗑️ Delete"
+  },
+  "editor_custom_case_delete_confirm": {
+    "message": "Delete this custom test case?"
+  },
+  "editor_custom_case_no_cases": {
+    "message": "No custom test cases added yet."
+  },
+  "editor_custom_case_input_required": {
+    "message": "Input (stdin) is required."
+  },
+  "editor_runner_status_finished": {
+    "message": "FINISHED"
+  },
+  "editor_context_invalidated_text": {
+    "message": "The extension has been updated. Please reload the page to apply changes."
+  },
+  "editor_context_invalidated_btn": {
+    "message": "Reload Page"
   }
 }
+
 
 

@@ -456,9 +456,20 @@
               break;
             }
 
-            // Extract sample test cases
+            // Extract sample test cases and merge with custom test cases
             const scrapeResult = scraper.extractSampleCases();
-            if (scrapeResult.error) {
+            const sampleCases = scrapeResult.cases || [];
+            const customCases = Array.isArray(e.data.customCases)
+              ? e.data.customCases.map((c) => ({
+                  input: c.input || '',
+                  expected: c.expected !== undefined ? c.expected : '',
+                  name: c.name || '',
+                  id: c.id,
+                  isCustom: true,
+                }))
+              : [];
+
+            if (sampleCases.length === 0 && customCases.length === 0 && scrapeResult.error) {
               notifyEditor({
                 type: 'test-error',
                 message: scrapeResult.error,
@@ -470,18 +481,25 @@
               console.warn(`[AtCoder Workspace] ${scrapeResult.warning}`);
             }
 
-            const samples = scrapeResult.cases;
+            const allCases = [...sampleCases, ...customCases];
+            if (allCases.length === 0) {
+              notifyEditor({
+                type: 'test-error',
+                message: '実行可能なテストケースが見つかりませんでした。',
+              });
+              break;
+            }
 
             notifyEditor({
               type: 'test-start',
-              total: samples.length,
+              total: allCases.length,
             });
 
             runner.runSampleTests(
               contestId,
               e.data.code,
               e.data.languageId,
-              samples,
+              allCases,
               (caseRes) => {
                 notifyEditor({
                   type: 'test-case-result',
@@ -493,6 +511,8 @@
                   expected: caseRes.expected,
                   stderr: caseRes.stderr,
                   message: caseRes.message,
+                  name: caseRes.name,
+                  isCustom: caseRes.isCustom,
                 });
               },
               () => {

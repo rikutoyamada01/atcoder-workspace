@@ -882,7 +882,62 @@
   },
   "dashboard_hint_bug_typo": {
     "message": "変数名（i, j, n, m, u, v）の取り違えや、1-indexed / 0-indexed の混同がないか一行ずつ確認しましょう。"
+  },
+  "editor_custom_case_title": {
+    "message": "🧪 カスタムテストケース"
+  },
+  "editor_custom_case_add_btn": {
+    "message": "＋ カスタムケースを追加"
+  },
+  "editor_custom_case_name_label": {
+    "message": "ケース名 (任意):"
+  },
+  "editor_custom_case_name_placeholder": {
+    "message": "ケース名 (任意, 例: N=1)"
+  },
+  "editor_custom_case_input_label": {
+    "message": "入力 (stdin):"
+  },
+  "editor_custom_case_input_placeholder": {
+    "message": "入力データを入力..."
+  },
+  "editor_custom_case_expected_label": {
+    "message": "期待される出力 (任意):"
+  },
+  "editor_custom_case_expected_placeholder": {
+    "message": "期待される出力を入力 (空欄の場合は判定なし)..."
+  },
+  "editor_custom_case_btn_save": {
+    "message": "保存"
+  },
+  "editor_custom_case_btn_cancel": {
+    "message": "キャンセル"
+  },
+  "editor_custom_case_btn_edit": {
+    "message": "✏️ 編集"
+  },
+  "editor_custom_case_btn_delete": {
+    "message": "🗑️ 削除"
+  },
+  "editor_custom_case_delete_confirm": {
+    "message": "このカスタムケースを削除しますか？"
+  },
+  "editor_custom_case_no_cases": {
+    "message": "カスタムテストケースはまだ登録されていません。"
+  },
+  "editor_custom_case_input_required": {
+    "message": "入力 (stdin) を入力してください。"
+  },
+  "editor_runner_status_finished": {
+    "message": "実行完了"
+  },
+  "editor_context_invalidated_text": {
+    "message": "拡張機能が更新されました。最新の状態で利用するためにページを再読み込みしてください。"
+  },
+  "editor_context_invalidated_btn": {
+    "message": "ページを再読み込み"
   }
 }
+
 
 

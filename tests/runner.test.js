@@ -680,4 +680,62 @@ describe('Runner Module Tests', () => {
       stderr: 'Segmentation fault\n',
     });
   });
+
+  test('runSampleTests returns FINISHED status when expected is empty or not provided', async () => {
+    document.body.innerHTML = '<input name="csrf_token" value="dummy-csrf-token" />';
+
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ Result: { Status: 3 } }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        text: () => Promise.resolve(''),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            Result: {
+              Status: 3,
+              Output: btoa('custom output 42\n'),
+              ExitCode: 0,
+              TimeConsumption: 80,
+              MemoryConsumption: 3000,
+            },
+          }),
+      });
+
+    const onCaseResult = jest.fn();
+    const onComplete = jest.fn();
+
+    const customCases = [
+      {
+        id: 'custom_1',
+        name: 'N=1 Corner Case',
+        input: '1\n',
+        expected: '', // empty expected -> FINISHED
+        isCustom: true,
+      },
+    ];
+
+    runner.runSampleTests('abc100', 'code', 'python', customCases, onCaseResult, onComplete);
+
+    await flushPromises(); // ensureIdle
+    await flushPromises(); // submit
+    await flushPromises(); // pollResult
+
+    expect(onCaseResult).toHaveBeenCalledWith({
+      index: 0,
+      status: 'FINISHED',
+      time: 80,
+      memory: 3000,
+      output: 'custom output 42\n',
+      expected: '',
+      stderr: '',
+      name: 'N=1 Corner Case',
+      isCustom: true,
+    });
+  });
 });

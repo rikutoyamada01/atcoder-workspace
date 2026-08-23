@@ -115,6 +115,9 @@
     updateSaveStatusText();
     updateEditorLanguageState();
     updateTestSummaryText();
+    if (typeof renderCustomTestCases === 'function') {
+      renderCustomTestCases();
+    }
     if (typeof renderLearningNotesAndTags === 'function') {
       renderLearningNotesAndTags();
     }
@@ -665,6 +668,7 @@ impl UnionFind {
     console.log('[AtCoder Workspace] Editor: Sending run-tests message to parent', {
       languageId: currentLanguageId,
       codeLength: editor.getValue().length,
+      customCasesCount: currentCustomCases.length,
     });
 
     window.parent.postMessage(
@@ -672,6 +676,12 @@ impl UnionFind {
         type: 'run-tests',
         code: editor.getValue(),
         languageId: currentLanguageId,
+        customCases: currentCustomCases.map((c) => ({
+          id: c.id,
+          name: c.name,
+          input: c.input,
+          expected: c.expected,
+        })),
       },
       '*'
     );
@@ -683,6 +693,9 @@ impl UnionFind {
 
     // Open console drawer
     toggleConsole(true);
+    if (consoleResults) {
+      consoleResults.scrollTop = 0;
+    }
     const prepSubmitText = i18nProvider
       ? i18nProvider.t('editor_console_preparing_submit')
       : '提出準備中...';
@@ -950,6 +963,8 @@ impl UnionFind {
           // Update language warning overlay state
           updateEditorLanguageState();
         }
+        // Load custom test cases for this problem
+        loadCustomTestCases(contestId, problemId);
         // Load console state for this problem
         loadConsoleState(contestId, problemId);
         // Load learning notes and tags for this problem
@@ -1036,7 +1051,6 @@ impl UnionFind {
           : '提出詳細ページを開く';
 
         const targetContestId = e.data.contestId || contestId;
-        const targetProblemId = e.data.problemId || problemId;
 
         // Update Console Results
         setConsoleHTML(`
@@ -1050,7 +1064,6 @@ impl UnionFind {
             </div>
           </div>
         `);
-        consoleResults.scrollTop = consoleResults.scrollHeight;
 
         testSummary.textContent = i18nProvider
           ? i18nProvider.t('editor_judge_running', [e.data.status])
@@ -1107,7 +1120,6 @@ impl UnionFind {
               ${celebrationHTML}
             </div>
           `);
-          consoleResults.scrollTop = consoleResults.scrollHeight;
         };
 
         if (isAC) {
@@ -1188,7 +1200,6 @@ impl UnionFind {
             <pre class="case-error-content">${escapeHtml(e.data.message)}</pre>
           </div>
         `);
-        consoleResults.scrollTop = consoleResults.scrollHeight;
         break;
       }
 
@@ -1223,7 +1234,6 @@ impl UnionFind {
               </div>
             </div>
           `);
-          consoleResults.scrollTop = consoleResults.scrollHeight;
           saveConsoleState(contestId, problemId);
         }
         break;
@@ -1324,7 +1334,6 @@ impl UnionFind {
 
               if (targetProblemId === problemId) {
                 setConsoleHTML(html);
-                consoleResults.scrollTop = consoleResults.scrollHeight;
                 testSummary.textContent = summaryText;
                 testSummary.className = summaryClass;
               }
@@ -1342,9 +1351,7 @@ impl UnionFind {
         } else {
           const html = buildConsoleHTML('');
           if (targetProblemId === problemId) {
-            consoleResults.innerHTML = html;
-            renderLearningNotesAndTags();
-            consoleResults.scrollTop = consoleResults.scrollHeight;
+            setConsoleHTML(html);
             testSummary.textContent = summaryText;
             testSummary.className = summaryClass;
           }
@@ -1440,8 +1447,16 @@ impl UnionFind {
             acCount++;
           }
 
+          if (e.data.name) {
+            const caseLabel = i18nProvider ? i18nProvider.t('editor_runner_case') : 'ケース';
+            const caseLabelSpan = row.querySelector('.case-label');
+            if (caseLabelSpan) {
+              caseLabelSpan.innerHTML = `<span data-i18n="editor_runner_case">${escapeHtml(caseLabel)}</span> ${e.data.index + 1} (${escapeHtml(e.data.name)}):`;
+            }
+          }
+
           const statusBadge = row.querySelector('.case-status');
-          statusBadge.removeAttribute('data-i18n'); // Status codes (AC/WA/TLE) are universal
+          statusBadge.removeAttribute('data-i18n'); // Status codes (AC/WA/TLE/FINISHED) are universal
           statusBadge.textContent = status;
           statusBadge.className = `case-status status-${status.toLowerCase()}`;
 
@@ -1479,6 +1494,18 @@ impl UnionFind {
                   <div class="case-io-label"><span data-i18n="editor_runner_actual">${escapeHtml(actualLabel)}</span>:</div>
                   <pre class="case-io-content">${escapeHtml(e.data.output)}</pre>
                 </div>
+              </div>
+            `;
+          } else if (status === 'FINISHED') {
+            body.style.display = 'block';
+            icon.textContent = '▼';
+            const actualLabel = i18nProvider
+              ? i18nProvider.t('editor_runner_actual')
+              : '実際の出力';
+            bodyHtml = `
+              <div class="case-io-block">
+                <div class="case-io-label"><span data-i18n="editor_runner_actual">${escapeHtml(actualLabel)}</span>:</div>
+                <pre class="case-io-content">${escapeHtml(e.data.output)}</pre>
               </div>
             `;
           } else if (status === 'RE' || status === 'ERR' || status === 'TLE' || status === 'MLE') {
@@ -1546,27 +1573,30 @@ impl UnionFind {
         isTesting = false;
         setButtonsDisabled(false);
 
-        if (acCount === totalCount) {
-          testSummaryState = { type: 'all_ac', acCount, total: totalCount };
-        } else {
-          // Priority of statuses to display in the overall summary
-          const uniqueNonAcStatuses = [...new Set(caseStatuses)].filter((s) => s !== 'AC');
-          let displayStatus = 'WA';
-          if (uniqueNonAcStatuses.includes('TLE')) {
-            displayStatus = 'TLE';
-          } else if (uniqueNonAcStatuses.includes('MLE')) {
-            displayStatus = 'MLE';
-          } else if (uniqueNonAcStatuses.includes('RE')) {
-            displayStatus = 'RE';
-          } else if (uniqueNonAcStatuses.includes('WA')) {
-            displayStatus = 'WA';
-          } else if (uniqueNonAcStatuses.includes('ERR')) {
-            displayStatus = 'ERR';
-          } else if (uniqueNonAcStatuses.length > 0) {
-            displayStatus = uniqueNonAcStatuses[0];
-          }
+        {
+          const nonAcFailures = caseStatuses.filter((s) => s !== 'AC' && s !== 'FINISHED');
+          if (nonAcFailures.length === 0) {
+            testSummaryState = { type: 'all_ac', acCount, total: totalCount };
+          } else {
+            // Priority of statuses to display in the overall summary
+            const uniqueNonAcStatuses = [...new Set(nonAcFailures)];
+            let displayStatus = 'WA';
+            if (uniqueNonAcStatuses.includes('TLE')) {
+              displayStatus = 'TLE';
+            } else if (uniqueNonAcStatuses.includes('MLE')) {
+              displayStatus = 'MLE';
+            } else if (uniqueNonAcStatuses.includes('RE')) {
+              displayStatus = 'RE';
+            } else if (uniqueNonAcStatuses.includes('WA')) {
+              displayStatus = 'WA';
+            } else if (uniqueNonAcStatuses.includes('ERR')) {
+              displayStatus = 'ERR';
+            } else if (uniqueNonAcStatuses.length > 0) {
+              displayStatus = uniqueNonAcStatuses[0];
+            }
 
-          testSummaryState = { type: 'non_ac', displayStatus, acCount, total: totalCount };
+            testSummaryState = { type: 'non_ac', displayStatus, acCount, total: totalCount };
+          }
         }
         updateTestSummaryText();
         saveConsoleState(contestId, problemId);
@@ -1581,17 +1611,12 @@ impl UnionFind {
         updateTestSummaryText();
         testSummary.className = 'summary-wa';
 
-        consoleResults.innerHTML = `
+        setConsoleHTML(`
           <div class="case-error-block">
             <div class="case-io-label">${escapeHtml(errorText)}:</div>
             <pre class="case-error-content">${escapeHtml(e.data.message)}</pre>
           </div>
-        `;
-
-        renderLearningNotesAndTags();
-
-        // Auto-scroll to the bottom of the console results
-        consoleResults.scrollTop = consoleResults.scrollHeight;
+        `);
         saveConsoleState(contestId, problemId);
         break;
       }
@@ -1726,9 +1751,33 @@ impl UnionFind {
           callback('');
           return;
         }
-        chrome.storage.local.get([storageKey], (res) => {
-          callback((res && res[storageKey]) || '');
-        });
+        let backupCode = '';
+        try {
+          const raw = localStorage.getItem(
+            `backup_code:${contestId}:${problemId}:${currentLanguageId}`
+          );
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && typeof parsed.code === 'string') {
+              backupCode = parsed.code;
+            }
+          }
+        } catch (e) {
+          // Ignore localStorage parsing error
+        }
+
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+          try {
+            chrome.storage.local.get([storageKey], (res) => {
+              const storageCode = (res && res[storageKey]) || '';
+              callback(storageCode || backupCode);
+            });
+          } catch (e) {
+            callback(backupCode);
+          }
+        } else {
+          callback(backupCode);
+        }
       };
 
       getInitialCode((initialCode) => {
@@ -1859,20 +1908,6 @@ impl UnionFind {
     });
   }
 
-  /**
-   * 保存された解答ステータスを更新するヘルパー関数
-   */
-  function saveProblemStatus(contestId, problemId, status, callback) {
-    if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.local) {
-      if (callback) callback();
-      return;
-    }
-    const key = `status:${contestId}:${problemId}`;
-    chrome.storage.local.set({ [key]: status }, () => {
-      if (callback) callback();
-    });
-  }
-
   function saveProblemStatusIfUnsolved(contestId, problemId, status, callback) {
     if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.local) {
       if (callback) callback();
@@ -1894,16 +1929,24 @@ impl UnionFind {
   function setConsoleHTML(html) {
     if (!consoleResults) return;
     consoleResults.innerHTML = html;
+    renderCustomTestCases();
     renderLearningNotesAndTags();
   }
 
   function saveConsoleState(cId, pId) {
     if (!cId || !pId) return;
+    const customCasesSection = document.getElementById('custom-cases-section');
+    if (customCasesSection && customCasesSection.parentElement === consoleResults) {
+      customCasesSection.remove();
+    }
     const learningNotesSection = document.getElementById('learning-notes-section');
     if (learningNotesSection && learningNotesSection.parentElement === consoleResults) {
       learningNotesSection.remove();
     }
     const htmlToSave = consoleResults.innerHTML;
+    if (customCasesSection) {
+      consoleResults.appendChild(customCasesSection);
+    }
     if (learningNotesSection) {
       consoleResults.appendChild(learningNotesSection);
     }
@@ -2081,30 +2124,94 @@ impl UnionFind {
     });
   }
 
-  function isContextValid() {
-    return typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id;
+  function backupCodeToLocalStorage() {
+    if (!editor || !contestId || !problemId || !currentLanguageId) return;
+    try {
+      const code = editor.getValue();
+      const key = `backup_code:${contestId}:${problemId}:${currentLanguageId}`;
+      localStorage.setItem(key, JSON.stringify({ code, timestamp: Date.now() }));
+    } catch (e) {
+      // Ignore quota errors
+    }
   }
 
+  function showContextInvalidatedBanner() {
+    const banner = document.getElementById('context-invalidated-banner');
+    if (banner && banner.style.display === 'none') {
+      banner.style.display = 'flex';
+      const reloadBtn = document.getElementById('context-reload-btn');
+      if (reloadBtn) {
+        reloadBtn.onclick = () => {
+          backupCodeToLocalStorage();
+          try {
+            if (window.top && window.top !== window) {
+              window.top.location.reload();
+              return;
+            }
+          } catch (e) {
+            // Cross-origin fallback
+          }
+          window.location.reload();
+        };
+      }
+    }
+  }
+
+  function isContextValid() {
+    try {
+      const valid = typeof chrome !== 'undefined' && chrome.runtime && !!chrome.runtime.id;
+      if (!valid && contestId && problemId) {
+        showContextInvalidatedBanner();
+        backupCodeToLocalStorage();
+      }
+      return valid;
+    } catch (e) {
+      if (contestId && problemId) {
+        showContextInvalidatedBanner();
+        backupCodeToLocalStorage();
+      }
+      return false;
+    }
+  }
+
+  // Periodic check for extension context invalidation
+  setInterval(() => {
+    isContextValid();
+  }, 5000);
+
   function saveCode() {
+    backupCodeToLocalStorage();
     if (!isContextValid()) return;
     if (!editor || !contestId || !problemId || !currentLanguageId) return;
     const code = editor.getValue();
     const storageKey = `code:${contestId}:${problemId}:${currentLanguageId}`;
 
-    chrome.storage.local.set({ [storageKey]: code }, () => {
-      setSaveStatus('saved');
-    });
+    try {
+      chrome.storage.local.set({ [storageKey]: code }, () => {
+        if (chrome.runtime && chrome.runtime.lastError) return;
+        setSaveStatus('saved');
+      });
+    } catch (e) {
+      // Extension context invalidated
+      showContextInvalidatedBanner();
+    }
   }
 
   function saveCodeSync() {
+    backupCodeToLocalStorage();
     if (!isContextValid()) return;
     if (!editor || !contestId || !problemId || !currentLanguageId) return;
     clearTimeout(saveTimeout);
     const code = editor.getValue();
     const storageKey = `code:${contestId}:${problemId}:${currentLanguageId}`;
 
-    chrome.storage.local.set({ [storageKey]: code });
-    setSaveStatus('saved');
+    try {
+      chrome.storage.local.set({ [storageKey]: code });
+      setSaveStatus('saved');
+    } catch (e) {
+      // Extension context invalidated
+      showContextInvalidatedBanner();
+    }
   }
 
   // Handle auto-save on tab close / switch / visibility change
@@ -2736,9 +2843,345 @@ impl UnionFind {
     });
   }
 
+  // --- Custom Test Cases Management ---
+  let currentCustomCases = [];
+  let isRenderingCustomCases = false;
+
+  function getCustomCasesStorageKey(cId, pId) {
+    if (!cId || !pId) return null;
+    return `custom_test_cases:${cId}:${pId}`;
+  }
+
+  function loadCustomTestCases(cId, pId) {
+    const key = getCustomCasesStorageKey(cId, pId);
+    currentCustomCases = [];
+    if (!key || !isContextValid()) {
+      renderCustomTestCases();
+      return;
+    }
+
+    try {
+      chrome.storage.local.get([key], (result) => {
+        if (result && Array.isArray(result[key])) {
+          currentCustomCases = result[key];
+        }
+        renderCustomTestCases();
+      });
+    } catch (e) {
+      console.error('[AtCoder Workspace] Failed to load custom test cases', e);
+      renderCustomTestCases();
+    }
+  }
+
+  function saveCustomTestCasesToStorage() {
+    const key = getCustomCasesStorageKey(contestId, problemId);
+    if (!key || !isContextValid()) return;
+
+    try {
+      chrome.storage.local.set({ [key]: currentCustomCases });
+    } catch (e) {
+      console.error('[AtCoder Workspace] Failed to save custom test cases', e);
+    }
+  }
+
+  function addOrUpdateCustomTestCase(caseData) {
+    if (caseData.id) {
+      const idx = currentCustomCases.findIndex((c) => c.id === caseData.id);
+      if (idx >= 0) {
+        currentCustomCases[idx] = {
+          ...currentCustomCases[idx],
+          name: caseData.name || '',
+          input: caseData.input,
+          expected: caseData.expected !== undefined ? caseData.expected : '',
+        };
+      }
+    } else {
+      const newCase = {
+        id: `custom_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+        name: caseData.name || '',
+        input: caseData.input,
+        expected: caseData.expected !== undefined ? caseData.expected : '',
+        createdAt: Date.now(),
+      };
+      currentCustomCases.push(newCase);
+    }
+    saveCustomTestCasesToStorage();
+    renderCustomTestCases();
+  }
+
+  function deleteCustomTestCase(caseId) {
+    currentCustomCases = currentCustomCases.filter((c) => c.id !== caseId);
+    saveCustomTestCasesToStorage();
+    renderCustomTestCases();
+  }
+
+  function ensureCustomCasesSection() {
+    let section = document.getElementById('custom-cases-section');
+    let isNew = false;
+    if (!section && consoleResults) {
+      section = document.createElement('div');
+      section.id = 'custom-cases-section';
+      section.className = 'custom-cases-section';
+      const customTitle = i18nProvider
+        ? i18nProvider.t('editor_custom_case_title')
+        : '🧪 カスタムテストケース';
+      const addBtnText = i18nProvider
+        ? i18nProvider.t('editor_custom_case_add_btn')
+        : '＋ カスタムケースを追加';
+      const nameLabel = i18nProvider
+        ? i18nProvider.t('editor_custom_case_name_label')
+        : 'ケース名 (任意):';
+      const namePlaceholder = i18nProvider
+        ? i18nProvider.t('editor_custom_case_name_placeholder')
+        : 'ケース名 (任意, 例: N=1)';
+      const inputLabel = i18nProvider
+        ? i18nProvider.t('editor_custom_case_input_label')
+        : '入力 (stdin):';
+      const inputPlaceholder = i18nProvider
+        ? i18nProvider.t('editor_custom_case_input_placeholder')
+        : '入力データを入力...';
+      const expectedLabel = i18nProvider
+        ? i18nProvider.t('editor_custom_case_expected_label')
+        : '期待される出力 (任意):';
+      const expectedPlaceholder = i18nProvider
+        ? i18nProvider.t('editor_custom_case_expected_placeholder')
+        : '期待される出力を入力 (空欄の場合は判定なし)...';
+      const saveBtnText = i18nProvider ? i18nProvider.t('editor_custom_case_btn_save') : '保存';
+      const cancelBtnText = i18nProvider
+        ? i18nProvider.t('editor_custom_case_btn_cancel')
+        : 'キャンセル';
+
+      section.innerHTML = `
+        <div class="custom-cases-header">
+          <span class="custom-cases-title" data-i18n="editor_custom_case_title">${escapeHtml(customTitle)}</span>
+          <button id="add-custom-case-btn" class="btn btn-default btn-xs" data-i18n="editor_custom_case_add_btn">${escapeHtml(addBtnText)}</button>
+        </div>
+        <div id="custom-case-form" class="custom-case-form" style="display: none;">
+          <input type="hidden" id="custom-case-edit-id" value="">
+          <div class="form-group-xs">
+            <label class="form-label-xs" data-i18n="editor_custom_case_name_label">${escapeHtml(nameLabel)}</label>
+            <input type="text" id="custom-case-name" class="form-control input-xs" data-i18n-placeholder="editor_custom_case_name_placeholder" placeholder="${escapeHtml(namePlaceholder)}">
+          </div>
+          <div class="form-group-xs">
+            <label class="form-label-xs" data-i18n="editor_custom_case_input_label">${escapeHtml(inputLabel)}</label>
+            <textarea id="custom-case-input" class="form-control input-xs" rows="3" data-i18n-placeholder="editor_custom_case_input_placeholder" placeholder="${escapeHtml(inputPlaceholder)}"></textarea>
+          </div>
+          <div class="form-group-xs">
+            <label class="form-label-xs" data-i18n="editor_custom_case_expected_label">${escapeHtml(expectedLabel)}</label>
+            <textarea id="custom-case-expected" class="form-control input-xs" rows="2" data-i18n-placeholder="editor_custom_case_expected_placeholder" placeholder="${escapeHtml(expectedPlaceholder)}"></textarea>
+          </div>
+          <div class="form-actions-xs">
+            <button id="save-custom-case-btn" class="btn btn-primary btn-xs" data-i18n="editor_custom_case_btn_save">${escapeHtml(saveBtnText)}</button>
+            <button id="cancel-custom-case-btn" class="btn btn-default btn-xs" data-i18n="editor_custom_case_btn_cancel">${escapeHtml(cancelBtnText)}</button>
+          </div>
+        </div>
+        <div id="custom-cases-list" class="custom-cases-list"></div>
+      `;
+
+      const learningNotesSection = document.getElementById('learning-notes-section');
+      if (learningNotesSection && learningNotesSection.parentElement === consoleResults) {
+        consoleResults.insertBefore(section, learningNotesSection);
+      } else {
+        consoleResults.appendChild(section);
+      }
+      isNew = true;
+    }
+    if (section && (!section._eventsBound || isNew)) {
+      bindCustomCasesEvents(section);
+      section._eventsBound = true;
+    }
+  }
+
+  function bindCustomCasesEvents(section) {
+    if (!section) return;
+    const addBtn = section.querySelector('#add-custom-case-btn');
+    const form = section.querySelector('#custom-case-form');
+    const cancelBtn = section.querySelector('#cancel-custom-case-btn');
+    const saveBtn = section.querySelector('#save-custom-case-btn');
+
+    if (addBtn && form) {
+      addBtn.onclick = (e) => {
+        e.stopPropagation();
+        const editIdInput = form.querySelector('#custom-case-edit-id');
+        const nameInput = form.querySelector('#custom-case-name');
+        const inputArea = form.querySelector('#custom-case-input');
+        const expectedArea = form.querySelector('#custom-case-expected');
+        const isHidden = form.style.display === 'none';
+        if (isHidden) {
+          if (editIdInput) editIdInput.value = '';
+          if (nameInput) nameInput.value = '';
+          if (inputArea) inputArea.value = '';
+          if (expectedArea) expectedArea.value = '';
+          form.style.display = 'flex';
+          if (inputArea) inputArea.focus();
+        } else {
+          form.style.display = 'none';
+        }
+      };
+    }
+
+    if (cancelBtn && form) {
+      cancelBtn.onclick = (e) => {
+        e.stopPropagation();
+        const editIdInput = form.querySelector('#custom-case-edit-id');
+        const nameInput = form.querySelector('#custom-case-name');
+        const inputArea = form.querySelector('#custom-case-input');
+        const expectedArea = form.querySelector('#custom-case-expected');
+        form.style.display = 'none';
+        if (editIdInput) editIdInput.value = '';
+        if (nameInput) nameInput.value = '';
+        if (inputArea) inputArea.value = '';
+        if (expectedArea) expectedArea.value = '';
+      };
+    }
+
+    if (saveBtn && form) {
+      saveBtn.onclick = (e) => {
+        e.stopPropagation();
+        const editIdInput = form.querySelector('#custom-case-edit-id');
+        const nameInput = form.querySelector('#custom-case-name');
+        const inputArea = form.querySelector('#custom-case-input');
+        const expectedArea = form.querySelector('#custom-case-expected');
+
+        const inputVal = inputArea ? inputArea.value : '';
+        if (!inputVal || !inputVal.trim()) {
+          const reqMsg = i18nProvider
+            ? i18nProvider.t('editor_custom_case_input_required')
+            : '入力 (stdin) を入力してください。';
+          alert(reqMsg);
+          if (inputArea) inputArea.focus();
+          return;
+        }
+
+        const editId = editIdInput ? editIdInput.value : '';
+        const nameVal = nameInput ? nameInput.value.trim() : '';
+        const expectedVal = expectedArea ? expectedArea.value : '';
+
+        addOrUpdateCustomTestCase({
+          id: editId || null,
+          name: nameVal,
+          input: inputVal,
+          expected: expectedVal,
+        });
+
+        form.style.display = 'none';
+        if (editIdInput) editIdInput.value = '';
+        if (nameInput) nameInput.value = '';
+        if (inputArea) inputArea.value = '';
+        if (expectedArea) expectedArea.value = '';
+      };
+    }
+  }
+
+  function renderCustomTestCases() {
+    if (isRenderingCustomCases) return;
+    isRenderingCustomCases = true;
+    try {
+      ensureCustomCasesSection();
+      const listContainer = document.getElementById('custom-cases-list');
+      if (!listContainer) return;
+
+      listContainer.innerHTML = '';
+      if (currentCustomCases.length === 0) {
+        const emptyEl = document.createElement('div');
+        emptyEl.className = 'custom-cases-empty';
+        emptyEl.setAttribute('data-i18n', 'editor_custom_case_no_cases');
+        emptyEl.textContent = i18nProvider
+          ? i18nProvider.t('editor_custom_case_no_cases')
+          : 'カスタムテストケースはまだ登録されていません。';
+        listContainer.appendChild(emptyEl);
+      } else {
+        currentCustomCases.forEach((item, idx) => {
+          const card = document.createElement('div');
+          card.className = 'custom-case-card';
+          const displayName = item.name ? `${escapeHtml(item.name)}` : `Case ${idx + 1}`;
+          const editBtnText = i18nProvider
+            ? i18nProvider.t('editor_custom_case_btn_edit')
+            : '✏️ 編集';
+          const deleteBtnText = i18nProvider
+            ? i18nProvider.t('editor_custom_case_btn_delete')
+            : '🗑️ 削除';
+          const inputLabel = i18nProvider
+            ? i18nProvider.t('editor_custom_case_input_label')
+            : '入力 (stdin):';
+          const expectedLabel = i18nProvider
+            ? i18nProvider.t('editor_custom_case_expected_label')
+            : '期待される出力 (任意):';
+
+          card.innerHTML = `
+            <div class="custom-case-card-header">
+              <span class="custom-case-card-title">🧪 ${displayName}</span>
+              <div class="custom-case-card-actions">
+                <button class="btn btn-default btn-xs btn-edit-custom-case" data-i18n="editor_custom_case_btn_edit">${escapeHtml(editBtnText)}</button>
+                <button class="btn btn-default btn-xs btn-delete-custom-case" data-i18n="editor_custom_case_btn_delete">${escapeHtml(deleteBtnText)}</button>
+              </div>
+            </div>
+            <div class="custom-case-card-body">
+              <div class="case-io-block">
+                <div class="case-io-label"><span data-i18n="editor_custom_case_input_label">${escapeHtml(inputLabel)}</span></div>
+                <pre class="case-io-content">${escapeHtml(item.input)}</pre>
+              </div>
+              ${
+                item.expected !== undefined && item.expected !== ''
+                  ? `
+                <div class="case-io-block">
+                  <div class="case-io-label"><span data-i18n="editor_custom_case_expected_label">${escapeHtml(expectedLabel)}</span></div>
+                  <pre class="case-io-content">${escapeHtml(item.expected)}</pre>
+                </div>
+              `
+                  : ''
+              }
+            </div>
+          `;
+
+          const editBtn = card.querySelector('.btn-edit-custom-case');
+          const deleteBtn = card.querySelector('.btn-delete-custom-case');
+
+          if (editBtn) {
+            editBtn.onclick = (e) => {
+              e.stopPropagation();
+              const form = document.getElementById('custom-case-form');
+              if (!form) return;
+              const editIdInput = form.querySelector('#custom-case-edit-id');
+              const nameInput = form.querySelector('#custom-case-name');
+              const inputArea = form.querySelector('#custom-case-input');
+              const expectedArea = form.querySelector('#custom-case-expected');
+
+              if (editIdInput && nameInput && inputArea && expectedArea) {
+                editIdInput.value = item.id;
+                nameInput.value = item.name || '';
+                inputArea.value = item.input || '';
+                expectedArea.value = item.expected || '';
+                form.style.display = 'flex';
+                inputArea.focus();
+              }
+            };
+          }
+
+          if (deleteBtn) {
+            deleteBtn.onclick = (e) => {
+              e.stopPropagation();
+              const confirmMsg = i18nProvider
+                ? i18nProvider.t('editor_custom_case_delete_confirm')
+                : 'このカスタムケースを削除しますか？';
+              if (confirm(confirmMsg)) {
+                deleteCustomTestCase(item.id);
+              }
+            };
+          }
+
+          listContainer.appendChild(card);
+        });
+      }
+    } finally {
+      isRenderingCustomCases = false;
+    }
+  }
+
   window.addEventListener('beforeunload', () => {
     saveLearningNotesAndTags();
   });
 
+  renderCustomTestCases();
   renderLearningNotesAndTags();
 })();
