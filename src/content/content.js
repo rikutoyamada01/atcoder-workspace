@@ -282,11 +282,7 @@
             if (!langText) return 'plaintext';
             const lower = langText.toLowerCase();
 
-            if (
-              lower.includes('c++') ||
-              lower.includes('clang++') ||
-              lower.includes('g++')
-            )
+            if (lower.includes('c++') || lower.includes('clang++') || lower.includes('g++'))
               return 'cpp';
             if (
               lower.startsWith('c ') ||
@@ -327,7 +323,8 @@
             if (lower.includes('elixir')) return 'elixir';
             if (lower.includes('clojure')) return 'clojure';
             if (lower.includes('perl') || lower.includes('raku')) return 'perl';
-            if (lower.startsWith('r ') || lower.startsWith('r(') || lower.includes('rscript')) return 'r';
+            if (lower.startsWith('r ') || lower.startsWith('r(') || lower.includes('rscript'))
+              return 'r';
             if (
               lower.includes('scheme') ||
               lower.includes('gauche') ||

@@ -827,12 +827,7 @@ impl UnionFind {
     if (!langText) return 'plaintext';
     const lower = langText.toLowerCase();
 
-    if (
-      lower.includes('c++') ||
-      lower.includes('clang++') ||
-      lower.includes('g++')
-    )
-      return 'cpp';
+    if (lower.includes('c++') || lower.includes('clang++') || lower.includes('g++')) return 'cpp';
     if (
       lower.startsWith('c ') ||
       lower.startsWith('c(') ||

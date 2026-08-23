@@ -40,6 +40,7 @@ fs.mkdirSync(tempDir, { recursive: true });
 const filesToCopy = [
   { src: 'manifest.json', dest: 'manifest.json' },
   { src: 'LICENSE', dest: 'LICENSE' },
+  { src: 'THIRD_PARTY_LICENSES.md', dest: 'THIRD_PARTY_LICENSES.md' },
   { src: 'README.md', dest: 'README.md' },
   { src: '_locales', dest: '_locales', isDir: true },
   { src: 'src', dest: 'src', isDir: true },
