@@ -1,12 +1,15 @@
 {
   "name": "atcoder-workspace",
-  "version": "1.7.2",
+  "version": "1.8.0",
   "description": "Competitive Programming Workspace for AtCoder",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "setup": "node scripts/setup-monaco.js",
     "version:check": "node scripts/sync-version.js --check",
     "version:sync": "node scripts/sync-version.js",
+    "license:audit": "license-trace audit -p .",
+    "license:export": "license-trace export -o THIRD_PARTY_LICENSES.md .",
     "i18n:check": "node scripts/check-i18n-keys.js && node scripts/check-hardcoded-i18n.js",
     "test": "npm run i18n:check && jest",
     "lint": "eslint src tests scripts",

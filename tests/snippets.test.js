@@ -253,6 +253,92 @@ describe('Templates and Custom Snippets Integration Tests', () => {
       window.location.hash = '';
       jest.useRealTimers();
     });
+
+    test('All recognized languages are available in template and snippet selects', () => {
+      const templateLangSelect = document.getElementById('template-lang-select');
+      const snippetLangSelect = document.getElementById('snippet-lang-select');
+
+      const expectedLanguages = [
+        'cpp',
+        'c',
+        'python',
+        'rust',
+        'java',
+        'go',
+        'nim',
+        'zig',
+        'd',
+        'julia',
+        'dart',
+        'lua',
+        'javascript',
+        'typescript',
+        'csharp',
+        'fsharp',
+        'kotlin',
+        'swift',
+        'ruby',
+        'crystal',
+        'php',
+        'scala',
+        'elixir',
+        'clojure',
+        'haskell',
+        'ocaml',
+        'perl',
+        'r',
+        'scheme',
+        'pascal',
+        'fortran',
+        'shell',
+      ];
+
+      const templateOptions = Array.from(templateLangSelect.options).map((o) => o.value);
+      const snippetOptions = Array.from(snippetLangSelect.options).map((o) => o.value);
+
+      expectedLanguages.forEach((lang) => {
+        expect(templateOptions).toContain(lang);
+        expect(snippetOptions).toContain(lang);
+      });
+    });
+
+    test('Custom template and snippet can be saved for non-default languages (e.g. Kotlin, JavaScript)', () => {
+      const templateLangSelect = document.getElementById('template-lang-select');
+      const templateCodeArea = document.getElementById('template-code-area');
+      const saveTemplateBtn = document.getElementById('save-template-btn');
+
+      // Test Kotlin template
+      templateLangSelect.value = 'kotlin';
+      templateLangSelect.dispatchEvent(new Event('change'));
+      expect(templateCodeArea.value).toBe(''); // Initially empty
+
+      const kotlinTemplate = 'fun main() {\n    println("Hello Kotlin")\n}';
+      templateCodeArea.value = kotlinTemplate;
+      saveTemplateBtn.dispatchEvent(new Event('click'));
+      expect(store['settings:template:kotlin']).toBe(kotlinTemplate);
+
+      // Test custom snippet for Kotlin
+      const addSnippetBtn = document.getElementById('add-snippet-btn');
+      const snippetTitleInput = document.getElementById('snippet-title-input');
+      const snippetLangSelect = document.getElementById('snippet-lang-select');
+      const snippetDescInput = document.getElementById('snippet-desc-input');
+      const snippetTagsInput = document.getElementById('snippet-tags-input');
+      const snippetCodeInput = document.getElementById('snippet-code-input');
+      const saveSnippetBtn = document.getElementById('save-snippet-btn');
+
+      addSnippetBtn.dispatchEvent(new Event('click'));
+      snippetTitleInput.value = 'Kotlin Fast I/O';
+      snippetLangSelect.value = 'kotlin';
+      snippetDescInput.value = 'Fast input for Kotlin';
+      snippetTagsInput.value = 'io, template';
+      snippetCodeInput.value = 'import java.util.Scanner';
+      saveSnippetBtn.dispatchEvent(new Event('click'));
+
+      const savedSnippets = store['settings:custom_snippets'];
+      expect(savedSnippets.some((s) => s.lang === 'kotlin' && s.title === 'Kotlin Fast I/O')).toBe(
+        true
+      );
+    });
   });
 
   describe('Editor Page: Auto Template & Snippets Drawer Insertion', () => {
@@ -542,6 +628,107 @@ describe('Templates and Custom Snippets Integration Tests', () => {
 
       // 4. Verify text content has been dynamically updated to English
       expect(snippetsBtn.textContent).toBe('📝 Snippets');
+    });
+
+    test('Non-default language (Kotlin) applies custom template and displays custom snippets in drawer', () => {
+      jest.useFakeTimers();
+
+      store['settings:template:kotlin'] = '// my kotlin template';
+      store['settings:custom_snippets'] = [
+        {
+          id: 'snip_kt',
+          title: 'Kotlin Fast I/O',
+          lang: 'kotlin',
+          desc: 'Fast scanner',
+          tags: ['io'],
+          code: 'class FastScanner {}',
+        },
+        {
+          id: 'snip_cpp',
+          title: 'CPP Snippet',
+          lang: 'cpp',
+          desc: 'C++ only',
+          tags: ['cpp'],
+          code: '// cpp',
+        },
+      ];
+
+      const configMsg = {
+        type: 'init-config',
+        contestId: 'abc300',
+        problemId: 'abc300_a',
+        selectedLanguageId: '5040',
+        languages: [{ value: '5040', text: 'Kotlin (1.8.20)' }],
+        isDark: false,
+      };
+
+      window.dispatchEvent(new MessageEvent('message', { data: configMsg }));
+
+      expect(global.monaco.editor.create).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          value: '// my kotlin template',
+          language: 'kotlin',
+        })
+      );
+
+      // Open Snippets Drawer
+      const snippetsBtn = document.getElementById('snippets-btn');
+      const snippetList = document.getElementById('snippet-list');
+      snippetsBtn.dispatchEvent(new Event('click'));
+
+      expect(snippetList.innerHTML).toContain('Kotlin Fast I/O');
+      expect(snippetList.innerHTML).not.toContain('CPP Snippet');
+
+      jest.useRealTimers();
+    });
+
+    test('C language uses default C template and Monaco cpp highlighting', () => {
+      const configMsg = {
+        type: 'init-config',
+        contestId: 'abc300',
+        problemId: 'abc300_a',
+        selectedLanguageId: '5002',
+        languages: [{ value: '5002', text: 'C (GCC 12.2.0)' }],
+        isDark: false,
+      };
+
+      window.dispatchEvent(new MessageEvent('message', { data: configMsg }));
+
+      expect(global.monaco.editor.create).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          value: expect.stringContaining('#include <stdio.h>'),
+          language: 'cpp',
+        })
+      );
+    });
+
+    test.each([
+      ['Nim (Nim 1.6.14)', 'python'],
+      ['Zig (Zig 0.10.1)', 'rust'],
+      ['Julia (Julia 1.9.2)', 'julia'],
+      ['Dart (Dart 3.0.5)', 'dart'],
+      ['Lua (Lua 5.4.6)', 'lua'],
+      ['D (DMD 2.104.0)', 'cpp'],
+    ])('%s initializes editor with %s syntax highlighter', (langText, expectedMonacoLang) => {
+      const configMsg = {
+        type: 'init-config',
+        contestId: 'abc300',
+        problemId: 'abc300_a',
+        selectedLanguageId: '9999',
+        languages: [{ value: '9999', text: langText }],
+        isDark: false,
+      };
+
+      window.dispatchEvent(new MessageEvent('message', { data: configMsg }));
+
+      expect(global.monaco.editor.create).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          language: expectedMonacoLang,
+        })
+      );
     });
 
     test('Redirection button inside drawer works correctly', () => {

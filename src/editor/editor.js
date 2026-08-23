@@ -115,6 +115,9 @@
     updateSaveStatusText();
     updateEditorLanguageState();
     updateTestSummaryText();
+    if (typeof renderCustomTestCases === 'function') {
+      renderCustomTestCases();
+    }
     if (typeof renderLearningNotesAndTags === 'function') {
       renderLearningNotesAndTags();
     }
@@ -159,6 +162,12 @@ int main() {
     
     return 0;
 }`,
+    c: `#include <stdio.h>
+
+int main(void) {
+    // write code here
+    return 0;
+}`,
     python: `import sys
 
 def main():
@@ -198,6 +207,32 @@ func main() {
 	defer writer.Flush()
 	// write code here
 }`,
+    nim: '',
+    zig: '',
+    d: '',
+    julia: '',
+    dart: '',
+    lua: '',
+    javascript: '',
+    typescript: '',
+    csharp: '',
+    fsharp: '',
+    kotlin: '',
+    swift: '',
+    ruby: '',
+    crystal: '',
+    php: '',
+    scala: '',
+    elixir: '',
+    clojure: '',
+    haskell: '',
+    ocaml: '',
+    perl: '',
+    r: '',
+    scheme: '',
+    pascal: '',
+    fortran: '',
+    shell: '',
   };
 
   // Preset snippets database
@@ -633,6 +668,7 @@ impl UnionFind {
     console.log('[AtCoder Workspace] Editor: Sending run-tests message to parent', {
       languageId: currentLanguageId,
       codeLength: editor.getValue().length,
+      customCasesCount: currentCustomCases.length,
     });
 
     window.parent.postMessage(
@@ -640,6 +676,12 @@ impl UnionFind {
         type: 'run-tests',
         code: editor.getValue(),
         languageId: currentLanguageId,
+        customCases: currentCustomCases.map((c) => ({
+          id: c.id,
+          name: c.name,
+          input: c.input,
+          expected: c.expected,
+        })),
       },
       '*'
     );
@@ -651,6 +693,9 @@ impl UnionFind {
 
     // Open console drawer
     toggleConsole(true);
+    if (consoleResults) {
+      consoleResults.scrollTop = 0;
+    }
     const prepSubmitText = i18nProvider
       ? i18nProvider.t('editor_console_preparing_submit')
       : '提出準備中...';
@@ -790,35 +835,79 @@ impl UnionFind {
     );
   }
 
-  // Helper to map AtCoder language names to Monaco Editor language IDs
+  // Helper to map AtCoder language names to recognized language IDs
   function getLanguageMode(langText) {
     if (!langText) return 'plaintext';
     const lower = langText.toLowerCase();
 
+    if (lower.includes('c++') || lower.includes('clang++') || lower.includes('g++')) return 'cpp';
     if (
-      lower.includes('c++') ||
+      lower.startsWith('c ') ||
+      lower.startsWith('c(') ||
+      lower === 'c' ||
       lower.includes('gcc') ||
-      lower.includes('clang++') ||
-      lower.includes('g++')
+      lower.includes('clang')
     )
-      return 'cpp';
+      return 'c';
     if (lower.includes('python') || lower.includes('pypy')) return 'python';
     if (lower.includes('rust')) return 'rust';
-    if (lower.includes('java')) return 'java';
+    if (lower.includes('java') && !lower.includes('javascript')) return 'java';
     if (lower.includes('go') || lower.includes('golang')) return 'go';
+    if (lower.includes('nim')) return 'nim';
+    if (lower.includes('zig')) return 'zig';
+    if (
+      lower.startsWith('d ') ||
+      lower.startsWith('d(') ||
+      lower.includes('dmd') ||
+      lower.includes('ldc')
+    )
+      return 'd';
+    if (lower.includes('julia')) return 'julia';
+    if (lower.includes('dart')) return 'dart';
+    if (lower.includes('lua')) return 'lua';
     if (lower.includes('haskell')) return 'haskell';
     if (lower.includes('javascript') || lower.includes('node') || lower.includes('js'))
       return 'javascript';
     if (lower.includes('typescript') || lower.includes('ts')) return 'typescript';
     if (lower.includes('ruby')) return 'ruby';
+    if (lower.includes('crystal')) return 'crystal';
     if (lower.includes('c#') || lower.includes('mono')) return 'csharp';
+    if (lower.includes('f#') || lower.includes('fsharp')) return 'fsharp';
     if (lower.includes('php')) return 'php';
     if (lower.includes('kotlin')) return 'kotlin';
     if (lower.includes('swift')) return 'swift';
     if (lower.includes('scala')) return 'scala';
+    if (lower.includes('elixir')) return 'elixir';
+    if (lower.includes('clojure')) return 'clojure';
+    if (lower.includes('perl') || lower.includes('raku')) return 'perl';
+    if (lower.startsWith('r ') || lower.startsWith('r(') || lower.includes('rscript')) return 'r';
+    if (
+      lower.includes('scheme') ||
+      lower.includes('gauche') ||
+      lower.includes('lisp') ||
+      lower.includes('sbcl')
+    )
+      return 'scheme';
+    if (lower.includes('pascal') || lower.includes('fpc')) return 'pascal';
+    if (lower.includes('ocaml')) return 'ocaml';
+    if (lower.includes('fortran')) return 'fortran';
     if (lower.includes('bash') || lower.includes('shell')) return 'shell';
 
     return 'plaintext';
+  }
+
+  // Map internal language mode to Monaco syntax highlighter ID
+  function getMonacoLanguage(mode) {
+    const map = {
+      c: 'cpp',
+      nim: 'python',
+      zig: 'rust',
+      d: 'cpp',
+      crystal: 'ruby',
+      ocaml: 'fsharp',
+      fortran: 'plaintext',
+    };
+    return map[mode] || mode;
   }
 
   // Notify parent content script that editor is ready
@@ -874,6 +963,8 @@ impl UnionFind {
           // Update language warning overlay state
           updateEditorLanguageState();
         }
+        // Load custom test cases for this problem
+        loadCustomTestCases(contestId, problemId);
         // Load console state for this problem
         loadConsoleState(contestId, problemId);
         // Load learning notes and tags for this problem
@@ -960,7 +1051,6 @@ impl UnionFind {
           : '提出詳細ページを開く';
 
         const targetContestId = e.data.contestId || contestId;
-        const targetProblemId = e.data.problemId || problemId;
 
         // Update Console Results
         setConsoleHTML(`
@@ -974,7 +1064,6 @@ impl UnionFind {
             </div>
           </div>
         `);
-        consoleResults.scrollTop = consoleResults.scrollHeight;
 
         testSummary.textContent = i18nProvider
           ? i18nProvider.t('editor_judge_running', [e.data.status])
@@ -1031,7 +1120,6 @@ impl UnionFind {
               ${celebrationHTML}
             </div>
           `);
-          consoleResults.scrollTop = consoleResults.scrollHeight;
         };
 
         if (isAC) {
@@ -1112,7 +1200,6 @@ impl UnionFind {
             <pre class="case-error-content">${escapeHtml(e.data.message)}</pre>
           </div>
         `);
-        consoleResults.scrollTop = consoleResults.scrollHeight;
         break;
       }
 
@@ -1147,7 +1234,6 @@ impl UnionFind {
               </div>
             </div>
           `);
-          consoleResults.scrollTop = consoleResults.scrollHeight;
           saveConsoleState(contestId, problemId);
         }
         break;
@@ -1248,7 +1334,6 @@ impl UnionFind {
 
               if (targetProblemId === problemId) {
                 setConsoleHTML(html);
-                consoleResults.scrollTop = consoleResults.scrollHeight;
                 testSummary.textContent = summaryText;
                 testSummary.className = summaryClass;
               }
@@ -1266,8 +1351,7 @@ impl UnionFind {
         } else {
           const html = buildConsoleHTML('');
           if (targetProblemId === problemId) {
-            consoleResults.innerHTML = html;
-            consoleResults.scrollTop = consoleResults.scrollHeight;
+            setConsoleHTML(html);
             testSummary.textContent = summaryText;
             testSummary.className = summaryClass;
           }
@@ -1299,7 +1383,7 @@ impl UnionFind {
           if (code) {
             console.log('[AtCoder Workspace] Editor: Applying loaded past submission code');
             const oldModel = editor.getModel();
-            const newModel = monaco.editor.createModel(code, mode);
+            const newModel = monaco.editor.createModel(code, getMonacoLanguage(mode));
             editor.setModel(newModel);
             if (oldModel) oldModel.dispose();
             saveCodeSync();
@@ -1347,7 +1431,7 @@ impl UnionFind {
           }
           consoleResults.appendChild(row);
         }
-        ensureLearningNotesSection();
+        renderLearningNotesAndTags();
         saveConsoleState(contestId, problemId);
         break;
 
@@ -1363,8 +1447,16 @@ impl UnionFind {
             acCount++;
           }
 
+          if (e.data.name) {
+            const caseLabel = i18nProvider ? i18nProvider.t('editor_runner_case') : 'ケース';
+            const caseLabelSpan = row.querySelector('.case-label');
+            if (caseLabelSpan) {
+              caseLabelSpan.innerHTML = `<span data-i18n="editor_runner_case">${escapeHtml(caseLabel)}</span> ${e.data.index + 1} (${escapeHtml(e.data.name)}):`;
+            }
+          }
+
           const statusBadge = row.querySelector('.case-status');
-          statusBadge.removeAttribute('data-i18n'); // Status codes (AC/WA/TLE) are universal
+          statusBadge.removeAttribute('data-i18n'); // Status codes (AC/WA/TLE/FINISHED) are universal
           statusBadge.textContent = status;
           statusBadge.className = `case-status status-${status.toLowerCase()}`;
 
@@ -1402,6 +1494,18 @@ impl UnionFind {
                   <div class="case-io-label"><span data-i18n="editor_runner_actual">${escapeHtml(actualLabel)}</span>:</div>
                   <pre class="case-io-content">${escapeHtml(e.data.output)}</pre>
                 </div>
+              </div>
+            `;
+          } else if (status === 'FINISHED') {
+            body.style.display = 'block';
+            icon.textContent = '▼';
+            const actualLabel = i18nProvider
+              ? i18nProvider.t('editor_runner_actual')
+              : '実際の出力';
+            bodyHtml = `
+              <div class="case-io-block">
+                <div class="case-io-label"><span data-i18n="editor_runner_actual">${escapeHtml(actualLabel)}</span>:</div>
+                <pre class="case-io-content">${escapeHtml(e.data.output)}</pre>
               </div>
             `;
           } else if (status === 'RE' || status === 'ERR' || status === 'TLE' || status === 'MLE') {
@@ -1469,27 +1573,30 @@ impl UnionFind {
         isTesting = false;
         setButtonsDisabled(false);
 
-        if (acCount === totalCount) {
-          testSummaryState = { type: 'all_ac', acCount, total: totalCount };
-        } else {
-          // Priority of statuses to display in the overall summary
-          const uniqueNonAcStatuses = [...new Set(caseStatuses)].filter((s) => s !== 'AC');
-          let displayStatus = 'WA';
-          if (uniqueNonAcStatuses.includes('TLE')) {
-            displayStatus = 'TLE';
-          } else if (uniqueNonAcStatuses.includes('MLE')) {
-            displayStatus = 'MLE';
-          } else if (uniqueNonAcStatuses.includes('RE')) {
-            displayStatus = 'RE';
-          } else if (uniqueNonAcStatuses.includes('WA')) {
-            displayStatus = 'WA';
-          } else if (uniqueNonAcStatuses.includes('ERR')) {
-            displayStatus = 'ERR';
-          } else if (uniqueNonAcStatuses.length > 0) {
-            displayStatus = uniqueNonAcStatuses[0];
-          }
+        {
+          const nonAcFailures = caseStatuses.filter((s) => s !== 'AC' && s !== 'FINISHED');
+          if (nonAcFailures.length === 0) {
+            testSummaryState = { type: 'all_ac', acCount, total: totalCount };
+          } else {
+            // Priority of statuses to display in the overall summary
+            const uniqueNonAcStatuses = [...new Set(nonAcFailures)];
+            let displayStatus = 'WA';
+            if (uniqueNonAcStatuses.includes('TLE')) {
+              displayStatus = 'TLE';
+            } else if (uniqueNonAcStatuses.includes('MLE')) {
+              displayStatus = 'MLE';
+            } else if (uniqueNonAcStatuses.includes('RE')) {
+              displayStatus = 'RE';
+            } else if (uniqueNonAcStatuses.includes('WA')) {
+              displayStatus = 'WA';
+            } else if (uniqueNonAcStatuses.includes('ERR')) {
+              displayStatus = 'ERR';
+            } else if (uniqueNonAcStatuses.length > 0) {
+              displayStatus = uniqueNonAcStatuses[0];
+            }
 
-          testSummaryState = { type: 'non_ac', displayStatus, acCount, total: totalCount };
+            testSummaryState = { type: 'non_ac', displayStatus, acCount, total: totalCount };
+          }
         }
         updateTestSummaryText();
         saveConsoleState(contestId, problemId);
@@ -1504,15 +1611,12 @@ impl UnionFind {
         updateTestSummaryText();
         testSummary.className = 'summary-wa';
 
-        consoleResults.innerHTML = `
+        setConsoleHTML(`
           <div class="case-error-block">
             <div class="case-io-label">${escapeHtml(errorText)}:</div>
             <pre class="case-error-content">${escapeHtml(e.data.message)}</pre>
           </div>
-        `;
-
-        // Auto-scroll to the bottom of the console results
-        consoleResults.scrollTop = consoleResults.scrollHeight;
+        `);
         saveConsoleState(contestId, problemId);
         break;
       }
@@ -1647,9 +1751,33 @@ impl UnionFind {
           callback('');
           return;
         }
-        chrome.storage.local.get([storageKey], (res) => {
-          callback((res && res[storageKey]) || '');
-        });
+        let backupCode = '';
+        try {
+          const raw = localStorage.getItem(
+            `backup_code:${contestId}:${problemId}:${currentLanguageId}`
+          );
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && typeof parsed.code === 'string') {
+              backupCode = parsed.code;
+            }
+          }
+        } catch (e) {
+          // Ignore localStorage parsing error
+        }
+
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+          try {
+            chrome.storage.local.get([storageKey], (res) => {
+              const storageCode = (res && res[storageKey]) || '';
+              callback(storageCode || backupCode);
+            });
+          } catch (e) {
+            callback(backupCode);
+          }
+        } else {
+          callback(backupCode);
+        }
       };
 
       getInitialCode((initialCode) => {
@@ -1657,7 +1785,7 @@ impl UnionFind {
         const createEditorWithCode = (codeValue) => {
           editor = monaco.editor.create(document.getElementById('editor-container'), {
             value: codeValue,
-            language: mode,
+            language: getMonacoLanguage(mode),
             theme: isDark ? 'vs-dark' : 'vs',
             readOnly: !currentLanguageId, // Read-only if no language selected
             automaticLayout: false, // We control it via message events
@@ -1780,20 +1908,6 @@ impl UnionFind {
     });
   }
 
-  /**
-   * 保存された解答ステータスを更新するヘルパー関数
-   */
-  function saveProblemStatus(contestId, problemId, status, callback) {
-    if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.local) {
-      if (callback) callback();
-      return;
-    }
-    const key = `status:${contestId}:${problemId}`;
-    chrome.storage.local.set({ [key]: status }, () => {
-      if (callback) callback();
-    });
-  }
-
   function saveProblemStatusIfUnsolved(contestId, problemId, status, callback) {
     if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.local) {
       if (callback) callback();
@@ -1815,16 +1929,24 @@ impl UnionFind {
   function setConsoleHTML(html) {
     if (!consoleResults) return;
     consoleResults.innerHTML = html;
-    ensureLearningNotesSection();
+    renderCustomTestCases();
+    renderLearningNotesAndTags();
   }
 
   function saveConsoleState(cId, pId) {
     if (!cId || !pId) return;
+    const customCasesSection = document.getElementById('custom-cases-section');
+    if (customCasesSection && customCasesSection.parentElement === consoleResults) {
+      customCasesSection.remove();
+    }
     const learningNotesSection = document.getElementById('learning-notes-section');
     if (learningNotesSection && learningNotesSection.parentElement === consoleResults) {
       learningNotesSection.remove();
     }
     const htmlToSave = consoleResults.innerHTML;
+    if (customCasesSection) {
+      consoleResults.appendChild(customCasesSection);
+    }
     if (learningNotesSection) {
       consoleResults.appendChild(learningNotesSection);
     }
@@ -1946,7 +2068,7 @@ impl UnionFind {
     // Helper: Set model with code value and bind listener
     const applyModelWithCode = (codeValue) => {
       const oldModel = editor.getModel();
-      const newModel = monaco.editor.createModel(codeValue, mode);
+      const newModel = monaco.editor.createModel(codeValue, getMonacoLanguage(mode));
       editor.setModel(newModel);
       if (oldModel) oldModel.dispose();
 
@@ -2002,30 +2124,94 @@ impl UnionFind {
     });
   }
 
-  function isContextValid() {
-    return typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id;
+  function backupCodeToLocalStorage() {
+    if (!editor || !contestId || !problemId || !currentLanguageId) return;
+    try {
+      const code = editor.getValue();
+      const key = `backup_code:${contestId}:${problemId}:${currentLanguageId}`;
+      localStorage.setItem(key, JSON.stringify({ code, timestamp: Date.now() }));
+    } catch (e) {
+      // Ignore quota errors
+    }
   }
 
+  function showContextInvalidatedBanner() {
+    const banner = document.getElementById('context-invalidated-banner');
+    if (banner && banner.style.display === 'none') {
+      banner.style.display = 'flex';
+      const reloadBtn = document.getElementById('context-reload-btn');
+      if (reloadBtn) {
+        reloadBtn.onclick = () => {
+          backupCodeToLocalStorage();
+          try {
+            if (window.top && window.top !== window) {
+              window.top.location.reload();
+              return;
+            }
+          } catch (e) {
+            // Cross-origin fallback
+          }
+          window.location.reload();
+        };
+      }
+    }
+  }
+
+  function isContextValid() {
+    try {
+      const valid = typeof chrome !== 'undefined' && chrome.runtime && !!chrome.runtime.id;
+      if (!valid && contestId && problemId) {
+        showContextInvalidatedBanner();
+        backupCodeToLocalStorage();
+      }
+      return valid;
+    } catch (e) {
+      if (contestId && problemId) {
+        showContextInvalidatedBanner();
+        backupCodeToLocalStorage();
+      }
+      return false;
+    }
+  }
+
+  // Periodic check for extension context invalidation
+  setInterval(() => {
+    isContextValid();
+  }, 5000);
+
   function saveCode() {
+    backupCodeToLocalStorage();
     if (!isContextValid()) return;
     if (!editor || !contestId || !problemId || !currentLanguageId) return;
     const code = editor.getValue();
     const storageKey = `code:${contestId}:${problemId}:${currentLanguageId}`;
 
-    chrome.storage.local.set({ [storageKey]: code }, () => {
-      setSaveStatus('saved');
-    });
+    try {
+      chrome.storage.local.set({ [storageKey]: code }, () => {
+        if (chrome.runtime && chrome.runtime.lastError) return;
+        setSaveStatus('saved');
+      });
+    } catch (e) {
+      // Extension context invalidated
+      showContextInvalidatedBanner();
+    }
   }
 
   function saveCodeSync() {
+    backupCodeToLocalStorage();
     if (!isContextValid()) return;
     if (!editor || !contestId || !problemId || !currentLanguageId) return;
     clearTimeout(saveTimeout);
     const code = editor.getValue();
     const storageKey = `code:${contestId}:${problemId}:${currentLanguageId}`;
 
-    chrome.storage.local.set({ [storageKey]: code });
-    setSaveStatus('saved');
+    try {
+      chrome.storage.local.set({ [storageKey]: code });
+      setSaveStatus('saved');
+    } catch (e) {
+      // Extension context invalidated
+      showContextInvalidatedBanner();
+    }
   }
 
   // Handle auto-save on tab close / switch / visibility change
@@ -2356,16 +2542,24 @@ impl UnionFind {
     return div;
   }
 
+  let isRenderingNotes = false;
+
   function ensureLearningNotesSection() {
     if (!consoleResults) return;
     let section = document.getElementById('learning-notes-section');
+    let isNew = false;
     if (!section) {
       section = createLearningNotesSectionDOM();
+      isNew = true;
     }
     if (section.parentElement !== consoleResults || consoleResults.lastElementChild !== section) {
       consoleResults.appendChild(section);
+      isNew = true;
     }
     initLearningNotesGlobalListeners();
+    if (isNew && !isRenderingNotes) {
+      renderLearningNotesAndTags();
+    }
   }
 
   function migrateTags(rawTags) {
@@ -2444,112 +2638,118 @@ impl UnionFind {
   }
 
   function renderLearningNotesAndTags() {
-    ensureLearningNotesSection();
+    if (isRenderingNotes) return;
+    isRenderingNotes = true;
+    try {
+      ensureLearningNotesSection();
 
-    const selectedTagsContainer = document.getElementById('selected-tags-container');
-    const methodTagsWrapper = document.getElementById('method-tags-wrapper');
-    const causeTagsWrapper = document.getElementById('cause-tags-wrapper');
-    const learningNoteTextarea = document.getElementById('learning-note-textarea');
-    const tagsLabel = document.querySelector('.tags-label');
+      const selectedTagsContainer = document.getElementById('selected-tags-container');
+      const methodTagsWrapper = document.getElementById('method-tags-wrapper');
+      const causeTagsWrapper = document.getElementById('cause-tags-wrapper');
+      const learningNoteTextarea = document.getElementById('learning-note-textarea');
+      const tagsLabel = document.querySelector('.tags-label');
 
-    if (tagsLabel && !tagsLabel.classList.contains('has-article-link')) {
-      tagsLabel.classList.add('has-article-link');
-      tagsLabel.title =
-        (i18nProvider && i18nProvider.t('editor_learning_tags_label_title')) ||
-        'クリックで競プロ用語解説ガイド記事を開く';
-      tagsLabel.addEventListener('click', () => {
-        window.open(
-          'https://rikutoyamada01.github.io/atcoder-workspace/article/glossary.html',
-          '_blank'
-        );
-      });
-    }
+      if (tagsLabel && !tagsLabel.classList.contains('has-article-link')) {
+        tagsLabel.classList.add('has-article-link');
+        tagsLabel.title =
+          (i18nProvider && i18nProvider.t('editor_learning_tags_label_title')) ||
+          'クリックで競プロ用語解説ガイド記事を開く';
+        tagsLabel.addEventListener('click', () => {
+          window.open(
+            'https://rikutoyamada01.github.io/atcoder-workspace/article/glossary.html',
+            '_blank'
+          );
+        });
+      }
 
-    if (selectedTagsContainer) {
-      selectedTagsContainer.innerHTML = '';
-      currentProblemNotes.tags.forEach((tag) => {
-        const chip = document.createElement('span');
-        chip.className = 'tag-chip';
-        const displayName = getTagDisplayName(tag);
-        chip.textContent = `#${displayName}`;
+      if (selectedTagsContainer) {
+        selectedTagsContainer.innerHTML = '';
+        currentProblemNotes.tags.forEach((tag) => {
+          const chip = document.createElement('span');
+          chip.className = 'tag-chip';
+          const displayName = getTagDisplayName(tag);
+          chip.textContent = `#${displayName}`;
 
-        const desc = getTagDescription(tag);
-        if (desc) {
-          chip.title = desc;
-        }
+          const desc = getTagDescription(tag);
+          if (desc) {
+            chip.title = desc;
+          }
 
-        const removeBtn = document.createElement('span');
-        removeBtn.className = 'tag-chip-remove';
-        removeBtn.textContent = '×';
-        removeBtn.onclick = (e) => {
-          e.stopPropagation();
-          toggleTag(tag);
-        };
-
-        chip.appendChild(removeBtn);
-        selectedTagsContainer.appendChild(chip);
-      });
-    }
-
-    if (methodTagsWrapper) {
-      methodTagsWrapper.innerHTML = '';
-      PRESET_METHOD_TAGS.forEach((tagObj) => {
-        const tagId = tagObj.id;
-        const displayName = getTagDisplayName(tagId);
-        const desc = getTagDescription(tagId);
-        const option = document.createElement('span');
-        const isActive = currentProblemNotes.tags.includes(tagId);
-        option.className = `tag-option-chip ${isActive ? 'active' : ''}`;
-        option.textContent = `#${displayName}`;
-        option.title = desc;
-        option.onclick = (e) => {
-          e.stopPropagation();
-          toggleTag(tagId);
-        };
-        methodTagsWrapper.appendChild(option);
-      });
-    }
-
-    if (causeTagsWrapper) {
-      causeTagsWrapper.innerHTML = '';
-      PRESET_CAUSE_TAGS.forEach((tagObj) => {
-        const tagId = tagObj.id;
-        const displayName = getTagDisplayName(tagId);
-        const desc = getTagDescription(tagId);
-        const option = document.createElement('span');
-        const isActive = currentProblemNotes.tags.includes(tagId);
-        option.className = `tag-option-chip ${isActive ? 'active' : ''}`;
-        option.textContent = `#${displayName}`;
-        option.title = desc;
-        option.onclick = (e) => {
-          e.stopPropagation();
-          toggleTag(tagId);
-        };
-        causeTagsWrapper.appendChild(option);
-      });
-
-      // Render custom tags not in presets
-      const presetKeys = new Set([
-        ...PRESET_METHOD_TAGS.map((t) => t.id),
-        ...PRESET_CAUSE_TAGS.map((t) => t.id),
-      ]);
-      currentProblemNotes.tags.forEach((tag) => {
-        if (!presetKeys.has(tag)) {
-          const option = document.createElement('span');
-          option.className = 'tag-option-chip active';
-          option.textContent = `#${getTagDisplayName(tag)}`;
-          option.onclick = (e) => {
+          const removeBtn = document.createElement('span');
+          removeBtn.className = 'tag-chip-remove';
+          removeBtn.textContent = '×';
+          removeBtn.onclick = (e) => {
             e.stopPropagation();
             toggleTag(tag);
           };
-          causeTagsWrapper.appendChild(option);
-        }
-      });
-    }
 
-    if (learningNoteTextarea && document.activeElement !== learningNoteTextarea) {
-      learningNoteTextarea.value = currentProblemNotes.note || '';
-      autoResizeTextarea(learningNoteTextarea);
+          chip.appendChild(removeBtn);
+          selectedTagsContainer.appendChild(chip);
+        });
+      }
+
+      if (methodTagsWrapper) {
+        methodTagsWrapper.innerHTML = '';
+        PRESET_METHOD_TAGS.forEach((tagObj) => {
+          const tagId = tagObj.id;
+          const displayName = getTagDisplayName(tagId);
+          const desc = getTagDescription(tagId);
+          const option = document.createElement('span');
+          const isActive = currentProblemNotes.tags.includes(tagId);
+          option.className = `tag-option-chip ${isActive ? 'active' : ''}`;
+          option.textContent = `#${displayName}`;
+          option.title = desc;
+          option.onclick = (e) => {
+            e.stopPropagation();
+            toggleTag(tagId);
+          };
+          methodTagsWrapper.appendChild(option);
+        });
+      }
+
+      if (causeTagsWrapper) {
+        causeTagsWrapper.innerHTML = '';
+        PRESET_CAUSE_TAGS.forEach((tagObj) => {
+          const tagId = tagObj.id;
+          const displayName = getTagDisplayName(tagId);
+          const desc = getTagDescription(tagId);
+          const option = document.createElement('span');
+          const isActive = currentProblemNotes.tags.includes(tagId);
+          option.className = `tag-option-chip ${isActive ? 'active' : ''}`;
+          option.textContent = `#${displayName}`;
+          option.title = desc;
+          option.onclick = (e) => {
+            e.stopPropagation();
+            toggleTag(tagId);
+          };
+          causeTagsWrapper.appendChild(option);
+        });
+
+        // Render custom tags not in presets
+        const presetKeys = new Set([
+          ...PRESET_METHOD_TAGS.map((t) => t.id),
+          ...PRESET_CAUSE_TAGS.map((t) => t.id),
+        ]);
+        currentProblemNotes.tags.forEach((tag) => {
+          if (!presetKeys.has(tag)) {
+            const option = document.createElement('span');
+            option.className = 'tag-option-chip active';
+            option.textContent = `#${getTagDisplayName(tag)}`;
+            option.onclick = (e) => {
+              e.stopPropagation();
+              toggleTag(tag);
+            };
+            causeTagsWrapper.appendChild(option);
+          }
+        });
+      }
+
+      if (learningNoteTextarea && document.activeElement !== learningNoteTextarea) {
+        learningNoteTextarea.value = currentProblemNotes.note || '';
+        autoResizeTextarea(learningNoteTextarea);
+      }
+    } finally {
+      isRenderingNotes = false;
     }
   }
 
@@ -2569,6 +2769,16 @@ impl UnionFind {
 
       toggleTagDropdownBtn.onclick = (e) => {
         e.stopPropagation();
+        const methodWrapper = section.querySelector('#method-tags-wrapper');
+        const causeWrapper = section.querySelector('#cause-tags-wrapper');
+        if (
+          !methodWrapper ||
+          methodWrapper.children.length === 0 ||
+          !causeWrapper ||
+          causeWrapper.children.length === 0
+        ) {
+          renderLearningNotesAndTags();
+        }
         const isHidden = tagDropdownPanel.style.display === 'none';
         tagDropdownPanel.style.display = isHidden ? 'flex' : 'none';
         toggleTagDropdownBtn.textContent = isHidden ? closeBtnText : selectBtnText;
@@ -2633,9 +2843,345 @@ impl UnionFind {
     });
   }
 
+  // --- Custom Test Cases Management ---
+  let currentCustomCases = [];
+  let isRenderingCustomCases = false;
+
+  function getCustomCasesStorageKey(cId, pId) {
+    if (!cId || !pId) return null;
+    return `custom_test_cases:${cId}:${pId}`;
+  }
+
+  function loadCustomTestCases(cId, pId) {
+    const key = getCustomCasesStorageKey(cId, pId);
+    currentCustomCases = [];
+    if (!key || !isContextValid()) {
+      renderCustomTestCases();
+      return;
+    }
+
+    try {
+      chrome.storage.local.get([key], (result) => {
+        if (result && Array.isArray(result[key])) {
+          currentCustomCases = result[key];
+        }
+        renderCustomTestCases();
+      });
+    } catch (e) {
+      console.error('[AtCoder Workspace] Failed to load custom test cases', e);
+      renderCustomTestCases();
+    }
+  }
+
+  function saveCustomTestCasesToStorage() {
+    const key = getCustomCasesStorageKey(contestId, problemId);
+    if (!key || !isContextValid()) return;
+
+    try {
+      chrome.storage.local.set({ [key]: currentCustomCases });
+    } catch (e) {
+      console.error('[AtCoder Workspace] Failed to save custom test cases', e);
+    }
+  }
+
+  function addOrUpdateCustomTestCase(caseData) {
+    if (caseData.id) {
+      const idx = currentCustomCases.findIndex((c) => c.id === caseData.id);
+      if (idx >= 0) {
+        currentCustomCases[idx] = {
+          ...currentCustomCases[idx],
+          name: caseData.name || '',
+          input: caseData.input,
+          expected: caseData.expected !== undefined ? caseData.expected : '',
+        };
+      }
+    } else {
+      const newCase = {
+        id: `custom_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+        name: caseData.name || '',
+        input: caseData.input,
+        expected: caseData.expected !== undefined ? caseData.expected : '',
+        createdAt: Date.now(),
+      };
+      currentCustomCases.push(newCase);
+    }
+    saveCustomTestCasesToStorage();
+    renderCustomTestCases();
+  }
+
+  function deleteCustomTestCase(caseId) {
+    currentCustomCases = currentCustomCases.filter((c) => c.id !== caseId);
+    saveCustomTestCasesToStorage();
+    renderCustomTestCases();
+  }
+
+  function ensureCustomCasesSection() {
+    let section = document.getElementById('custom-cases-section');
+    let isNew = false;
+    if (!section && consoleResults) {
+      section = document.createElement('div');
+      section.id = 'custom-cases-section';
+      section.className = 'custom-cases-section';
+      const customTitle = i18nProvider
+        ? i18nProvider.t('editor_custom_case_title')
+        : '🧪 カスタムテストケース';
+      const addBtnText = i18nProvider
+        ? i18nProvider.t('editor_custom_case_add_btn')
+        : '＋ カスタムケースを追加';
+      const nameLabel = i18nProvider
+        ? i18nProvider.t('editor_custom_case_name_label')
+        : 'ケース名 (任意):';
+      const namePlaceholder = i18nProvider
+        ? i18nProvider.t('editor_custom_case_name_placeholder')
+        : 'ケース名 (任意, 例: N=1)';
+      const inputLabel = i18nProvider
+        ? i18nProvider.t('editor_custom_case_input_label')
+        : '入力 (stdin):';
+      const inputPlaceholder = i18nProvider
+        ? i18nProvider.t('editor_custom_case_input_placeholder')
+        : '入力データを入力...';
+      const expectedLabel = i18nProvider
+        ? i18nProvider.t('editor_custom_case_expected_label')
+        : '期待される出力 (任意):';
+      const expectedPlaceholder = i18nProvider
+        ? i18nProvider.t('editor_custom_case_expected_placeholder')
+        : '期待される出力を入力 (空欄の場合は判定なし)...';
+      const saveBtnText = i18nProvider ? i18nProvider.t('editor_custom_case_btn_save') : '保存';
+      const cancelBtnText = i18nProvider
+        ? i18nProvider.t('editor_custom_case_btn_cancel')
+        : 'キャンセル';
+
+      section.innerHTML = `
+        <div class="custom-cases-header">
+          <span class="custom-cases-title" data-i18n="editor_custom_case_title">${escapeHtml(customTitle)}</span>
+          <button id="add-custom-case-btn" class="btn btn-default btn-xs" data-i18n="editor_custom_case_add_btn">${escapeHtml(addBtnText)}</button>
+        </div>
+        <div id="custom-case-form" class="custom-case-form" style="display: none;">
+          <input type="hidden" id="custom-case-edit-id" value="">
+          <div class="form-group-xs">
+            <label class="form-label-xs" data-i18n="editor_custom_case_name_label">${escapeHtml(nameLabel)}</label>
+            <input type="text" id="custom-case-name" class="form-control input-xs" data-i18n-placeholder="editor_custom_case_name_placeholder" placeholder="${escapeHtml(namePlaceholder)}">
+          </div>
+          <div class="form-group-xs">
+            <label class="form-label-xs" data-i18n="editor_custom_case_input_label">${escapeHtml(inputLabel)}</label>
+            <textarea id="custom-case-input" class="form-control input-xs" rows="3" data-i18n-placeholder="editor_custom_case_input_placeholder" placeholder="${escapeHtml(inputPlaceholder)}"></textarea>
+          </div>
+          <div class="form-group-xs">
+            <label class="form-label-xs" data-i18n="editor_custom_case_expected_label">${escapeHtml(expectedLabel)}</label>
+            <textarea id="custom-case-expected" class="form-control input-xs" rows="2" data-i18n-placeholder="editor_custom_case_expected_placeholder" placeholder="${escapeHtml(expectedPlaceholder)}"></textarea>
+          </div>
+          <div class="form-actions-xs">
+            <button id="save-custom-case-btn" class="btn btn-primary btn-xs" data-i18n="editor_custom_case_btn_save">${escapeHtml(saveBtnText)}</button>
+            <button id="cancel-custom-case-btn" class="btn btn-default btn-xs" data-i18n="editor_custom_case_btn_cancel">${escapeHtml(cancelBtnText)}</button>
+          </div>
+        </div>
+        <div id="custom-cases-list" class="custom-cases-list"></div>
+      `;
+
+      const learningNotesSection = document.getElementById('learning-notes-section');
+      if (learningNotesSection && learningNotesSection.parentElement === consoleResults) {
+        consoleResults.insertBefore(section, learningNotesSection);
+      } else {
+        consoleResults.appendChild(section);
+      }
+      isNew = true;
+    }
+    if (section && (!section._eventsBound || isNew)) {
+      bindCustomCasesEvents(section);
+      section._eventsBound = true;
+    }
+  }
+
+  function bindCustomCasesEvents(section) {
+    if (!section) return;
+    const addBtn = section.querySelector('#add-custom-case-btn');
+    const form = section.querySelector('#custom-case-form');
+    const cancelBtn = section.querySelector('#cancel-custom-case-btn');
+    const saveBtn = section.querySelector('#save-custom-case-btn');
+
+    if (addBtn && form) {
+      addBtn.onclick = (e) => {
+        e.stopPropagation();
+        const editIdInput = form.querySelector('#custom-case-edit-id');
+        const nameInput = form.querySelector('#custom-case-name');
+        const inputArea = form.querySelector('#custom-case-input');
+        const expectedArea = form.querySelector('#custom-case-expected');
+        const isHidden = form.style.display === 'none';
+        if (isHidden) {
+          if (editIdInput) editIdInput.value = '';
+          if (nameInput) nameInput.value = '';
+          if (inputArea) inputArea.value = '';
+          if (expectedArea) expectedArea.value = '';
+          form.style.display = 'flex';
+          if (inputArea) inputArea.focus();
+        } else {
+          form.style.display = 'none';
+        }
+      };
+    }
+
+    if (cancelBtn && form) {
+      cancelBtn.onclick = (e) => {
+        e.stopPropagation();
+        const editIdInput = form.querySelector('#custom-case-edit-id');
+        const nameInput = form.querySelector('#custom-case-name');
+        const inputArea = form.querySelector('#custom-case-input');
+        const expectedArea = form.querySelector('#custom-case-expected');
+        form.style.display = 'none';
+        if (editIdInput) editIdInput.value = '';
+        if (nameInput) nameInput.value = '';
+        if (inputArea) inputArea.value = '';
+        if (expectedArea) expectedArea.value = '';
+      };
+    }
+
+    if (saveBtn && form) {
+      saveBtn.onclick = (e) => {
+        e.stopPropagation();
+        const editIdInput = form.querySelector('#custom-case-edit-id');
+        const nameInput = form.querySelector('#custom-case-name');
+        const inputArea = form.querySelector('#custom-case-input');
+        const expectedArea = form.querySelector('#custom-case-expected');
+
+        const inputVal = inputArea ? inputArea.value : '';
+        if (!inputVal || !inputVal.trim()) {
+          const reqMsg = i18nProvider
+            ? i18nProvider.t('editor_custom_case_input_required')
+            : '入力 (stdin) を入力してください。';
+          alert(reqMsg);
+          if (inputArea) inputArea.focus();
+          return;
+        }
+
+        const editId = editIdInput ? editIdInput.value : '';
+        const nameVal = nameInput ? nameInput.value.trim() : '';
+        const expectedVal = expectedArea ? expectedArea.value : '';
+
+        addOrUpdateCustomTestCase({
+          id: editId || null,
+          name: nameVal,
+          input: inputVal,
+          expected: expectedVal,
+        });
+
+        form.style.display = 'none';
+        if (editIdInput) editIdInput.value = '';
+        if (nameInput) nameInput.value = '';
+        if (inputArea) inputArea.value = '';
+        if (expectedArea) expectedArea.value = '';
+      };
+    }
+  }
+
+  function renderCustomTestCases() {
+    if (isRenderingCustomCases) return;
+    isRenderingCustomCases = true;
+    try {
+      ensureCustomCasesSection();
+      const listContainer = document.getElementById('custom-cases-list');
+      if (!listContainer) return;
+
+      listContainer.innerHTML = '';
+      if (currentCustomCases.length === 0) {
+        const emptyEl = document.createElement('div');
+        emptyEl.className = 'custom-cases-empty';
+        emptyEl.setAttribute('data-i18n', 'editor_custom_case_no_cases');
+        emptyEl.textContent = i18nProvider
+          ? i18nProvider.t('editor_custom_case_no_cases')
+          : 'カスタムテストケースはまだ登録されていません。';
+        listContainer.appendChild(emptyEl);
+      } else {
+        currentCustomCases.forEach((item, idx) => {
+          const card = document.createElement('div');
+          card.className = 'custom-case-card';
+          const displayName = item.name ? `${escapeHtml(item.name)}` : `Case ${idx + 1}`;
+          const editBtnText = i18nProvider
+            ? i18nProvider.t('editor_custom_case_btn_edit')
+            : '✏️ 編集';
+          const deleteBtnText = i18nProvider
+            ? i18nProvider.t('editor_custom_case_btn_delete')
+            : '🗑️ 削除';
+          const inputLabel = i18nProvider
+            ? i18nProvider.t('editor_custom_case_input_label')
+            : '入力 (stdin):';
+          const expectedLabel = i18nProvider
+            ? i18nProvider.t('editor_custom_case_expected_label')
+            : '期待される出力 (任意):';
+
+          card.innerHTML = `
+            <div class="custom-case-card-header">
+              <span class="custom-case-card-title">🧪 ${displayName}</span>
+              <div class="custom-case-card-actions">
+                <button class="btn btn-default btn-xs btn-edit-custom-case" data-i18n="editor_custom_case_btn_edit">${escapeHtml(editBtnText)}</button>
+                <button class="btn btn-default btn-xs btn-delete-custom-case" data-i18n="editor_custom_case_btn_delete">${escapeHtml(deleteBtnText)}</button>
+              </div>
+            </div>
+            <div class="custom-case-card-body">
+              <div class="case-io-block">
+                <div class="case-io-label"><span data-i18n="editor_custom_case_input_label">${escapeHtml(inputLabel)}</span></div>
+                <pre class="case-io-content">${escapeHtml(item.input)}</pre>
+              </div>
+              ${
+                item.expected !== undefined && item.expected !== ''
+                  ? `
+                <div class="case-io-block">
+                  <div class="case-io-label"><span data-i18n="editor_custom_case_expected_label">${escapeHtml(expectedLabel)}</span></div>
+                  <pre class="case-io-content">${escapeHtml(item.expected)}</pre>
+                </div>
+              `
+                  : ''
+              }
+            </div>
+          `;
+
+          const editBtn = card.querySelector('.btn-edit-custom-case');
+          const deleteBtn = card.querySelector('.btn-delete-custom-case');
+
+          if (editBtn) {
+            editBtn.onclick = (e) => {
+              e.stopPropagation();
+              const form = document.getElementById('custom-case-form');
+              if (!form) return;
+              const editIdInput = form.querySelector('#custom-case-edit-id');
+              const nameInput = form.querySelector('#custom-case-name');
+              const inputArea = form.querySelector('#custom-case-input');
+              const expectedArea = form.querySelector('#custom-case-expected');
+
+              if (editIdInput && nameInput && inputArea && expectedArea) {
+                editIdInput.value = item.id;
+                nameInput.value = item.name || '';
+                inputArea.value = item.input || '';
+                expectedArea.value = item.expected || '';
+                form.style.display = 'flex';
+                inputArea.focus();
+              }
+            };
+          }
+
+          if (deleteBtn) {
+            deleteBtn.onclick = (e) => {
+              e.stopPropagation();
+              const confirmMsg = i18nProvider
+                ? i18nProvider.t('editor_custom_case_delete_confirm')
+                : 'このカスタムケースを削除しますか？';
+              if (confirm(confirmMsg)) {
+                deleteCustomTestCase(item.id);
+              }
+            };
+          }
+
+          listContainer.appendChild(card);
+        });
+      }
+    } finally {
+      isRenderingCustomCases = false;
+    }
+  }
+
   window.addEventListener('beforeunload', () => {
     saveLearningNotesAndTags();
   });
 
+  renderCustomTestCases();
   renderLearningNotesAndTags();
 })();

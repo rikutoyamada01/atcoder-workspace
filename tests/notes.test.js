@@ -121,4 +121,9 @@ describe('Learning Notes and Tags Module & Constants', () => {
     expect(result[key].tags).toEqual(['tag_name_binary_search', 'tag_name_corner_case']);
     expect(result[key].note).toBe('N=1の例外処理に注意');
   });
+
+  test('Preset method and cause tags contain non-empty lists matching expectations', () => {
+    expect(TagConstants.PRESET_METHOD_TAGS.length).toBeGreaterThan(5);
+    expect(TagConstants.PRESET_CAUSE_TAGS.length).toBeGreaterThan(5);
+  });
 });
