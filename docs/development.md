@@ -6,10 +6,10 @@
 
 ## 技術スタック
 
-* **コア**: HTML5, JavaScript (ES6)
-* **スタイル**: CSS3
-* **エディタ**: Monaco Editor (非同期ロード対応)
-* **データ保存**: Chrome Extension Storage API (chrome.storage.local)
+- **コア**: HTML5, JavaScript (ES6)
+- **スタイル**: CSS3
+- **エディタ**: Monaco Editor (非同期ロード対応)
+- **データ保存**: Chrome Extension Storage API (chrome.storage.local)
 
 ---
 
@@ -37,19 +37,40 @@
 node scripts/toggle-feature.js monaco
 ```
 
-* **指定可能な機能ID一覧**:
+- **指定可能な機能ID一覧**:
   `monaco`, `template`, `test`, `notes`, `submit`, `dashboard`, `library`, `error`, `export`, `queue`, `safety`, `autopush`
-* **スクリプトの動作仕様**:
+- **スクリプトの動作仕様**:
   - 指定した機能IDが「未実装」の場合 ➔ **「実装済」**に切り替わります（HTMLの表示ロックが解除され、獲得スコアやAtCoderレーティングカラーが自動計算されます）。
   - 指定した機能IDがすでに「実装済」の場合 ➔ **「未実装（ロック状態）」**にロールバックされます。
 
 ---
 
-## 💡 推奨される機能開発ワークフロー
+## 💡 ブランチ戦略と機能開発ワークフロー
 
-1. **機能実装 ＆ テスト**: 対象機能のコーディングと検証を終えます。
-2. **ロードマップ更新**: ローカル環境で `node scripts/toggle-feature.js [機能ID]` を実行し、`roadmap.html` を更新します。
-3. **まとめてコミット**: 機能の実装コードと、更新された `roadmap.html` を同じコミットに含めて、Git にコミット ＆ プッシュします。
+本プロジェクトでは、コードの品質とリリース管理を徹底するため **Git-flow** を採用しています。
+
+### ブランチ運用モデル
+
+- **`master` (本番・リリース)**: Chromeウェブストア等にリリースされている安定バージョンのみを保持。直接プッシュ禁止（PR必須・CI通過必須）。
+- **`develop` (開発統合)**: 次期リリースに向けた機能開発・修正が集約されるブランチ。通常PRの宛先。直接プッシュ禁止（PR必須・CI通過必須）。
+- **トピックブランチ**:
+  - `feat/<機能名>`: 新機能開発（`develop` から分岐 ➔ `develop` 宛てにPR）
+  - `fix/<不具合名>`: 通常バグ修正（`develop` から分岐 ➔ `develop` 宛てにPR）
+  - `hotfix/<不具合名>`: 本番緊急修正（`master` から分岐 ➔ `master` & `develop` の双方にマージ）
+
+### 開発 ＆ コミット手順
+
+1. **ブランチ作成**: `develop` から最新を取得してトピックブランチを作成します。
+2. **機能実装 ＆ テスト**: 対象機能のコーディング、テスト追加、Linter検証（`npm run pre-merge`）を行います。
+3. **ロードマップ更新**: 必要に応じて `node scripts/toggle-feature.js [機能ID]` を実行し、`roadmap.html` を更新します。
+4. **コミット ＆ PR作成**:
+   - `develop` 宛てにプルリクエストを作成します。
+   - **重要（Issueクローズのタイミング）**: `develop` 宛てのPR本文には `Closes #XX` を使用せず、`Related: #XX` または `Ref: #XX` と記載してください（`develop` マージ時点ではまだ未リリースのため）。
+   - 本番リリースの際（`develop` ➔ `master` のリリースPR）において、初めて `Closes #XX` を記載して一括自動クローズを行います。
+
+### セキュリティポリシー
+
+拡張機能の権限設計、XSS防止、脆弱性報告手順については [SECURITY.md](../SECURITY.md) を厳守してください。
 
 ---
 
@@ -58,46 +79,51 @@ node scripts/toggle-feature.js monaco
 自動テスト機能を安全かつ堅牢に稼働させるための、AtCoder 内部コードテスト API の仕様情報です。
 
 ### 1. コードテスト実行の登録 (POST)
-* **エンドポイント**: `/contests/{contestId}/custom_test/submit/json`
-* **パラメータ (Form Data)**:
+
+- **エンドポイント**: `/contests/{contestId}/custom_test/submit/json`
+- **パラメータ (Form Data)**:
   - `csrf_token`: セッション内の有効な CSRF トークン
   - `sourceCode`: 実行するソースコード文字列
   - `data.LanguageId`: プログラミング言語の識別数値ID
   - `input`: プログラムへの標準入力 (stdin) 文字列
-* **レスポンス**:
+- **レスポンス**:
   - 成功時: ステータス `200 OK`、ボディは空 (0バイト)
   - 競合時（実行中の別プロセスがある場合等）: `前回のカスタムテストの実行が終了していません。` というプレーンテキストが返却されます。
 
 ### 2. 実行結果・進捗取得 (GET)
-* **エンドポイント**: `/contests/{contestId}/custom_test/json?_={timestamp}`
-* **レスポンス JSON の構造**:
+
+- **エンドポイント**: `/contests/{contestId}/custom_test/json?_={timestamp}`
+- **レスポンス JSON の構造**:
   ```json
   {
     "Result": {
       "Id": 12345678,
       "SourceCode": "...", // Base64 エンコードされたソースコード
-      "Input": "...",      // Base64 エンコードされた入力値
-      "Output": "...",     // Base64 エンコードされた出力値 (Status 3 のみ)
-      "Error": "",         // Base64 エンコードされた stderr (Status 3 のみ)
-      "TimeConsumption": "1 ms",      // 実行時間 (文字列、例: "1 ms")
+      "Input": "...", // Base64 エンコードされた入力値
+      "Output": "...", // Base64 エンコードされた出力値 (Status 3 のみ)
+      "Error": "", // Base64 エンコードされた stderr (Status 3 のみ)
+      "TimeConsumption": "1 ms", // 実行時間 (文字列、例: "1 ms")
       "MemoryConsumption": "3608 KiB", // メモリ使用量 (文字列、例: "3608 KiB")
-      "ExitCode": 0,       // 終了コード (数値)
-      "Status": 3          // 実行状態ステータス (数値)
+      "ExitCode": 0, // 終了コード (数値)
+      "Status": 3 // 実行状態ステータス (数値)
     },
-    "Stderr": "",  // プレーンテキストの標準エラー出力
+    "Stderr": "", // プレーンテキストの標準エラー出力
     "Stdout": "5\n" // プレーンテキストの標準出力
   }
   ```
 
 ### 3. ステータスコードの意味と遷移
+
 `Result.Status` の値によって、テストの実行ステージが管理されます。
-* **`0`**: 待機中 (Queued)
-* **`1`**: コンパイル中 (Compiling)
-* **`2`**: 実行中 (Running / Executing)
-* **`3`**: 完了 (Completed)
+
+- **`0`**: 待機中 (Queued)
+- **`1`**: コンパイル中 (Compiling)
+- **`2`**: 実行中 (Running / Executing)
+- **`3`**: 完了 (Completed)
 
 > [!IMPORTANT]
 > **ポーリング完了判定の注意点**:
+>
 > - `Status` が `0`, `1`, `2` の状態はまだ実行中です。この時に結果取得を終了（resolve）してしまうと、空の出力を取得してしまい `WA` になる原因になります。必ず `status === 3`（またはその他の完了状態）になるまでポーリングを継続してください。
 > - プログラムが実行中（`Status` が `0`, `1`, `2`）の時に新しいカスタムテストを POST すると、サーバーから `LockError`（競合エラー）が返されます。連続してテストケースを実行する場合は、前の実行状態が確実に `3` になったことを確認してから次のケースを送信してください。
 
@@ -108,42 +134,46 @@ node scripts/toggle-feature.js monaco
 エディタからのコード提出機能を実装するための、AtCoder 提出エンドポイントの仕様情報です。
 
 ### 1. コード提出 (POST)
-* **エンドポイント**: `/contests/{contestId}/submit`
-* **パラメータ (Form Data)**:
+
+- **エンドポイント**: `/contests/{contestId}/submit`
+- **パラメータ (Form Data)**:
   - `csrf_token`: セッション内の有効な CSRF トークン
   - `data.TaskScreenName`: 問題のスクリーン名（例: `abc460_a`）
   - `data.LanguageId`: プログラミング言語の識別数値ID（例: C++ (GCC 12.2) = `6017`）
   - `sourceCode`: 提出するソースコード文字列
   - `cf-turnstile-response`: Cloudflare Turnstile の検証トークン（**後述の「Turnstile」セクション参照**）
-* **レスポンス**:
+- **レスポンス**:
   - 成功時: ステータス `302 Found` → `/contests/{contestId}/submissions/me` へリダイレクト
   - 失敗時: ステータス `200 OK`、HTML 内に `<div class="alert alert-danger">` でエラーメッセージが含まれる
 
 ### 2. 提出結果の取得 (GET)
-* **エンドポイント**: `/contests/{contestId}/submissions/me?_={timestamp}`
-* **レスポンス**: HTML ページ内に提出履歴テーブルが含まれる
-* **テーブル構造**:
+
+- **エンドポイント**: `/contests/{contestId}/submissions/me?_={timestamp}`
+- **レスポンス**: HTML ページ内に提出履歴テーブルが含まれる
+- **テーブル構造**:
   - `<thead>` の `<th>` で列名を取得（`提出時間`, `問題`, `ユーザ`, `言語`, `結果`, `実行時間`, `メモリ`）
   - `<tbody>` の各 `<tr>` が1件の提出に対応
   - 提出IDは `<a href="/contests/{contestId}/submissions/{submissionId}">` のリンクから抽出
   - ジャッジ結果は `<span class="label">` のテキストから取得（`WJ`, `1/15`, `AC`, `WA` 等）
 
 ### 3. ジャッジステータスの遷移
+
 提出後、ジャッジ結果は以下のように遷移します：
-* **`WJ`**: ジャッジ待ち (Waiting for Judge)
-* **`n/m`**: ジャッジ進行中（例: `5/12` = 12ケース中5ケース完了）
-* **最終結果**: `AC`, `WA`, `TLE`, `MLE`, `RE`, `CE` 等
+
+- **`WJ`**: ジャッジ待ち (Waiting for Judge)
+- **`n/m`**: ジャッジ進行中（例: `5/12` = 12ケース中5ケース完了）
+- **最終結果**: `AC`, `WA`, `TLE`, `MLE`, `RE`, `CE` 等
 
 > [!IMPORTANT]
 > **ポーリング完了判定**: `WJ` および `数字/数字` パターンは中間ステータスです。これら以外のステータスが返却されたらジャッジ完了と判定してポーリングを停止します。
 
 ### 4. よくあるエラーメッセージ
 
-| エラーメッセージ | 原因 |
-|---|---|
-| `エラーが発生しました。` | CSRFトークン不一致、Turnstileトークン不正、またはセッション切れ |
-| `前回の提出から30秒間は提出できません。` | 連続提出の制限（30秒間隔） |
-| `ソースコードが短すぎます。` | ソースコードが空または極端に短い |
+| エラーメッセージ                         | 原因                                                            |
+| ---------------------------------------- | --------------------------------------------------------------- |
+| `エラーが発生しました。`                 | CSRFトークン不一致、Turnstileトークン不正、またはセッション切れ |
+| `前回の提出から30秒間は提出できません。` | 連続提出の制限（30秒間隔）                                      |
+| `ソースコードが短すぎます。`             | ソースコードが空または極端に短い                                |
 
 ---
 
@@ -159,6 +189,7 @@ AtCoder は 2024年頃から Cloudflare Turnstile（CAPTCHA の後継となる�
 ### 問題の症状
 
 コード提出時に以下のエラーが返される：
+
 ```
 エラーが発生しました。（セッション切れ、コンテストの未登録、
 またはCSRFトークン不一致の可能性があります。
@@ -171,11 +202,12 @@ CSRF トークンが正しくても、Turnstile トークンが不正だとこ�
 ### ❌ 失敗したアプローチ
 
 #### 1. `fetch` で submit ページを GET → HTML パース → CSRF 取得 → 手動 POST
+
 ```javascript
 // ❌ これではTurnstileトークンを取得できない
 fetch('/contests/{contestId}/submit')
-  .then(res => res.text())
-  .then(html => {
+  .then((res) => res.text())
+  .then((html) => {
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const csrf = doc.querySelector('input[name="csrf_token"]').value;
     // Turnstile ウィジェットは JS で動作するため、
@@ -186,6 +218,7 @@ fetch('/contests/{contestId}/submit')
 **失敗理由**: Turnstile トークンは Cloudflare の JavaScript ウィジェットがページ上で実行されて初めて生成されます。`fetch` で取得した HTML を `DOMParser` でパースしても、JS は実行されないため Turnstile トークンは得られません。
 
 #### 2. `FormData` を手動構築して Turnstile なしで POST
+
 ```javascript
 // ❌ Turnstileトークンが含まれないため拒否される
 const formData = new FormData();
@@ -199,6 +232,7 @@ formData.append('sourceCode', code);
 **失敗理由**: AtCoder のサーバーは `cf-turnstile-response` の値を Cloudflare API で検証しています。このフィールドがないか無効な値だと、CSRF トークンが正しくてもリクエストが拒否されます。
 
 #### 3. DOM のネイティブフォームから `FormData` を構築するが Turnstile の待機が不十分
+
 ```javascript
 // ❌ Turnstileが生成完了する前に送信してしまう
 const form = document.querySelector('form[action*="/submit"]');
@@ -294,11 +328,13 @@ waitForTurnstile(input) {
 ### ⚠️ レイアウト再構成による Lazy Load ＆ DOM移動（Reparenting）による iframe 破損の問題
 
 **現象**:
+
 1. **Lazy Load による未起動**: 拡張機能がページのレイアウトを固定（`position: fixed` やスプリットパネル）に再構成すると、実際の提出フォーム（Turnstileコンテナである `.cf-challenge` を含む）がスクロール可能な `#main-container` の下部（初期表示のビューポート外）に配置されることになります。Cloudflare Turnstile は内部で `IntersectionObserver` を利用してレイアウト上の可視性を判定し、ビューポート内に要素が入るまでレンダリングを遅延させる（Lazy Load）仕様になっているため、フォームがビューポートから遠く離れた位置にあると、いつまで待っても Turnstile が起動せず、トークンが生成されずタイムアウトします。
 2. **DOM移動（Reparenting）による iframe 破損（真っ白化）**: ブラウザのセキュリティおよび仕様上、**すでにレンダリングされた `iframe` を含む親要素をDOMツリー内で別の位置に移動（再親化 / Reparenting）させると、中の `iframe` は切断され、中身が真っ白に初期化された「破損状態」**になります。AtCoder標準の自動ロード、あるいは拡張機能のレイアウト完成前に描画された Turnstile ウィジェットは、拡張機能がレイアウトを構成する際に `#main-container` を `#atcoder-workspace-wrapper` の下に移動させるため、この瞬間にすべて真っ白な破損状態になり、クリックしても無反応になります。
 
 **解決策**:
 `manifest.json` において、`"world": "MAIN"` (MAIN world) で動作する独立したスクリプト `src/content/turnstile-kick.js` を `document_start` のタイミングで注入し、以下の2つの制御を行います：
+
 1. **レイアウト構築完了まで待機**: 拡張機能がレイアウト構築を終え、`#atcoder-workspace-wrapper` が作成されるまでは、Turnstile のレンダリングを保留（待機）します。これにより、レンダリング直後に DOM が移動されて破損するのを防ぎます。
 2. **自動描画された破損 iframe のリセットと再生成**: 万が一、レイアウト構築前にすでに implicit（暗黙的）に Turnstile が描画され、DOMの移動によって iframe が真っ白に破損した場合は、`window.turnstile.reset(container)` を呼び出して破損した iframe をクリアし、新しいDOM構造の元で明示的に再描画を実行します。
 
@@ -309,16 +345,21 @@ waitForTurnstile(input) {
 ### ⚠️ 開発・デバッグ時の注意点
 
 #### 1. 拡張機能リロード時の「コンテキスト無効化（Invalidated context）」
+
 拡張機能をリロード（またはソースコード変更による自動更新）した直後は、すでに開いていたブラウザのタブ上で動作するスクリプト（Content Script）が Chrome の仕様により無効化されます。
-* **現象**: `chrome.storage` へのアクセスや iframe エディタとのメッセージ通信がすべてエラーになり、保存されたコードが消えたり言語が「未選択（言語情報なし）」になります。
-* **対策**: 拡張機能を更新した後は、**必ず AtCoder の対象タブを F5 等でリロード**してください。
+
+- **現象**: `chrome.storage` へのアクセスや iframe エディタとのメッセージ通信がすべてエラーになり、保存されたコードが消えたり言語が「未選択（言語情報なし）」になります。
+- **対策**: 拡張機能を更新した後は、**必ず AtCoder の対象タブを F5 等でリロード**してください。
 
 #### 2. 非同期 DOM 生成による言語選択肢のレースコンディション
+
 AtCoder のページ読み込みタイミングによっては、言語セレクトボックス自体は存在しても、中の `<option>` 選択肢がまだ非同期的にレンダリングされていない場合があります。
-* **現象**: 言語リストが空（`[]`）の状態でエディタが初期化されてしまい、正しいコードが読み込めなくなります。
-* **対策**: `content.js` の初期化メッセージ送信（`editor-ready` 時）では、単に言語要素があるかだけではなく、**「セレクトボックスの値が存在し、かつ `<option>` の選択肢が 1 件以上読み込まれていること」**をチェックし、ロードが完了するまで最大1秒間リトライするロジック（`sendConfigWithRetry`）を組むことで安全に動作させています。
+
+- **現象**: 言語リストが空（`[]`）の状態でエディタが初期化されてしまい、正しいコードが読み込めなくなります。
+- **対策**: `content.js` の初期化メッセージ送信（`editor-ready` 時）では、単に言語要素があるかだけではなく、**「セレクトボックスの値が存在し、かつ `<option>` の選択肢が 1 件以上読み込まれていること」**をチェックし、ロードが完了するまで最大1秒間リトライするロジック（`sendConfigWithRetry`）を組むことで安全に動作させています。
 
 #### 3. iframe内でのIndexedDBアクセスブロック問題と解決策
-Chrome などのブラウザ設定において「サードパーティのクッキーやデータをブロックする」設定が有効になっている場合、AtCoder（ファーストパーティ）の中に拡張機能の `editor.html`（サードパーティ iframe）を埋め込む構成では、IndexedDB への接続が `UnknownError: Internal error` で強制遮断されます。
-* **解決策**: 提出履歴（Phase 2 機能）の保存および読み込みには、サードパーティ iframe 内でも完全にデータ永続化が保証される **`chrome.storage.local`** をプライマリの保存先として利用するように実装されています。もし `chrome.storage` API が使用できない限定的な環境に備えて、旧来の `IndexedDB` への読み書きコードもフォールバックとして維持しています。
 
+Chrome などのブラウザ設定において「サードパーティのクッキーやデータをブロックする」設定が有効になっている場合、AtCoder（ファーストパーティ）の中に拡張機能の `editor.html`（サードパーティ iframe）を埋め込む構成では、IndexedDB への接続が `UnknownError: Internal error` で強制遮断されます。
+
+- **解決策**: 提出履歴（Phase 2 機能）の保存および読み込みには、サードパーティ iframe 内でも完全にデータ永続化が保証される **`chrome.storage.local`** をプライマリの保存先として利用するように実装されています。もし `chrome.storage` API が使用できない限定的な環境に備えて、旧来の `IndexedDB` への読み書きコードもフォールバックとして維持しています。
