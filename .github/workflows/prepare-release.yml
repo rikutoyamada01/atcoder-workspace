@@ -40,8 +40,10 @@ jobs:
 
       - name: Run prepare-release script
         id: prepare
+        env:
+          RELEASE_TYPE: ${{ inputs.release_type }}
         run: |
-          node scripts/prepare-release.js ${{ inputs.release_type }}
+          node scripts/prepare-release.js "$RELEASE_TYPE"
           VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
@@ -51,21 +53,25 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Commit and Push Release Branch
+        id: git_push
+        env:
+          VERSION: ${{ steps.prepare.outputs.version }}
         run: |
-          BRANCH_NAME="release/v${{ steps.prepare.outputs.version }}"
+          BRANCH_NAME="release/v$VERSION"
           git checkout -b "$BRANCH_NAME"
           git add package.json manifest.json CHANGELOG.md src/changelog.json pages/
-          git commit -m "chore(release): bump version to v${{ steps.prepare.outputs.version }}"
+          git commit -m "chore(release): bump version to v$VERSION"
           git push origin "$BRANCH_NAME"
           echo "branch=$BRANCH_NAME" >> $GITHUB_OUTPUT
-        id: git_push
 
       - name: Create Pull Request to master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_BRANCH: ${{ steps.git_push.outputs.branch }}
+          VERSION: ${{ steps.prepare.outputs.version }}
         run: |
           gh pr create \
             --base master \
-            --head ${{ steps.git_push.outputs.branch }} \
-            --title "Release v${{ steps.prepare.outputs.version }}" \
+            --head "$HEAD_BRANCH" \
+            --title "Release v$VERSION" \
             --body-file release-pr-body.md

@@ -915,6 +915,7 @@ impl UnionFind {
 
   // Listen for messages from parent content script
   window.addEventListener('message', (e) => {
+    if (e.source && e.source !== window.parent) return;
     if (!e.data || typeof e.data !== 'object') return;
 
     console.log('[AtCoder Workspace] Editor: Received message from parent', e.data.type, e.data);
