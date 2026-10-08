@@ -59,7 +59,7 @@ describe('Layout Module Tests', () => {
     expect(layout).toBeDefined();
   });
 
-  test('Layout.init sets up workspace elements and classes', () => {
+  test('Layout.init sets up workspace elements and classes when initially open', () => {
     layout.init(jest.fn());
 
     // Verify elements are created and structured correctly
@@ -68,6 +68,7 @@ describe('Layout Module Tests', () => {
     const panel = document.getElementById('atcoder-workspace-panel');
     const iframe = document.getElementById('atcoder-workspace-iframe');
     const toggleBtn = document.getElementById('atcoder-workspace-toggle-btn');
+    const mainContainer = document.getElementById('main-container');
 
     expect(wrapper).not.toBeNull();
     expect(splitter).not.toBeNull();
@@ -81,7 +82,7 @@ describe('Layout Module Tests', () => {
 
     // Verify correct width is set according to loaded split_ratio (0.4)
     expect(panel.style.width).toBe('40%');
-    expect(document.getElementById('main-container').style.width).toBe('60%');
+    expect(mainContainer.style.width).toBe('60%');
   });
 
   test('Layout.init sets up closed layout when storage panel_open is false', () => {
