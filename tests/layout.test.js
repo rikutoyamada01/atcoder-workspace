@@ -104,4 +104,14 @@ describe('Layout Module Tests', () => {
     expect(document.body.classList.contains('atcoder-workspace-active')).toBe(true);
     expect(global.chrome.storage.local.set).toHaveBeenCalledWith({ 'settings:panel_open': true });
   });
+
+  test('content.css defines fallback card background and shadow for closed editor (#21)', () => {
+    const cssPath = path.resolve(__dirname, '../src/content/content.css');
+    const cssContent = fs.readFileSync(cssPath, 'utf8');
+
+    // Verify background and box-shadow rule exists for collapsed main-container
+    expect(cssContent).toMatch(/#atcoder-workspace-wrapper\s*>\s*#main-container/);
+    expect(cssContent).toMatch(/box-shadow:\s*0px\s+0px\s+10px\s+5px\s+#888888/);
+    expect(cssContent).toMatch(/background:\s*#ffffff/);
+  });
 });
