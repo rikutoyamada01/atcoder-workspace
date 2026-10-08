@@ -41,6 +41,12 @@ body.atcoder-workspace-active {
   z-index: 1000;
 }
 
+/* Restore AtCoder's default card styling when collapsed/closed (fixes Issue #21) */
+body:not(.atcoder-workspace-active) #atcoder-workspace-wrapper > #main-container {
+  background: #ffffff;
+  box-shadow: 0px 0px 10px 5px #888888;
+}
+
 /* Main Container override to enable independent scrolling when active */
 .atcoder-workspace-active #atcoder-workspace-wrapper > #main-container {
   flex: 1;
@@ -51,6 +57,7 @@ body.atcoder-workspace-active {
   padding: 20px 30px !important;
   margin: 0 !important;
   box-sizing: border-box !important;
+  box-shadow: none !important;
 }
 
 /* Splitter Bar */
