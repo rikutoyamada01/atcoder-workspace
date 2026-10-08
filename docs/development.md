@@ -68,6 +68,20 @@ node scripts/toggle-feature.js monaco
    - **重要（Issueクローズのタイミング）**: `develop` 宛てのPR本文には `Closes #XX` を使用せず、`Related: #XX` または `Ref: #XX` と記載してください（`develop` マージ時点ではまだ未リリースのため）。
    - 本番リリースの際（`develop` ➔ `master` のリリースPR）において、初めて `Closes #XX` を記載して一括自動クローズを行います。
 
+### リリース準備の自動化 (Version Bump & Release PR)
+
+バージョン更新およびリリースPR作成は自動化されています：
+
+1. **GitHub Actions 経由 (推奨)**:
+   - **Actions** タブ > **Prepare Release PR** を選択
+   - 「Run workflow」からリリース種別（`patch` / `minor` / `major`）を選んで実行
+   - 前回 `master` リリース以降に `develop` にマージされた PR 一覧と本文の `Ref: #XX` が自動解析され、`release/vX.Y.Z` ブランチおよび `master` 宛ての Release PR が自動生成されます（PR本文に `Closes #XX` が一覧化されます）。
+2. **ローカル CLI 経由**:
+   ```bash
+   npm run release:prepare patch  # または minor / major
+   ```
+   - 同様にマージ済み PR からの抽出を行い、`package.json`, `manifest.json`, `CHANGELOG.md`, `src/changelog.json`, HTMLキャッシュバスターが一括更新され、PR本文用の `release-pr-body.md` が出力されます。
+
 ### セキュリティポリシー
 
 拡張機能の権限設計、XSS防止、脆弱性報告手順については [SECURITY.md](../SECURITY.md) を厳守してください。
