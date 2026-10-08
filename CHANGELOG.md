@@ -5,6 +5,16 @@ All notable changes to the AtCoder Workspace extension will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] - 2026-08-23
+
+### Added
+- **AtCoder 32言語サポートの拡張**: 設定画面のテンプレート・自作スニペット管理、Monaco エディタのシンタックスハイライト、提出コード自動取得を AtCoder 主要・人気の 32 言語へ全面拡張
+- **ライセンスおよびサードパーティ通知の明記**: `license-trace` による依存ライブラリのライセンス解析と `THIRD_PARTY_LICENSES.md` の同梱・配布設定
+
+### Fixed
+- **タグ選択時にタグ一覧が表示されない不具合の修正**: コンソール再生成時のタグチップ描画スキップ解消とフェイルセーフ処理の追加
+- **リリースノート（Changelog）の非同期読み込み競合の修正**: `initChangelog` の Promise 管理化によりモーダル本文が空になる不具合を解消
+
 ## [1.7.2] - 2026-08-03
 
 ### Fixed

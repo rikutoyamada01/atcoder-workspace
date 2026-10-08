@@ -296,6 +296,11 @@
                       ? result.Output
                       : '';
                 const actual = actualOutput.trim().replace(/\r\n/g, '\n');
+                const hasExpected =
+                  sample.expected !== undefined &&
+                  sample.expected !== null &&
+                  typeof sample.expected === 'string' &&
+                  sample.expected.trim().length > 0;
                 const expected = (sample.expected || '').trim().replace(/\r\n/g, '\n');
 
                 const exitCode = result.ExitCode !== undefined ? Number(result.ExitCode) : 0;
@@ -319,13 +324,15 @@
                   status = 'TLE';
                 } else if (memoryConsumption > memoryLimit * 1024) {
                   status = 'MLE';
-                } else if (actual === expected && exitCode === 0) {
-                  status = 'AC';
                 } else if (exitCode !== 0 || result.Stderr) {
                   status = 'RE';
+                } else if (!hasExpected) {
+                  status = 'FINISHED';
+                } else if (actual === expected && exitCode === 0) {
+                  status = 'AC';
                 }
 
-                onCaseResult({
+                const caseResultObj = {
                   index,
                   status,
                   time: result.TimeConsumption !== undefined ? result.TimeConsumption : result.Time,
@@ -336,7 +343,16 @@
                   output: actualOutput,
                   expected: sample.expected,
                   stderr: result.Stderr || '',
-                });
+                };
+
+                if (sample.name !== undefined) {
+                  caseResultObj.name = sample.name;
+                }
+                if (sample.isCustom !== undefined || sample.id !== undefined) {
+                  caseResultObj.isCustom = !!sample.isCustom || !!sample.id;
+                }
+
+                onCaseResult(caseResultObj);
 
                 index++;
                 setTimeout(() => runNext(0), NEXT_CASE_DELAY_MS);

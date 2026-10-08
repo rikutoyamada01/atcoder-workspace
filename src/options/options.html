@@ -31,294 +31,480 @@
       <button id="dismiss-banner-btn" class="banner-close-btn">&times;</button>
     </div>
 
+    <!-- Tab Navigation -->
+    <nav class="settings-tab-nav" role="tablist">
+      <button type="button" class="tab-btn active" data-tab="dashboard" role="tab" aria-selected="true">
+        <span class="tab-icon">📊</span>
+        <span data-i18n="options_tab_dashboard">ダッシュボード & 進捗</span>
+      </button>
+      <button type="button" class="tab-btn" data-tab="general" role="tab" aria-selected="false">
+        <span class="tab-icon">⚙️</span>
+        <span data-i18n="options_tab_general">一般設定</span>
+      </button>
+      <button type="button" class="tab-btn" data-tab="templates" role="tab" aria-selected="false">
+        <span class="tab-icon">📝</span>
+        <span data-i18n="options_tab_templates">テンプレート & スニペット</span>
+      </button>
+      <button type="button" class="tab-btn" data-tab="storage" role="tab" aria-selected="false">
+        <span class="tab-icon">💾</span>
+        <span data-i18n="options_tab_storage">データ & バックアップ</span>
+      </button>
+    </nav>
+
     <div class="settings-grid">
       <!-- Left Column: Settings Cards -->
       <main class="settings-main">
-        <!-- Card 1: Workspace Settings -->
-        <section class="settings-card">
-          <div class="card-header">
-            <h2 data-i18n="settings_general_title">一般設定 / General Settings</h2>
-          </div>
-          <div class="card-body">
-            <!-- Language Setting -->
-            <div class="setting-item">
-              <div class="setting-info">
-                <label for="display-language" data-i18n="settings_general_lang_label">表示言語 / Display Language</label>
-                <p class="setting-description" data-i18n="settings_general_lang_desc">設定画面の表示言語を切り替えます。 / Change display language.</p>
-              </div>
-              <div class="setting-control">
-                <select id="display-language" class="form-control">
-                  <option value="auto" data-i18n="settings_general_lang_auto">自動 (システム設定) / Auto</option>
-                  <option value="ja" data-i18n="settings_general_lang_ja">日本語</option>
-                  <option value="en" data-i18n="settings_general_lang_en">English</option>
-                </select>
-              </div>
+        <!-- Tab 1: Learning Dashboard & Progress -->
+        <div id="tab-panel-dashboard" class="tab-panel active">
+          <!-- Learning Dashboard Card -->
+          <section class="settings-card" id="learning-dashboard-card">
+            <div class="card-header">
+              <h2 data-i18n="options_dashboard_title">学習ダッシュボード & エラー傾向分析</h2>
             </div>
+            <div class="card-body">
+              <p class="setting-description margin-bottom-md" data-i18n="options_dashboard_desc">
+                自力・解説ACの比率、得意な解法手法、よく躓く原因、コンテスト別の進捗を集計・可視化します。
+              </p>
 
-            <!-- Split Ratio Setting -->
-            <div class="setting-item">
-              <div class="setting-info">
-                <label for="split-ratio" data-i18n="settings_general_ratio_label">分割比率のデフォルト値</label>
-                <p class="setting-description" data-i18n="settings_general_ratio_desc">問題ページを開いた際のエディタと問題文の初期幅比率です。</p>
-              </div>
-              <div class="setting-control-vertical">
-                <div class="slider-container">
-                  <input type="range" id="split-ratio" min="0.2" max="0.8" step="0.05" value="0.5">
-                  <span id="split-ratio-value">50%</span>
-                </div>
-                <button id="reset-ratio-btn" class="btn btn-secondary btn-sm" data-i18n="settings_general_ratio_reset">デフォルトに戻す</button>
-              </div>
-            </div>
-
-            <!-- Panel Default State -->
-            <div class="setting-item">
-              <div class="setting-info">
-                <label for="panel-open" data-i18n="settings_general_panelOpen_label">エディタをデフォルトで開く</label>
-                <p class="setting-description" data-i18n="settings_general_panelOpen_desc">問題ページに遷移した際、自動的にエディタを開いた状態にします。</p>
-              </div>
-              <div class="setting-control">
-                <label class="switch">
-                  <input type="checkbox" id="panel-open" checked>
-                  <span class="slider round"></span>
-                </label>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Card 2: Problem Status Management -->
-        <section class="settings-card">
-          <div class="card-header">
-            <h2 data-i18n="options_status_title">解答ステータス管理 / Problem Statuses</h2>
-          </div>
-          <div class="card-body">
-            <div class="setting-item-vertical">
-              <div class="setting-info">
-                <p class="setting-description" data-i18n="options_status_desc">これまでACした問題の自力・解説ステータスを個別に管理・編集できます。</p>
-              </div>
-              
-              <div class="setting-item-vertical" style="border: none; padding: 0; margin-bottom: 10px; width: 100%;">
-                <div style="display: flex; flex-wrap: wrap; gap: 8px; width: 100%; max-width: 600px; align-items: center;">
-                  <input type="text" id="status-search-input" class="form-control" placeholder="コンテストIDで検索・追加 (例: abc300)" data-i18n-placeholder="options_status_search_placeholder" style="flex: 2; min-width: 200px;">
-                  <button type="button" id="status-search-btn" class="settings-btn" style="white-space: nowrap; height: 34px; margin-top: 0;" data-i18n="options_status_search_btn">検索</button>
-                  <select id="status-filter-select" class="form-control" style="flex: 1; min-width: 130px; height: 34px;">
-                    <option value="all" data-i18n="options_status_filter_all">すべて / All</option>
-                    <option value="self_ac" data-i18n="options_status_filter_self">自力AC / Self AC</option>
-                    <option value="editorial_ac" data-i18n="options_status_filter_editorial">解説AC / Editorial AC</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="status-table-container" style="margin-top: 15px; width: 100%;">
-                <table class="status-table">
-                  <thead>
-                    <tr>
-                      <th data-i18n="options_status_col_contest">コンテスト</th>
-                      <th data-i18n="options_status_col_problem">問題</th>
-                      <th data-i18n="options_status_col_status">ステータス</th>
-                      <th data-i18n="options_status_col_tags">タグ</th>
-                    </tr>
-                  </thead>
-                  <tbody id="status-table-body">
-                    <!-- JSで動的生成 -->
-                  </tbody>
-                </table>
-                <div id="no-status-message" class="no-status-message" data-i18n="options_status_empty" style="text-align: center; padding: 20px; color: #999; display: none;">
-                  記録された解答ステータスはありません。
-                </div>
-              </div>
-              
-              <!-- Pagination Controls -->
-              <div id="status-pagination" style="display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 12px; width: 100%;">
-                <button type="button" id="btn-prev-page" class="settings-btn" style="margin-top: 0; padding: 4px 12px; font-size: 12px; min-width: 70px;" data-i18n="options_pagination_prev">前へ</button>
-                <span id="page-info" style="font-size: 13px; font-weight: 600; min-width: 60px; text-align: center; color: #666;">1 / 1</span>
-                <button type="button" id="btn-next-page" class="settings-btn" style="margin-top: 0; padding: 4px 12px; font-size: 12px; min-width: 70px;" data-i18n="options_pagination_next">次へ</button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Card 3: Template Settings -->
-        <section class="settings-card">
-          <div class="card-header">
-            <h2 data-i18n="settings_template_title">テンプレート設定 / Template Settings</h2>
-          </div>
-          <div class="card-body">
-            <div class="setting-item-vertical">
-              <div class="setting-info">
-                <label for="template-lang-select" data-i18n="settings_template_lang_label">対象言語を選択</label>
-                <p class="setting-description" data-i18n="settings_template_lang_desc">テンプレートを設定するプログラミング言語を切り替えます。</p>
-              </div>
-              <div class="setting-control-row">
-                <select id="template-lang-select" class="form-control select-lang">
-                  <option value="cpp">C++ (GCC/Clang)</option>
-                  <option value="python">Python3 / PyPy3</option>
-                  <option value="rust">Rust</option>
-                  <option value="java">Java</option>
-                  <option value="go">Go</option>
-                </select>
-                <button id="reset-template-btn" class="btn btn-secondary btn-sm" data-i18n="settings_template_reset">デフォルトに戻す</button>
-              </div>
-            </div>
-
-            <div class="setting-item-vertical no-border-top no-padding-top">
-              <div class="setting-info margin-bottom-sm">
-                <label for="template-code-area" data-i18n="settings_template_code_label">初期コードテンプレート</label>
-                <p class="setting-description" data-i18n="settings_template_code_desc">コードが未記述の問題ページを開いた際、自動的に挿入される初期コードです。</p>
-              </div>
-              <div class="setting-control-vertical-full">
-                <textarea id="template-code-area" class="form-control code-editor-textarea" rows="12" data-i18n-placeholder="settings_template_code_placeholder" placeholder="// ここにテンプレートコードを入力してください..."></textarea>
-              </div>
-            </div>
-            
-            <div class="setting-item-vertical no-border-top padding-top-md align-right">
-              <button id="save-template-btn" class="btn btn-primary" data-i18n="settings_template_save">テンプレートを保存</button>
-            </div>
-          </div>
-        </section>
-
-        <!-- Card 4: Custom Snippets Management -->
-        <section id="custom-snippets-section" class="settings-card">
-          <div class="card-header">
-            <h2 data-i18n="settings_snippets_title">自作スニペット管理 / Custom Snippets</h2>
-          </div>
-          <div class="card-body">
-            <div class="setting-item-vertical">
-              <div class="setting-info-row">
-                <div class="setting-info">
-                  <label data-i18n="settings_snippets_label">登録済みのスニペット</label>
-                  <p class="setting-description" data-i18n="settings_snippets_desc">エディタから呼び出せるオリジナルのコードスニペットです。</p>
-                </div>
-                <button id="add-snippet-btn" class="btn btn-success btn-sm" data-i18n="settings_snippets_add">+ 新規追加</button>
-              </div>
-
-              <!-- スニペット登録フォーム (初期非表示) -->
-              <div id="snippet-form-container" class="snippet-form-container" style="display: none;">
-                <h3 id="form-title" data-i18n="settings_snippets_form_addTitle">新規スニペット追加</h3>
-                <div class="form-group">
-                  <label for="snippet-title-input" data-i18n="settings_snippets_form_label_title">タイトル</label>
-                  <input type="text" id="snippet-title-input" class="form-control" data-i18n-placeholder="settings_snippets_form_placeholder_title" placeholder="例: Segment Tree">
-                </div>
-                <div class="form-group">
-                  <label for="snippet-lang-select" data-i18n="settings_snippets_form_label_lang">対象言語</label>
-                  <select id="snippet-lang-select" class="form-control">
-                    <option value="cpp">C++</option>
-                    <option value="python">Python</option>
-                    <option value="rust">Rust</option>
-                    <option value="java">Java</option>
-                    <option value="go">Go</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label for="snippet-desc-input" data-i18n="settings_snippets_form_label_desc">説明</label>
-                  <input type="text" id="snippet-desc-input" class="form-control" data-i18n-placeholder="settings_snippets_form_placeholder_desc" placeholder="例: 1点更新・区間クエリ">
-                </div>
-                <div class="form-group">
-                  <label for="snippet-tags-input" data-i18n="settings_snippets_form_label_tags">タグ (カンマ区切り)</label>
-                  <input type="text" id="snippet-tags-input" class="form-control" data-i18n-placeholder="settings_snippets_form_placeholder_tags" placeholder="例: segtree, data-structure">
-                </div>
-                <div class="form-group">
-                  <label for="snippet-code-input" data-i18n="settings_snippets_form_label_code">ソースコード (プレースホルダー $1, $2 等を使用可能)</label>
-                  <textarea id="snippet-code-input" class="form-control code-editor-textarea" rows="8" data-i18n-placeholder="settings_snippets_form_placeholder_code" placeholder="// スニペットコードを入力してください..."></textarea>
-                </div>
-                <div class="form-actions">
-                  <button id="cancel-snippet-btn" class="btn btn-secondary btn-sm" data-i18n="settings_snippets_form_cancel">キャンセル</button>
-                  <button id="save-snippet-btn" class="btn btn-primary btn-sm" data-i18n="settings_snippets_form_save">保存</button>
-                </div>
-              </div>
-
-              <!-- スニペット一覧表示エリア -->
-              <div id="snippets-list-container" class="snippets-list-container">
-                <table class="snippets-table">
-                  <thead>
-                    <tr>
-                      <th data-i18n="settings_snippets_table_title">タイトル</th>
-                      <th class="col-lang" data-i18n="settings_snippets_table_lang">言語</th>
-                      <th data-i18n="settings_snippets_table_tags">タグ</th>
-                      <th class="col-actions" data-i18n="settings_snippets_table_actions">操作</th>
-                    </tr>
-                  </thead>
-                  <tbody id="snippets-table-body">
-                    <!-- JavaScriptで動的生成 -->
-                  </tbody>
-                </table>
-                <div id="no-snippets-message" class="no-snippets-message" data-i18n="settings_snippets_table_empty">
-                  登録されている自作スニペットはありません。
-                </div>
-                <div class="snippets-footer-actions">
-                  <button id="import-vscode-btn" class="btn btn-secondary btn-sm" data-i18n="settings_snippets_import">インポート</button>
-                  <button id="export-vscode-btn" class="btn btn-secondary btn-sm" data-i18n="settings_snippets_export">エクスポート</button>
-                  <input type="file" id="import-vscode-file" style="display: none;" accept=".json,.code-snippets">
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Card 5: Storage Management -->
-        <section class="settings-card">
-          <div class="card-header">
-            <h2 data-i18n="settings_storage_title">データとストレージ / Data & Storage</h2>
-          </div>
-          <div class="card-body">
-            <div class="setting-item" style="flex-direction: column; align-items: flex-start; gap: 15px;">
-              <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; flex-wrap: wrap; gap: 10px; border: none; padding: 0;">
-                <div class="setting-info" style="flex: 1; min-width: 250px;">
-                  <label data-i18n="settings_storage_cache_label">自動保存されたコードの履歴</label>
-                  <p class="setting-description" data-i18n="settings_storage_cache_desc">ブラウザのローカル領域に保存されている提出コードや一時保存データの情報です。</p>
-                </div>
-                <div class="setting-control-vertical" style="align-items: flex-end;">
-                  <div class="storage-stats">
-                    <span class="stat-label" data-i18n="settings_storage_cache_count">キャッシュ件数:</span>
-                    <span id="cache-count" class="stat-value">0 件</span>
+              <!-- Unified KPI & Quality Summary -->
+              <div class="dashboard-hero-card">
+                <div class="kpi-grid">
+                  <div class="kpi-cell">
+                    <span class="kpi-label" data-i18n="dashboard_kpi_total_tracked">総記録問題数</span>
+                    <div class="kpi-val-row">
+                      <span id="kpi-total-tracked" class="kpi-val">0</span>
+                      <span class="kpi-unit" data-i18n="settings_support_acUnit">問</span>
+                    </div>
+                    <span class="kpi-meta" id="kpi-total-ac">0 AC</span>
                   </div>
-                  <button id="clear-cache-btn" class="btn btn-danger btn-sm" data-i18n="settings_storage_cache_clear">すべてのキャッシュデータを消去</button>
+                  <div class="kpi-cell kpi-clickable" id="legend-self-filter" title="クリックして自力ACのみ絞り込み">
+                    <span class="kpi-label"><span class="kpi-dot dot-self"></span> <span data-i18n="dashboard_ac_quality_self">自力AC</span></span>
+                    <div class="kpi-val-row">
+                      <span id="kpi-self-rate" class="kpi-val text-success">0%</span>
+                    </div>
+                    <span class="kpi-meta" id="kpi-self-count">0 / 0 AC</span>
+                  </div>
+                  <div class="kpi-cell kpi-clickable" id="legend-editorial-filter" title="クリックして解説ACのみ絞り込み">
+                    <span class="kpi-label"><span class="kpi-dot dot-editorial"></span> <span data-i18n="dashboard_ac_quality_editorial">解説AC</span></span>
+                    <div class="kpi-val-row">
+                      <span id="kpi-editorial-rate" class="kpi-val text-warning">0%</span>
+                    </div>
+                    <span class="kpi-meta" id="kpi-editorial-count">0 / 0 AC</span>
+                  </div>
+                  <div class="kpi-cell">
+                    <span class="kpi-label" data-i18n="dashboard_kpi_notes">メモ・タグ記録</span>
+                    <div class="kpi-val-row">
+                      <span id="kpi-notes-count" class="kpi-val text-primary">0</span>
+                      <span class="kpi-unit" data-i18n="settings_support_acUnit">問</span>
+                    </div>
+                    <span class="kpi-meta" id="kpi-notes-sub">-</span>
+                  </div>
+                </div>
+                <div class="hero-ratio-track">
+                  <div id="ac-quality-self-bar" class="hero-ratio-fill fill-self" style="width: 0%;"></div>
+                  <div id="ac-quality-editorial-bar" class="hero-ratio-fill fill-editorial" style="width: 0%;"></div>
                 </div>
               </div>
-              <details id="cache-details" style="width: 100%;">
-                <summary style="cursor: pointer; color: #337ab7; font-size: 13px; user-select: none;" data-i18n="settings_storage_cache_details_toggle">キャッシュの内訳を表示</summary>
-                <div class="cache-list-container" style="max-height: 200px; overflow-y: auto; margin-top: 8px; border: 1px solid #ddd; border-radius: 4px; padding: 0; background-color: #fafafa; width: 100%;">
-                  <table class="status-table" style="font-size: 12px; margin-bottom: 0; width: 100%; table-layout: fixed;">
+
+              <!-- Breakdowns (Methods & Causes) -->
+              <div class="dashboard-breakdown-grid">
+                <!-- Method Breakdown -->
+                <div class="dashboard-chart-box">
+                  <h3 class="dashboard-box-title" data-i18n="dashboard_section_methods">💡 解法・手法の活用傾向</h3>
+                  <div id="method-breakdown-list" class="dashboard-bar-list"></div>
+                  <div id="method-empty-msg" class="dashboard-empty-msg" data-i18n="dashboard_no_tags_message">
+                    まだタグが記録されていません。問題の学習メモでタグを付けるとここに集計が表示されます。
+                  </div>
+                </div>
+
+                <!-- Struggle Causes Breakdown -->
+                <div class="dashboard-chart-box">
+                  <h3 class="dashboard-box-title" data-i18n="dashboard_section_causes">⚠️ 躓いた原因・弱点分析</h3>
+                  <div id="cause-breakdown-list" class="dashboard-bar-list"></div>
+                  <div id="cause-empty-msg" class="dashboard-empty-msg" data-i18n="dashboard_no_causes_message">
+                    まだ躓き原因タグが記録されていません。
+                  </div>
+                  <div id="cause-hint-container" class="dashboard-hint-box" style="display: none;">
+                    <div class="hint-header">
+                      <span class="hint-icon">💡</span>
+                      <strong data-i18n="dashboard_hint_title">改善ヒント:</strong>
+                    </div>
+                    <div id="cause-hint-text" class="hint-body"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Contest Type Distribution (AtCoder Problems Table Style) -->
+              <div class="dashboard-contest-box">
+                <h3 class="dashboard-box-title" data-i18n="dashboard_section_contests">📈 コンテスト種別進捗</h3>
+                <div class="contest-table-wrapper">
+                  <table class="contest-progress-table">
                     <thead>
                       <tr>
-                        <th data-i18n="settings_storage_cache_col_problem" style="padding: 8px 12px;">問題 ID</th>
-                        <th data-i18n="settings_storage_cache_col_action" style="text-align: center; width: 100px; padding: 8px 12px;">操作</th>
+                        <th style="width: 70px;" data-i18n="dashboard_contest_col_category">種別</th>
+                        <th data-i18n="dashboard_contest_col_progress">進捗</th>
+                        <th style="width: 110px; text-align: right;" data-i18n="dashboard_contest_col_solved">AC / 総数</th>
+                        <th style="width: 65px; text-align: right;" data-i18n="dashboard_contest_col_ac_rate">AC率</th>
                       </tr>
                     </thead>
-                    <tbody id="cache-list-body">
-                      <!-- JSで動的に生成 -->
+                    <tbody id="contest-distribution-list">
+                      <!-- JSで動的生成 -->
                     </tbody>
                   </table>
                 </div>
-              </details>
-            </div>
-          </div>
-        </section>
-
-        <!-- Card 6: Backup & Restore -->
-        <section class="settings-card">
-          <div class="card-header">
-            <h2 data-i18n="options_backup_title">バックアップと復元 / Backup & Restore</h2>
-          </div>
-          <div class="card-body">
-            <div class="setting-item-vertical">
-              <div class="setting-info">
-                <p class="setting-description" data-i18n="options_backup_desc">拡張機能のすべての設定と解答ステータスをファイルに保存、またはファイルから復元できます。</p>
               </div>
-              <div style="display: flex; gap: 12px; margin-top: 15px; flex-wrap: wrap; align-items: center;">
-                <button type="button" id="btn-export-backup" class="btn btn-primary" data-i18n="options_backup_btn_export">バックアップをエクスポート</button>
-                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                  <button type="button" id="btn-import-backup" class="btn btn-secondary" data-i18n="options_backup_btn_import">バックアップから復元</button>
-                  <select id="import-mode-select" class="form-control" style="width: auto; height: 34px; padding: 4px 8px; font-size: 13px; margin-top: 0;">
-                    <option value="merge" selected data-i18n="options_backup_mode_merge">マージ（既存データを保持）</option>
-                    <option value="overwrite" data-i18n="options_backup_mode_overwrite">完全に上書き（既存データを消去）</option>
+            </div>
+          </section>
+
+          <!-- Problem Status Management Card -->
+          <section class="settings-card">
+            <div class="card-header">
+              <h2 data-i18n="options_status_title">解答ステータス管理 / Problem Statuses</h2>
+            </div>
+            <div class="card-body">
+              <div class="setting-item-vertical">
+                <div class="setting-info">
+                  <p class="setting-description" data-i18n="options_status_desc">これまでACした問題の自力・解説ステータスを個別に管理・編集できます。</p>
+                </div>
+                
+                <div class="setting-item-vertical" style="border: none; padding: 0; margin-bottom: 10px; width: 100%;">
+                  <div style="display: flex; flex-wrap: wrap; gap: 8px; width: 100%; max-width: 600px; align-items: center;">
+                    <input type="text" id="status-search-input" class="form-control" placeholder="コンテストIDで検索・追加 (例: abc300)" data-i18n-placeholder="options_status_search_placeholder" style="flex: 2; min-width: 200px;">
+                    <button type="button" id="status-search-btn" class="settings-btn" style="white-space: nowrap; height: 34px; margin-top: 0;" data-i18n="options_status_search_btn">検索</button>
+                    <select id="status-filter-select" class="form-control" style="flex: 1; min-width: 130px; height: 34px;">
+                      <option value="all" data-i18n="options_status_filter_all">すべて / All</option>
+                      <option value="self_ac" data-i18n="options_status_filter_self">自力AC / Self AC</option>
+                      <option value="editorial_ac" data-i18n="options_status_filter_editorial">解説AC / Editorial AC</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="status-table-container" style="margin-top: 15px; width: 100%;">
+                  <table class="status-table">
+                    <thead>
+                      <tr>
+                        <th data-i18n="options_status_col_contest">コンテスト</th>
+                        <th data-i18n="options_status_col_problem">問題</th>
+                        <th data-i18n="options_status_col_status">ステータス</th>
+                        <th data-i18n="options_status_col_tags">タグ</th>
+                      </tr>
+                    </thead>
+                    <tbody id="status-table-body">
+                      <!-- JSで動的生成 -->
+                    </tbody>
+                  </table>
+                  <div id="no-status-message" class="no-status-message" data-i18n="options_status_empty" style="text-align: center; padding: 20px; color: #999; display: none;">
+                    記録された解答ステータスはありません。
+                  </div>
+                </div>
+                
+                <!-- Pagination Controls -->
+                <div id="status-pagination" style="display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 12px; width: 100%;">
+                  <button type="button" id="btn-prev-page" class="settings-btn" style="margin-top: 0; padding: 4px 12px; font-size: 12px; min-width: 70px;" data-i18n="options_pagination_prev">前へ</button>
+                  <span id="page-info" style="font-size: 13px; font-weight: 600; min-width: 60px; text-align: center; color: #666;">1 / 1</span>
+                  <button type="button" id="btn-next-page" class="settings-btn" style="margin-top: 0; padding: 4px 12px; font-size: 12px; min-width: 70px;" data-i18n="options_pagination_next">次へ</button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Tab 2: General Settings -->
+        <div id="tab-panel-general" class="tab-panel">
+          <!-- Card 1: Workspace Settings -->
+          <section class="settings-card">
+            <div class="card-header">
+              <h2 data-i18n="settings_general_title">一般設定 / General Settings</h2>
+            </div>
+            <div class="card-body">
+              <!-- Language Setting -->
+              <div class="setting-item">
+                <div class="setting-info">
+                  <label for="display-language" data-i18n="settings_general_lang_label">表示言語 / Display Language</label>
+                  <p class="setting-description" data-i18n="settings_general_lang_desc">設定画面の表示言語を切り替えます。 / Change display language.</p>
+                </div>
+                <div class="setting-control">
+                  <select id="display-language" class="form-control">
+                    <option value="auto" data-i18n="settings_general_lang_auto">自動 (システム設定) / Auto</option>
+                    <option value="ja" data-i18n="settings_general_lang_ja">日本語</option>
+                    <option value="en" data-i18n="settings_general_lang_en">English</option>
                   </select>
                 </div>
-                <input type="file" id="import-file-input" accept=".json" style="display: none;">
+              </div>
+
+              <!-- Split Ratio Setting -->
+              <div class="setting-item">
+                <div class="setting-info">
+                  <label for="split-ratio" data-i18n="settings_general_ratio_label">分割比率のデフォルト値</label>
+                  <p class="setting-description" data-i18n="settings_general_ratio_desc">問題ページを開いた際のエディタと問題文の初期幅比率です。</p>
+                </div>
+                <div class="setting-control-vertical">
+                  <div class="slider-container">
+                    <input type="range" id="split-ratio" min="0.2" max="0.8" step="0.05" value="0.5">
+                    <span id="split-ratio-value">50%</span>
+                  </div>
+                  <button id="reset-ratio-btn" class="btn btn-secondary btn-sm" data-i18n="settings_general_ratio_reset">デフォルトに戻す</button>
+                </div>
+              </div>
+
+              <!-- Panel Default State -->
+              <div class="setting-item">
+                <div class="setting-info">
+                  <label for="panel-open" data-i18n="settings_general_panelOpen_label">エディタをデフォルトで開く</label>
+                  <p class="setting-description" data-i18n="settings_general_panelOpen_desc">問題ページに遷移した際、自動的にエディタを開いた状態にします。</p>
+                </div>
+                <div class="setting-control">
+                  <label class="switch">
+                    <input type="checkbox" id="panel-open" checked>
+                    <span class="slider round"></span>
+                  </label>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </div>
+
+        <!-- Tab 3: Template & Snippets -->
+        <div id="tab-panel-templates" class="tab-panel">
+          <!-- Card 3: Template Settings -->
+          <section class="settings-card">
+            <div class="card-header">
+              <h2 data-i18n="settings_template_title">テンプレート設定 / Template Settings</h2>
+            </div>
+            <div class="card-body">
+              <div class="setting-item-vertical">
+                <div class="setting-info">
+                  <label for="template-lang-select" data-i18n="settings_template_lang_label">対象言語を選択</label>
+                  <p class="setting-description" data-i18n="settings_template_lang_desc">テンプレートを設定するプログラミング言語を切り替えます。</p>
+                </div>
+                <div class="setting-control-row">
+                  <select id="template-lang-select" class="form-control select-lang">
+                    <option value="cpp">C++ (GCC/Clang)</option>
+                    <option value="c">C (GCC/Clang)</option>
+                    <option value="python">Python3 / PyPy3</option>
+                    <option value="rust">Rust</option>
+                    <option value="java">Java</option>
+                    <option value="go">Go</option>
+                    <option value="nim">Nim</option>
+                    <option value="zig">Zig</option>
+                    <option value="d">D (DMD/LDC)</option>
+                    <option value="julia">Julia</option>
+                    <option value="dart">Dart</option>
+                    <option value="lua">Lua</option>
+                    <option value="javascript">JavaScript (Node.js)</option>
+                    <option value="typescript">TypeScript</option>
+                    <option value="csharp">C#</option>
+                    <option value="fsharp">F#</option>
+                    <option value="kotlin">Kotlin</option>
+                    <option value="swift">Swift</option>
+                    <option value="ruby">Ruby</option>
+                    <option value="crystal">Crystal</option>
+                    <option value="php">PHP</option>
+                    <option value="scala">Scala</option>
+                    <option value="elixir">Elixir</option>
+                    <option value="clojure">Clojure</option>
+                    <option value="haskell">Haskell</option>
+                    <option value="ocaml">OCaml</option>
+                    <option value="perl">Perl / Raku</option>
+                    <option value="r">R</option>
+                    <option value="scheme">Scheme / Lisp</option>
+                    <option value="pascal">Pascal</option>
+                    <option value="fortran">Fortran</option>
+                    <option value="shell">Bash / Shell</option>
+                  </select>
+                  <button id="reset-template-btn" class="btn btn-secondary btn-sm" data-i18n="settings_template_reset">デフォルトに戻す</button>
+                </div>
+              </div>
+
+              <div class="setting-item-vertical no-border-top no-padding-top">
+                <div class="setting-info margin-bottom-sm">
+                  <label for="template-code-area" data-i18n="settings_template_code_label">初期コードテンプレート</label>
+                  <p class="setting-description" data-i18n="settings_template_code_desc">コードが未記述の問題ページを開いた際、自動的に挿入される初期コードです。</p>
+                </div>
+                <div class="setting-control-vertical-full">
+                  <textarea id="template-code-area" class="form-control code-editor-textarea" rows="12" data-i18n-placeholder="settings_template_code_placeholder" placeholder="// ここにテンプレートコードを入力してください..."></textarea>
+                </div>
+              </div>
+              
+              <div class="setting-item-vertical no-border-top padding-top-md align-right">
+                <button id="save-template-btn" class="btn btn-primary" data-i18n="settings_template_save">テンプレートを保存</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- Card 4: Custom Snippets Management -->
+          <section id="custom-snippets-section" class="settings-card">
+            <div class="card-header">
+              <h2 data-i18n="settings_snippets_title">自作スニペット管理 / Custom Snippets</h2>
+            </div>
+            <div class="card-body">
+              <div class="setting-item-vertical">
+                <div class="setting-info-row">
+                  <div class="setting-info">
+                    <label data-i18n="settings_snippets_label">登録済みのスニペット</label>
+                    <p class="setting-description" data-i18n="settings_snippets_desc">エディタから呼び出せるオリジナルのコードスニペットです。</p>
+                  </div>
+                  <button id="add-snippet-btn" class="btn btn-success btn-sm" data-i18n="settings_snippets_add">+ 新規追加</button>
+                </div>
+
+                <!-- スニペット登録フォーム (初期非表示) -->
+                <div id="snippet-form-container" class="snippet-form-container" style="display: none;">
+                  <h3 id="form-title" data-i18n="settings_snippets_form_addTitle">新規スニペット追加</h3>
+                  <div class="form-group">
+                    <label for="snippet-title-input" data-i18n="settings_snippets_form_label_title">タイトル</label>
+                    <input type="text" id="snippet-title-input" class="form-control" data-i18n-placeholder="settings_snippets_form_placeholder_title" placeholder="例: Segment Tree">
+                  </div>
+                  <div class="form-group">
+                    <label for="snippet-lang-select" data-i18n="settings_snippets_form_label_lang">対象言語</label>
+                    <select id="snippet-lang-select" class="form-control">
+                      <option value="cpp">C++</option>
+                      <option value="c">C</option>
+                      <option value="python">Python</option>
+                      <option value="rust">Rust</option>
+                      <option value="java">Java</option>
+                      <option value="go">Go</option>
+                      <option value="nim">Nim</option>
+                      <option value="zig">Zig</option>
+                      <option value="d">D</option>
+                      <option value="julia">Julia</option>
+                      <option value="dart">Dart</option>
+                      <option value="lua">Lua</option>
+                      <option value="javascript">JavaScript</option>
+                      <option value="typescript">TypeScript</option>
+                      <option value="csharp">C#</option>
+                      <option value="fsharp">F#</option>
+                      <option value="kotlin">Kotlin</option>
+                      <option value="swift">Swift</option>
+                      <option value="ruby">Ruby</option>
+                      <option value="crystal">Crystal</option>
+                      <option value="php">PHP</option>
+                      <option value="scala">Scala</option>
+                      <option value="elixir">Elixir</option>
+                      <option value="clojure">Clojure</option>
+                      <option value="haskell">Haskell</option>
+                      <option value="ocaml">OCaml</option>
+                      <option value="perl">Perl</option>
+                      <option value="r">R</option>
+                      <option value="scheme">Scheme</option>
+                      <option value="pascal">Pascal</option>
+                      <option value="fortran">Fortran</option>
+                      <option value="shell">Bash / Shell</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="snippet-desc-input" data-i18n="settings_snippets_form_label_desc">説明</label>
+                    <input type="text" id="snippet-desc-input" class="form-control" data-i18n-placeholder="settings_snippets_form_placeholder_desc" placeholder="例: 1点更新・区間クエリ">
+                  </div>
+                  <div class="form-group">
+                    <label for="snippet-tags-input" data-i18n="settings_snippets_form_label_tags">タグ (カンマ区切り)</label>
+                    <input type="text" id="snippet-tags-input" class="form-control" data-i18n-placeholder="settings_snippets_form_placeholder_tags" placeholder="例: segtree, data-structure">
+                  </div>
+                  <div class="form-group">
+                    <label for="snippet-code-input" data-i18n="settings_snippets_form_label_code">ソースコード (プレースホルダー $1, $2 等を使用可能)</label>
+                    <textarea id="snippet-code-input" class="form-control code-editor-textarea" rows="8" data-i18n-placeholder="settings_snippets_form_placeholder_code" placeholder="// スニペットコードを入力してください..."></textarea>
+                  </div>
+                  <div class="form-actions">
+                    <button id="cancel-snippet-btn" class="btn btn-secondary btn-sm" data-i18n="settings_snippets_form_cancel">キャンセル</button>
+                    <button id="save-snippet-btn" class="btn btn-primary btn-sm" data-i18n="settings_snippets_form_save">保存</button>
+                  </div>
+                </div>
+
+                <!-- スニペット一覧表示エリア -->
+                <div id="snippets-list-container" class="snippets-list-container">
+                  <table class="snippets-table">
+                    <thead>
+                      <tr>
+                        <th data-i18n="settings_snippets_table_title">タイトル</th>
+                        <th class="col-lang" data-i18n="settings_snippets_table_lang">言語</th>
+                        <th data-i18n="settings_snippets_table_tags">タグ</th>
+                        <th class="col-actions" data-i18n="settings_snippets_table_actions">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody id="snippets-table-body">
+                      <!-- JavaScriptで動的生成 -->
+                    </tbody>
+                  </table>
+                  <div id="no-snippets-message" class="no-snippets-message" data-i18n="settings_snippets_table_empty">
+                    登録されている自作スニペットはありません。
+                  </div>
+                  <div class="snippets-footer-actions">
+                    <button id="import-vscode-btn" class="btn btn-secondary btn-sm" data-i18n="settings_snippets_import">インポート</button>
+                    <button id="export-vscode-btn" class="btn btn-secondary btn-sm" data-i18n="settings_snippets_export">エクスポート</button>
+                    <input type="file" id="import-vscode-file" style="display: none;" accept=".json,.code-snippets">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Tab 4: Storage & Backup -->
+        <div id="tab-panel-storage" class="tab-panel">
+          <!-- Card 5: Storage Management -->
+          <section class="settings-card">
+            <div class="card-header">
+              <h2 data-i18n="settings_storage_title">データとストレージ / Data & Storage</h2>
+            </div>
+            <div class="card-body">
+              <div class="setting-item" style="flex-direction: column; align-items: flex-start; gap: 15px;">
+                <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; flex-wrap: wrap; gap: 10px; border: none; padding: 0;">
+                  <div class="setting-info" style="flex: 1; min-width: 250px;">
+                    <label data-i18n="settings_storage_cache_label">自動保存されたコードの履歴</label>
+                    <p class="setting-description" data-i18n="settings_storage_cache_desc">ブラウザのローカル領域に保存されている提出コードや一時保存データの情報です。</p>
+                  </div>
+                  <div class="setting-control-vertical" style="align-items: flex-end;">
+                    <div class="storage-stats">
+                      <span class="stat-label" data-i18n="settings_storage_cache_count">キャッシュ件数:</span>
+                      <span id="cache-count" class="stat-value">0 件</span>
+                    </div>
+                    <button id="clear-cache-btn" class="btn btn-danger btn-sm" data-i18n="settings_storage_cache_clear">すべてのキャッシュデータを消去</button>
+                  </div>
+                </div>
+                <details id="cache-details" style="width: 100%;">
+                  <summary style="cursor: pointer; color: #337ab7; font-size: 13px; user-select: none;" data-i18n="settings_storage_cache_details_toggle">キャッシュの内訳を表示</summary>
+                  <div class="cache-list-container" style="max-height: 200px; overflow-y: auto; margin-top: 8px; border: 1px solid #ddd; border-radius: 4px; padding: 0; background-color: #fafafa; width: 100%;">
+                    <table class="status-table" style="font-size: 12px; margin-bottom: 0; width: 100%; table-layout: fixed;">
+                      <thead>
+                        <tr>
+                          <th data-i18n="settings_storage_cache_col_problem" style="padding: 8px 12px;">問題 ID</th>
+                          <th data-i18n="settings_storage_cache_col_action" style="text-align: center; width: 100px; padding: 8px 12px;">操作</th>
+                        </tr>
+                      </thead>
+                      <tbody id="cache-list-body">
+                        <!-- JSで動的に生成 -->
+                      </tbody>
+                    </table>
+                  </div>
+                </details>
+              </div>
+            </div>
+          </section>
+
+          <!-- Card 6: Backup & Restore -->
+          <section class="settings-card">
+            <div class="card-header">
+              <h2 data-i18n="options_backup_title">バックアップと復元 / Backup & Restore</h2>
+            </div>
+            <div class="card-body">
+              <div class="setting-item-vertical">
+                <div class="setting-info">
+                  <p class="setting-description" data-i18n="options_backup_desc">拡張機能のすべての設定と解答ステータスをファイルに保存、またはファイルから復元できます。</p>
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 15px; flex-wrap: wrap; align-items: center;">
+                  <button type="button" id="btn-export-backup" class="btn btn-primary" data-i18n="options_backup_btn_export">バックアップをエクスポート</button>
+                  <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <button type="button" id="btn-import-backup" class="btn btn-secondary" data-i18n="options_backup_btn_import">バックアップから復元</button>
+                    <select id="import-mode-select" class="form-control" style="width: auto; height: 34px; padding: 4px 8px; font-size: 13px; margin-top: 0;">
+                      <option value="merge" selected data-i18n="options_backup_mode_merge">マージ（既存データを保持）</option>
+                      <option value="overwrite" data-i18n="options_backup_mode_overwrite">完全に上書き（既存データを消去）</option>
+                    </select>
+                  </div>
+                  <input type="file" id="import-file-input" accept=".json" style="display: none;">
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
       </main>
 
       <!-- Right Column: Info & Links -->
@@ -438,6 +624,7 @@
 
   <script src="../lib/i18n.js"></script>
   <script src="../lib/tag-constants.js"></script>
+  <script src="../lib/dashboard-stats.js"></script>
   <script src="options.js"></script>
 </body>
 </html>

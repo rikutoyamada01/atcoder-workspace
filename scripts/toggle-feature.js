@@ -16,6 +16,7 @@ const VALID_FEATURES = [
   'safety',
   'autopush',
   'customtest',
+  'ac_distinction',
 ];
 
 const featureId = process.argv[2];
@@ -35,10 +36,10 @@ if (!VALID_FEATURES.includes(normalizedId)) {
 }
 
 const rootDir = path.resolve(__dirname, '..');
-const roadmapPath = path.join(rootDir, 'roadmap.html');
+const roadmapPath = path.join(rootDir, 'pages', 'roadmap.js');
 
 if (!fs.existsSync(roadmapPath)) {
-  console.error('\x1b[31m[Roadmap Error]\x1b[0m roadmap.html not found.');
+  console.error('\x1b[31m[Roadmap Error]\x1b[0m pages/roadmap.js not found.');
   process.exit(1);
 }
 

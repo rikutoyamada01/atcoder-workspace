@@ -783,7 +783,161 @@
   },
   "options_backup_confirm_merge": {
     "message": "バックアップを現在のデータにマージ（追加・更新）して復元しますか？"
+  },
+  "options_tab_dashboard": {
+    "message": "ダッシュボード & 進捗"
+  },
+  "options_tab_general": {
+    "message": "一般設定"
+  },
+  "options_tab_templates": {
+    "message": "テンプレート & スニペット"
+  },
+  "options_tab_storage": {
+    "message": "データ & バックアップ"
+  },
+  "options_dashboard_title": {
+    "message": "学習ダッシュボード & エラー傾向分析"
+  },
+  "options_dashboard_desc": {
+    "message": "自力・解説ACの比率、得意な解法手法、よく躓く原因、コンテスト別の進捗を集計・可視化します。"
+  },
+  "dashboard_kpi_total_tracked": {
+    "message": "総記録問題数"
+  },
+  "dashboard_kpi_total_ac": {
+    "message": "AC数"
+  },
+  "dashboard_kpi_self_ac": {
+    "message": "自力AC比率"
+  },
+  "dashboard_kpi_editorial_ac": {
+    "message": "解説AC比率"
+  },
+  "dashboard_kpi_notes": {
+    "message": "メモ・タグ記録"
+  },
+  "dashboard_section_methods": {
+    "message": "💡 解法・手法の活用傾向"
+  },
+  "dashboard_section_causes": {
+    "message": "⚠️ 躓いた原因・弱点分析"
+  },
+  "dashboard_section_contests": {
+    "message": "📈 コンテスト種別進捗"
+  },
+  "dashboard_ac_quality_title": {
+    "message": "自力AC vs 解説AC 構成比"
+  },
+  "dashboard_ac_quality_self": {
+    "message": "自力AC"
+  },
+  "dashboard_ac_quality_editorial": {
+    "message": "解説AC"
+  },
+  "dashboard_contest_col_category": {
+    "message": "種別"
+  },
+  "dashboard_contest_col_progress": {
+    "message": "進捗"
+  },
+  "dashboard_contest_col_solved": {
+    "message": "AC / 総数"
+  },
+  "dashboard_contest_col_ac_rate": {
+    "message": "AC率"
+  },
+  "dashboard_no_tags_message": {
+    "message": "まだタグが記録されていません。問題の学習メモでタグを付けるとここに集計が表示されます。"
+  },
+  "dashboard_no_causes_message": {
+    "message": "まだ躓き原因タグが記録されていません。"
+  },
+  "dashboard_click_to_filter": {
+    "message": "クリックしてこのタグで問題を絞り込み"
+  },
+  "dashboard_hint_title": {
+    "message": "改善ヒント:"
+  },
+  "dashboard_hint_corner_case": {
+    "message": "N=0, 1、最小値・最大値、空文字列、境界値、グラフの非連結・自己ループなどの極端な入力を意識してテストケースを作成しましょう。"
+  },
+  "dashboard_hint_overflow": {
+    "message": "32bit整数の上限（約2×10^9）に注意し、積や累積和では 64bit整数 (long long / BigInt) を積極的に使いましょう。"
+  },
+  "dashboard_hint_cast_precision": {
+    "message": "浮動小数点数（double/float）の丸め誤差に注意し、可能な限り整数演算（クロス乗算等）への式変形を検討しましょう。"
+  },
+  "dashboard_hint_tle": {
+    "message": "制約条件（N <= 10^5 など）から要求計算量（O(N) や O(N log N)）を見積もり、二分探索・累積和・DP・適切なデータ構造を検討しましょう。"
+  },
+  "dashboard_hint_re": {
+    "message": "配列外参照や0除算、再帰の深さ（スタックオーバーフロー）を確認しましょう。"
+  },
+  "dashboard_hint_uninitialized": {
+    "message": "複数テストケース（T個のケース）がある場合、グローバル配列や変数の初期化漏れに注意しましょう。"
+  },
+  "dashboard_hint_heavy_impl": {
+    "message": "処理を小さな関数に分割し、状態遷移やデータ構造をシンプルに整理してから実装を始めましょう。"
+  },
+  "dashboard_hint_bug_typo": {
+    "message": "変数名（i, j, n, m, u, v）の取り違えや、1-indexed / 0-indexed の混同がないか一行ずつ確認しましょう。"
+  },
+  "editor_custom_case_title": {
+    "message": "🧪 カスタムテストケース"
+  },
+  "editor_custom_case_add_btn": {
+    "message": "＋ カスタムケースを追加"
+  },
+  "editor_custom_case_name_label": {
+    "message": "ケース名 (任意):"
+  },
+  "editor_custom_case_name_placeholder": {
+    "message": "ケース名 (任意, 例: N=1)"
+  },
+  "editor_custom_case_input_label": {
+    "message": "入力 (stdin):"
+  },
+  "editor_custom_case_input_placeholder": {
+    "message": "入力データを入力..."
+  },
+  "editor_custom_case_expected_label": {
+    "message": "期待される出力 (任意):"
+  },
+  "editor_custom_case_expected_placeholder": {
+    "message": "期待される出力を入力 (空欄の場合は判定なし)..."
+  },
+  "editor_custom_case_btn_save": {
+    "message": "保存"
+  },
+  "editor_custom_case_btn_cancel": {
+    "message": "キャンセル"
+  },
+  "editor_custom_case_btn_edit": {
+    "message": "✏️ 編集"
+  },
+  "editor_custom_case_btn_delete": {
+    "message": "🗑️ 削除"
+  },
+  "editor_custom_case_delete_confirm": {
+    "message": "このカスタムケースを削除しますか？"
+  },
+  "editor_custom_case_no_cases": {
+    "message": "カスタムテストケースはまだ登録されていません。"
+  },
+  "editor_custom_case_input_required": {
+    "message": "入力 (stdin) を入力してください。"
+  },
+  "editor_runner_status_finished": {
+    "message": "実行完了"
+  },
+  "editor_context_invalidated_text": {
+    "message": "拡張機能が更新されました。最新の状態で利用するためにページを再読み込みしてください。"
+  },
+  "editor_context_invalidated_btn": {
+    "message": "ページを再読み込み"
   }
 }
+
 
 

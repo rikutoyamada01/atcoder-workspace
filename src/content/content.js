@@ -281,28 +281,62 @@
           const getLanguageMode = (langText) => {
             if (!langText) return 'plaintext';
             const lower = langText.toLowerCase();
-            if (
-              lower.includes('c++') ||
-              lower.includes('gcc') ||
-              lower.includes('clang++') ||
-              lower.includes('g++')
-            )
+
+            if (lower.includes('c++') || lower.includes('clang++') || lower.includes('g++'))
               return 'cpp';
+            if (
+              lower.startsWith('c ') ||
+              lower.startsWith('c(') ||
+              lower === 'c' ||
+              lower.includes('gcc') ||
+              lower.includes('clang')
+            )
+              return 'c';
             if (lower.includes('python') || lower.includes('pypy')) return 'python';
             if (lower.includes('rust')) return 'rust';
-            if (lower.includes('java')) return 'java';
+            if (lower.includes('java') && !lower.includes('javascript')) return 'java';
             if (lower.includes('go') || lower.includes('golang')) return 'go';
+            if (lower.includes('nim')) return 'nim';
+            if (lower.includes('zig')) return 'zig';
+            if (
+              lower.startsWith('d ') ||
+              lower.startsWith('d(') ||
+              lower.includes('dmd') ||
+              lower.includes('ldc')
+            )
+              return 'd';
+            if (lower.includes('julia')) return 'julia';
+            if (lower.includes('dart')) return 'dart';
+            if (lower.includes('lua')) return 'lua';
             if (lower.includes('haskell')) return 'haskell';
             if (lower.includes('javascript') || lower.includes('node') || lower.includes('js'))
               return 'javascript';
             if (lower.includes('typescript') || lower.includes('ts')) return 'typescript';
             if (lower.includes('ruby')) return 'ruby';
+            if (lower.includes('crystal')) return 'crystal';
             if (lower.includes('c#') || lower.includes('mono')) return 'csharp';
+            if (lower.includes('f#') || lower.includes('fsharp')) return 'fsharp';
             if (lower.includes('php')) return 'php';
             if (lower.includes('kotlin')) return 'kotlin';
             if (lower.includes('swift')) return 'swift';
             if (lower.includes('scala')) return 'scala';
+            if (lower.includes('elixir')) return 'elixir';
+            if (lower.includes('clojure')) return 'clojure';
+            if (lower.includes('perl') || lower.includes('raku')) return 'perl';
+            if (lower.startsWith('r ') || lower.startsWith('r(') || lower.includes('rscript'))
+              return 'r';
+            if (
+              lower.includes('scheme') ||
+              lower.includes('gauche') ||
+              lower.includes('lisp') ||
+              lower.includes('sbcl')
+            )
+              return 'scheme';
+            if (lower.includes('pascal') || lower.includes('fpc')) return 'pascal';
+            if (lower.includes('ocaml')) return 'ocaml';
+            if (lower.includes('fortran')) return 'fortran';
             if (lower.includes('bash') || lower.includes('shell')) return 'shell';
+
             return 'plaintext';
           };
 
@@ -422,9 +456,20 @@
               break;
             }
 
-            // Extract sample test cases
+            // Extract sample test cases and merge with custom test cases
             const scrapeResult = scraper.extractSampleCases();
-            if (scrapeResult.error) {
+            const sampleCases = scrapeResult.cases || [];
+            const customCases = Array.isArray(e.data.customCases)
+              ? e.data.customCases.map((c) => ({
+                  input: c.input || '',
+                  expected: c.expected !== undefined ? c.expected : '',
+                  name: c.name || '',
+                  id: c.id,
+                  isCustom: true,
+                }))
+              : [];
+
+            if (sampleCases.length === 0 && customCases.length === 0 && scrapeResult.error) {
               notifyEditor({
                 type: 'test-error',
                 message: scrapeResult.error,
@@ -436,18 +481,25 @@
               console.warn(`[AtCoder Workspace] ${scrapeResult.warning}`);
             }
 
-            const samples = scrapeResult.cases;
+            const allCases = [...sampleCases, ...customCases];
+            if (allCases.length === 0) {
+              notifyEditor({
+                type: 'test-error',
+                message: '実行可能なテストケースが見つかりませんでした。',
+              });
+              break;
+            }
 
             notifyEditor({
               type: 'test-start',
-              total: samples.length,
+              total: allCases.length,
             });
 
             runner.runSampleTests(
               contestId,
               e.data.code,
               e.data.languageId,
-              samples,
+              allCases,
               (caseRes) => {
                 notifyEditor({
                   type: 'test-case-result',
@@ -459,6 +511,8 @@
                   expected: caseRes.expected,
                   stderr: caseRes.stderr,
                   message: caseRes.message,
+                  name: caseRes.name,
+                  isCustom: caseRes.isCustom,
                 });
               },
               () => {
