@@ -5,6 +5,24 @@ All notable changes to the AtCoder Workspace extension will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] - 2026-10-12
+
+### Added
+- **カスタムテストケース追加機能**: 問題ごとに自作テストケース（入力・期待出力）をローカル保存・編集・削除し、サンプルケースと一括テスト実行できる機能を追加
+- **学習ダッシュボード＆エラー傾向分析**: 設定画面にタブUIを導入し、自力AC/解説AC比率、解法・原因タグ集計ランキング、コンテスト別進捗テーブルを追加
+- **AtCoder 32言語サポートの拡張**: 設定画面のテンプレート・自作スニペット管理、Monaco エディタのシンタックスハイライト、提出コード自動取得を AtCoder 主要・人気の 32 言語へ全面拡張
+- **拡張機能更新・切断検知と安全なリロード案内**: `Extension context invalidated` 検知時のリロード案内バナー表示および `localStorage` への自動コード退避・復元機能を追加
+- **ライセンスおよびサードパーティ通知の明記**: `license-trace` による依存ライブラリのライセンス解析と `THIRD_PARTY_LICENSES.md` の同梱・配布設定
+
+### Fixed
+- **fix: エディタ格納時の問題領域背景色・シャドウ消失の修正 (#21)** ([#22](https://github.com/rikutoyamada01/atcoder-workspace/pull/22))
+- **タグ選択時にタグ一覧が表示されない不具合の修正**: コンソール再生成時のタグチップ描画スキップ解消とフェイルセーフ処理の追加
+- **リリースノート（Changelog）の非同期読み込み競合の修正**: `initChangelog` の Promise 管理化によりモーダル本文が空になる不具合を解消
+
+### Changed
+- **docs: Git-flowブランチ戦略・Issueライフサイクル規約・セキュリティポリシーの制定** ([#23](https://github.com/rikutoyamada01/atcoder-workspace/pull/23))
+- **開発ロードマップ更新**: `customtest`（カスタムテストケース追加）および `dashboard`（学習ダッシュボード）を実装済（COMPLETED）に更新
+
 ## [1.7.2] - 2026-08-03
 
 ### Fixed

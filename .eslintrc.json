@@ -13,7 +13,8 @@
     "monaco": "readonly",
     "MonacoEnvironment": "writable",
     "require": "readonly",
-    "TagConstants": "readonly"
+    "TagConstants": "readonly",
+    "DashboardStats": "readonly"
   },
   "rules": {
     "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],

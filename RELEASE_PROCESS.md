@@ -71,17 +71,28 @@ npm run pre-merge
 
 `master` へマージされると、GitHub Actions が自動的にリリースビルドとパッケージ作成を実行します。
 
-### ステップ 1: GitHub Release の自動生成
+### ステップ 1: GitHub Release の自動生成 & Chrome Web Store 自動アップロード (Draft)
 1. `master` へのマージ/プッシュに伴い、**`Auto Release Workspace Extension` (release.yml)** ワークフローが起動します。
-2. 新しいバージョン番号に対応する Git タグ（例: `v1.7.0`）が自動で作成・プッシュされます。
-3. `npm run build` が実行され、リリース用の ZIP パッケージ（例: `dist/atcoder-workspace-v1.7.0.zip`）がビルドされます。
+2. 新しいバージョン番号に対応する Git タグ（例: `v1.8.0`）が自動で作成・プッシュされます。
+3. `npm run build` が実行され、リリース用の ZIP パッケージ（例: `dist/atcoder-workspace-v1.8.0.zip`）がビルドされます。
 4. 変更履歴と ZIP パッケージが添付された **GitHub Release が自動で作成・公開** されます。
+5. 続けて `scripts/upload-webstore.js` が実行され、Google 公式の **Chrome Web Store API (v2)** を介して **Chrome Developer Console へ ZIP パッケージが自動アップロード（下書き保存）** されます（※審査提出 `:publish` は自動実行せず、Upload のみで停止します）。
 
-### ステップ 2: Chrome Web Store への提出 (開発者による手動作業)
-1. 作成された GitHub Release ページを開き、添付されている `atcoder-workspace-v[バージョン].zip` をローカルにダウンロードします。
-2. [Chrome Developer Console (Chrome ウェブストア デベロッパー ダッシュボード)](https://chrome.google.com/webstore/devconsole) にログインします。
-3. 対象の拡張機能を選択し、[パッケージ] セクションからダウンロードした ZIP パッケージをアップロードします。
-4. ストアの情報を必要に応じて更新し、**[審査のため送信]** をクリックして提出します。
+> **初回のみ必要な GitHub Actions Secrets 設定**:
+> リポジトリの `Settings > Secrets and variables > Actions` に以下の 5 つの Secret を登録することで自動アップロードが有効になります（未設定の場合は自動スキップされます）：
+> - `CWS_PUBLISHER_ID`: Chrome Web Store Developer Console の「アカウント」に記載されているパブリッシャー ID
+> - `CWS_EXTENSION_ID`: 対象の拡張機能 ID（32文字）
+> - `CWS_CLIENT_ID`: Google Cloud Console で Chrome Web Store API を有効化して作成した OAuth 2.0 クライアント ID
+> - `CWS_CLIENT_SECRET`: OAuth 2.0 クライアントシークレット
+> - `CWS_REFRESH_TOKEN`: スコープ `https://www.googleapis.com/auth/chromewebstore` で認可した OAuth 2.0 リフレッシュトークン
+>
+> ローカルから手動でアップロードしたい場合も `npm run store:upload` で実行可能です。
+
+### ステップ 2: Chrome Web Store での掲載文確認・審査提出 (開発者による手動作業)
+1. [Chrome Developer Console (Chrome ウェブストア デベロッパー ダッシュボード)](https://chrome.google.com/webstore/devconsole) にログインします。
+2. 対象の拡張機能を開き、[パッケージ] セクションに新バージョンの ZIP が下書きアップロードされていることを確認します（Secrets 未設定時は GitHub Release から ZIP をダウンロードして手動アップロードします）。
+3. [ストアの掲載情報] タブにて、掲載文などを必要に応じて手動更新します。
+4. **[審査のため送信]** をクリックして提出します。
 
 ---
 

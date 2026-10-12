@@ -155,4 +155,5 @@ npm run setup
 
 ## ライセンス
 
-本プロジェクトは [MIT License](LICENSE) に基づいて公開されています。
+本プロジェクトは [MIT License](LICENSE) に基づいて公開されています。  
+サードパーティ製依存ライブラリのライセンス表示および著作権表記については [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md) をご覧ください。

@@ -44,6 +44,11 @@
         <button id="settings-btn" class="btn btn-default btn-icon" data-i18n-title="editor_toolbar_settings_title">⚙️</button>
       </div>
     </div>
+    <!-- Context Invalidated Reload Banner (Discreet alert banner, no emojis) -->
+    <div id="context-invalidated-banner" class="context-invalidated-banner" style="display: none;">
+      <span class="context-invalidated-text" data-i18n="editor_context_invalidated_text">拡張機能が更新されました。最新の状態で利用するためにページを再読み込みしてください。</span>
+      <button id="context-reload-btn" class="btn btn-default btn-xs" data-i18n="editor_context_invalidated_btn">ページを再読み込み</button>
+    </div>
     <div id="editor-main-section">
       <div id="editor-container"></div>
       <div id="snippets-drawer" class="snippets-drawer" style="display: none;">
@@ -73,6 +78,34 @@
         </div>
       </div>
       <div class="console-body" id="console-results">
+        <div id="custom-cases-section" class="custom-cases-section">
+          <div class="custom-cases-header">
+            <span class="custom-cases-title" data-i18n="editor_custom_case_title">🧪 カスタムテストケース</span>
+            <button id="add-custom-case-btn" class="btn btn-default btn-xs" data-i18n="editor_custom_case_add_btn">＋ カスタムケースを追加</button>
+          </div>
+          <div id="custom-case-form" class="custom-case-form" style="display: none;">
+            <input type="hidden" id="custom-case-edit-id" value="">
+            <div class="form-group-xs">
+              <label class="form-label-xs" data-i18n="editor_custom_case_name_label">ケース名 (任意):</label>
+              <input type="text" id="custom-case-name" class="form-control input-xs" data-i18n-placeholder="editor_custom_case_name_placeholder" placeholder="ケース名 (任意, 例: N=1)">
+            </div>
+            <div class="form-group-xs">
+              <label class="form-label-xs" data-i18n="editor_custom_case_input_label">入力 (stdin):</label>
+              <textarea id="custom-case-input" class="form-control input-xs" rows="3" data-i18n-placeholder="editor_custom_case_input_placeholder" placeholder="入力データを入力..."></textarea>
+            </div>
+            <div class="form-group-xs">
+              <label class="form-label-xs" data-i18n="editor_custom_case_expected_label">期待される出力 (任意):</label>
+              <textarea id="custom-case-expected" class="form-control input-xs" rows="2" data-i18n-placeholder="editor_custom_case_expected_placeholder" placeholder="期待される出力を入力 (空欄の場合は判定なし)..."></textarea>
+            </div>
+            <div class="form-actions-xs">
+              <button id="save-custom-case-btn" class="btn btn-primary btn-xs" data-i18n="editor_custom_case_btn_save">保存</button>
+              <button id="cancel-custom-case-btn" class="btn btn-default btn-xs" data-i18n="editor_custom_case_btn_cancel">キャンセル</button>
+            </div>
+          </div>
+          <div id="custom-cases-list" class="custom-cases-list">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
         <div id="learning-notes-section" class="learning-notes-section">
           <div class="learning-tags-bar">
             <span class="tags-label" data-i18n="editor_learning_tags_label">🏷️ タグ:</span>
