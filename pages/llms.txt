@@ -1,20 +1,32 @@
 # AtCoder Workspace (Competitive Programming Workspace)
 
-> AtCoderの問題ページを、ブラウザ上の統合開発環境（オンラインIDE）に変える無料・オープンソース（MIT License）のGoogle Chrome拡張機能です。環境構築不要（GCCやVSCodeの設定不要）、サンプル入出力のコピペ不要（ワンクリック自動テスト・Diff比較）、画面やタブの移動不要で、問題を開いた瞬間からC++・Python・Rust・Java等のコーディングと提出を完結できます。生成AIによる自動解答生成機能を排除しているため、AtCoderの競技規約に完全準拠しています。
+> AtCoderの問題ページでコード編集・サンプルテスト・出力比較・提出を行う、無料・MITライセンスのGoogle Chrome拡張です。AtCoderの非公式プロジェクトです。保存はブラウザ内、テストと提出はAtCoderで行います。実行と提出にはAtCoderへのログインとインターネット接続が必要です。
+
+## インストール
+
+- [Chrome Web Store](https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh?hl=ja)
+- [導入手順とFAQ](https://rikutoyamada01.github.io/atcoder-workspace/presentation.html#getting-started)
 
 ## 解決する課題と主な特徴
 
-- **環境構築ゼロで即開始**: コンパイラ導入やローカルエディタ設定で挫折することなく、Chrome拡張機能を追加するだけでMonaco Editor（VSCode同等）による分割画面コーディングが可能。
+- **コンパイラ導入不要**: Chrome拡張を追加し、AtCoderにログインして問題を開くと、Monaco Editorによる分割画面でコードを編集できます。
 - **ワンクリック自動サンプルテスト**: 問題ページ内のサンプル入力・出力例を自動抽出し、AtCoder公式カスタムテストAPIでバックグラウンド実行、AC/WA/TLE/REの判定とDiff表示を自動実行。
 - **自動保存と復習ステータス管理**: キー入力停止1.5秒でローカル自動保存。さらに「自力AC」「解説AC」の個別ステータス記録・絞り込みによる復習管理に対応。
 
+## 条件とデータの扱い
+
+- テスト時はコードと入力を、提出時はコードと言語などの情報をAtCoderへ直接送信します。独自の中継サーバーは使用しません。
+- 保存データはブラウザ内にあり、別の端末へ自動同期されません。
+- サンプル通過は本提出のACを保証しません。
+- 生成AIによる解答生成はありません。競技中の利用条件はAtCoderの利用規約と各コンテストのルール・告知を確認してください。
+
 ## ドキュメント・解説記事一覧
 
-- [計算量・TLEシミュレーター | AtCoder Workspace Articles](https://rikutoyamada01.github.io/atcoder-workspace/article/complexity.html): AtCoderでTLE（実行時間制限超過）にならないための計算量判定ツール。Nの数値を入力するだけで、O(N log N) や O(N^2) の実行時間をリアルタイムシミュレーション。
+- [計算量・TLEシミュレーター｜計算回数と実行時間の目安 | AtCoder Workspace](https://rikutoyamada01.github.io/atcoder-workspace/article/complexity.html): 入力サイズNと計算量から処理回数を概算するツール。速度の仮定、言語や処理による違い、時間制限の確認方法を解説します。ACやTLEの判定を行うものではありません。
 - [競プロ初心者向け アルゴリズム & 用語解説ガイド | AtCoder Workspace Articles](https://rikutoyamada01.github.io/atcoder-workspace/article/glossary.html): 競プロ（AtCoder）初心者必見！二分探索、DP、尺取り法などの主要アルゴリズムから、コーナーケース、オーバーフロー、TLEなどのエラー要因までわかりやすく解説した用語ガイド。
 - [灰レーティング脱出！茶色になるまでに絶対押さえるべき解法 & 実践Tips | AtCoder Workspace Articles](https://rikutoyamada01.github.io/atcoder-workspace/article/gray-to-brown-tips.html): AtCoder灰レーティングから脱出して茶色を目指す初心者向けの実践ガイド。A・B問題の早解きからC問題突破に必要な4大解法パターン、TLE・オーバーフローの回避コツを徹底解説。
-- [「小数で解くな、整数で解け！」競プロにおける浮動小数点数・切り捨て罠の完全回避ガイド | AtCoder Workspace Articles](https://rikutoyamada01.github.io/atcoder-workspace/article/integerization-tips.html): AtCoder等の競技プログラミングで頻出する「整数除算による切り捨て」や「double型の精度誤差」の罠を完全解説。式全体を1000倍・定数倍して整数（long long）だけで安全に解くテクニックを紹介。
+- [C++・Pythonの整数除算と浮動小数点誤差｜整数化の使い方 | AtCoder Workspace](https://rikutoyamada01.github.io/atcoder-workspace/article/integerization-tips.html): C++とPython 3の除算の違い、浮動小数点の丸め誤差、整数化による比較を解説。ABC113 Bを例に、分母の符号とオーバーフローの注意点も紹介します。
 - [記事一覧 | AtCoder Workspace Knowledge Hub](https://rikutoyamada01.github.io/atcoder-workspace/article.html): 競プロ（AtCoder）初心者向けのアルゴリズム解説、計算量シミュレーター、TLE・WAのバグ解決法などをまとめた技術記事・ノウハウポータル。
-- [AtCoder Workspace - コンセプトプレゼンテーション | 環境構築不要で快適な競プロエディタ](https://rikutoyamada01.github.io/atcoder-workspace/presentation.html): AtCoderが使いづらいと感じる初心者必見！環境構築不要でブラウザをIDE化するChrome拡張機能「AtCoder Workspace」のご紹介。問題文の隣にエディタを表示し、自動テストや自動提出で競プロの摩擦をゼロにします。
-- [プライバシーポリシー | AtCoder Workspace Pages](https://rikutoyamada01.github.io/atcoder-workspace/privacy.html): 
+- [AtCoder Workspace｜問題文の横で編集・サンプルテストできるChrome拡張](https://rikutoyamada01.github.io/atcoder-workspace/presentation.html): AtCoderの問題文の横でコード編集・サンプルテスト・出力比較・提出ができる無料のChrome拡張。コンパイラの導入は不要。Chromeへの追加方法、使い方、コードの保存先をご案内します。
+- [プライバシーポリシー | AtCoder Workspace Pages](https://rikutoyamada01.github.io/atcoder-workspace/privacy.html): AtCoder Workspaceの保存先、テスト・提出時のAtCoderとの通信、使用権限とプライバシー方針をご案内します。
 - [開発ロードマップ | AtCoder Workspace Pages](https://rikutoyamada01.github.io/atcoder-workspace/roadmap.html): AtCoder Workspaceの今後の機能追加ロードマップと実装進捗。解法メモ、自動テスト、提出履歴、GitHub連携のロードマップツリー。

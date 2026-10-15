@@ -3,77 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AtCoder Workspace - コンセプトプレゼンテーション | 環境構築不要で快適な競プロエディタ</title>
-  <meta name="description" content="AtCoderが使いづらいと感じる初心者必見！環境構築不要でブラウザをIDE化するChrome拡張機能「AtCoder Workspace」のご紹介。問題文の隣にエディタを表示し、自動テストや自動提出で競プロの摩擦をゼロにします。">
+  <title>AtCoder Workspace｜問題文の横で編集・サンプルテストできるChrome拡張</title>
+  <meta property="og:image" content="https://rikutoyamada01.github.io/atcoder-workspace/assets/icon128.png">
+  <meta property="og:image:alt" content="AtCoder Workspaceのアイコン">
+  <link rel="icon" href="assets/icon128.png" type="image/png">
+  <meta name="description" content="AtCoderの問題文の横でコード編集・サンプルテスト・出力比較・提出ができる無料のChrome拡張。コンパイラの導入は不要。Chromeへの追加方法、使い方、コードの保存先をご案内します。">
   <meta name="keywords" content="AtCoder,使いづらい,使いずらい,競プロ,環境構築,Chrome拡張機能,自動テスト,Monaco Editor,VSCode">
 
   <link rel="canonical" href="https://rikutoyamada01.github.io/atcoder-workspace/presentation.html">
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="AtCoder Workspace - コンセプトプレゼンテーション">
-  <meta property="og:description" content="AtCoderが使いづらいと感じる初心者向けの環境構築不要エディタ。コピペゼロ、画面遷移ゼロで即AC。">
+  <meta property="og:title" content="AtCoder Workspace｜問題文の横で編集・サンプルテスト">
+  <meta property="og:description" content="問題文とエディタを並べ、サンプルテスト・出力比較・提出を同じ画面で行う無料のChrome拡張。導入方法と使い方を紹介します。">
   <meta property="og:url" content="https://rikutoyamada01.github.io/atcoder-workspace/presentation.html">
-  <meta property="og:image" content="https://rikutoyamada01.github.io/atcoder-workspace/icons/icon128.png">
-
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "SoftwareApplication",
-        "name": "AtCoder Workspace",
-        "alternateName": "Competitive Programming Workspace",
-        "applicationCategory": "DeveloperApplication",
-        "operatingSystem": "Chrome, Chromium",
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "JPY"
-        },
-        "description": "AtCoderの問題ページを、エディタ・自動ローカルテスト・提出が統合されたブラウザ上の開発環境（オンラインIDE）に変えるGoogle Chrome拡張機能。",
-        "url": "https://rikutoyamada01.github.io/atcoder-workspace/presentation.html"
-      },
-      {
-        "@type": "FAQPage",
-        "mainEntity": [
-          {
-            "@type": "Question",
-            "name": "AtCoderの環境構築が難しくてできません。GCCのインストールやVSCodeの設定をせずにC++やPythonでAtCoderを解く方法はありますか？",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Google Chrome拡張機能「AtCoder Workspace」をインストールするだけで、ブラウザ上の問題ページがMonaco Editorを使用したIDE（開発環境）に変わります。コンパイラのインストールやパス設定は不要で、すぐにコードを書いて実行・提出できます。"
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "AtCoderが使いづらいと感じます。問題文とコードテスト画面の切り替えやサンプルのコピペをなくす解決策はありますか？",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "AtCoder Workspaceを導入すると問題文のすぐ右側にコードエディタが左右分割で表示され、サンプル入出力の自動抽出とワンクリック実行・Diff比較が可能になります。"
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "この拡張機能を使うことで、AtCoderの規約違反（カンニング等）になりませんか？",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "自動で回答コードを生成する生成AI機能やカンニング補助システムは非搭載であり、AtCoder公式のサーバー負荷制限ルールを遵守してユーザー自身のセッションで通信するため安全です。"
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "利用料金はかかりますか？また、対応しているプログラミング言語は何ですか？",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "完全無料（MITライセンス）で利用可能です。AtCoder公式のコードテスト機能がサポートしている全プログラミング言語（C++, Python, Java, Go, Rust等）に対応しています。"
-            }
-          }
-        ]
-      }
-    ]
-  }
-  </script>
 
   <link rel="stylesheet" href="site.css?v=1.8.0">
 
@@ -126,7 +69,7 @@
       margin-bottom: 30px;
       text-align: center;
     }
-    .hero-banner h1 {
+    .hero-banner h2 {
       font-size: 32px;
       font-weight: bold;
       color: #222222;
@@ -416,9 +359,38 @@
       }
     }
   </style>
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "AtCoder Workspace",
+  "applicationCategory": "DeveloperApplication",
+  "browserRequirements": "Google Chrome。テスト・提出にはインターネット接続とAtCoderへのログインが必要です。",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "JPY"
+  },
+  "description": "AtCoderの問題文の横でコード編集・サンプルテスト・出力比較・提出を行うChrome拡張。保存はブラウザ内、実行と提出はAtCoderで行います。",
+  "url": "https://rikutoyamada01.github.io/atcoder-workspace/presentation.html",
+  "downloadUrl": "https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh?hl=ja",
+  "license": "https://opensource.org/license/mit",
+  "isAccessibleForFree": true
+}
+  </script>
 </head>
 <body>
-  <div id="site-header"></div>
+  <nav class="navbar" aria-label="メインナビゲーション">
+    <a class="navbar-brand" href="presentation.html">AtCoder Workspace</a>
+    <div class="navbar-links">
+      <a class="nav-link active" aria-current="page" href="presentation.html">製品紹介</a>
+      <a class="nav-link" href="article.html">記事一覧</a>
+      <a class="nav-link" href="article/glossary.html">用語辞典</a>
+      <a class="nav-link" href="article/complexity.html">計算量ツール</a>
+      <a class="nav-link" href="roadmap.html">ロードマップ</a>
+      <a class="nav-link install-link" href="https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh?hl=ja">Chromeに追加</a>
+    </div>
+  </nav>
 
   <div class="container">
     <div class="page-header">
@@ -426,9 +398,27 @@
     </div>
 
     <div class="hero-banner">
-      <h1>競プロの「めんどくさい」を、ゼロにする。</h1>
-      <p>問題文とエディタの行き来、テストケースの手動コピペ、コンパイル環境の設定——。すべての不要な往復作業を削減し、アルゴリズムの思考だけに集中できる環境を提供します。</p>
+      <h2>問題文の横で書く、試す、提出する。</h2>
+      <p>AtCoder Workspaceは、AtCoderの問題ページにコードエディタを追加し、サンプルテスト・出力比較・提出を同じ画面で行える無料のChrome拡張です。コードはブラウザ内に保存され、実行と提出にはAtCoderの機能を利用します。</p>
     </div>
+
+    <div class="install-actions">
+      <a class="install-button" href="https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh?hl=ja">Chromeに追加（無料）</a>
+      <a href="#getting-started">使い方を見る</a>
+    </div>
+    <p class="site-note">AtCoderの非公式・オープンソースの拡張機能です。テストと提出にはAtCoderへのログインとインターネット接続が必要です。</p>
+
+    <section id="getting-started" class="guide-section" aria-labelledby="getting-started-title">
+      <h2 id="getting-started-title">導入から最初のサンプルテストまで</h2>
+      <ol>
+        <li><a href="https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh?hl=ja">Chrome Web Store</a>で「Chromeに追加」を選びます。</li>
+        <li><a href="https://atcoder.jp/login">AtCoderにログイン</a>し、<a href="https://atcoder.jp/contests/abs/tasks/practice_1">練習問題「Welcome to AtCoder」</a>を開きます。</li>
+        <li>問題文の横のエディタで言語を選び、コードを入力します。境界をドラッグして画面の幅を調整できます。</li>
+        <li>「テスト実行」でサンプルを確認します。出力が違う場合は期待値とのDiffを確認し、修正して再実行します。</li>
+        <li>確認できたら「提出」を選び、AtCoderの判定結果を確認します。サンプル通過だけでは本提出のACを保証しません。</li>
+      </ol>
+      <p>コードは問題・言語ごとにブラウザ内へ自動保存されます。別の端末への自動同期はありません。削除やアンインストールの前には、必要なコードを手元にも保存してください。</p>
+    </section>
 
     <h2>主要機能とインタラクティブ体験</h2>
     <p style="margin-bottom: 15px; font-size: 13.5px; color: #555555;">以下のカードにホバーすると、下部のプレビュー画面で該当するUI要素が強調表示されます。</p>
@@ -453,7 +443,7 @@
 
     <div class="mock-container">
       <div class="mock-header">
-        <span>インタラクティブ・ワークスペースプレビュー</span>
+        <span>操作イメージ（実際の実行結果ではありません）</span>
         <span>AtCoder Problem & Monaco Editor Integration</span>
       </div>
       <div class="mock-workspace">
@@ -496,7 +486,7 @@
     <div class="calculator-box">
       <h3>⌛ 競技プログラミングの「往復作業」削減試算シミュレーター</h3>
       <p style="font-size: 13px; color: #666666; margin-bottom: 15px;">
-        1回のコンテスト・過去問演習で発生する「サンプルのコピペ」「コードテスト画面への移動」「提出コードのコピペ」にかかる隠れたロスタイムを計算します。
+        年間50回の演習、テスト1回あたり25秒・提出等15秒を省けると仮定した試算です。実測や削減時間の保証ではなく、作業を見直すための参考値です。
       </p>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
         <div class="form-group">
@@ -513,7 +503,7 @@
         <div class="calc-result-title">年間（50回のコンテスト/演習）で削れる無駄なコピペ回数:</div>
         <div class="calc-result-value" id="calc-val-copypaste">2,200 回</div>
         <div class="calc-result-title" style="margin-top: 10px;">浮いた思考時間・純粋な演習への集中可能時間:</div>
-        <div class="calc-result-value" id="calc-val-time" style="color: #5cb85c;">265 分 (約 4.4 時間)</div>
+        <div class="calc-result-value" id="calc-val-time" style="color: #5cb85c;">300 分 (約 5.0 時間)</div>
       </div>
     </div>
 
@@ -533,7 +523,7 @@
             <td><strong>環境構築コスト</strong></td>
             <td class="cell-good">不要 (0分)</td>
             <td class="cell-bad">高い (GCC/Python/oj設定)</td>
-            <td class="cell-good">不要 (拡張導入の10秒)</td>
+            <td class="cell-good">コンパイラ導入不要（Chrome拡張を追加）</td>
           </tr>
           <tr>
             <td><strong>サンプルテスト実行</strong></td>
@@ -566,10 +556,10 @@
             <td class="cell-good">あり (キー入力停止後1.5秒で保存)</td>
           </tr>
           <tr>
-            <td><strong>競技規約への適合性</strong></td>
-            <td class="cell-good">適合 (公式ツール)</td>
-            <td class="cell-good">適合</td>
-            <td class="cell-good">適合 (AI非搭載・公式規約準拠)</td>
+            <td><strong>競技中の利用</strong></td>
+            <td>公式サービス</td>
+            <td>各コンテストのルールを確認</td>
+            <td>生成AIによる解答生成なし。利用条件を確認</td>
           </tr>
         </tbody>
       </table>
@@ -578,7 +568,7 @@
     <!-- Articles & Guides Showcase Section -->
     <section style="background: linear-gradient(135deg, #f8f9fa 0%, #e8f4ff 100%); border: 1px solid #b6d4f5; border-radius: 8px; padding: 24px 28px; margin: 40px 0 35px 0;">
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
-        <h2 style="font-size: 20px; font-weight: bold; color: #222222; margin: 0; border: none; padding: 0;">📚 競プロ初心者向け 公式解説記事 & ノウハウ</h2>
+        <h2 style="font-size: 20px; font-weight: bold; color: #222222; margin: 0; border: none; padding: 0;">📚 開発者による競プロ解説記事 & ノウハウ</h2>
         <a href="article.html" style="font-size: 14px; font-weight: bold; color: #337ab7; text-decoration: none;">すべての記事一覧を見る →</a>
       </div>
       <p style="font-size: 13.5px; color: #555555; margin-bottom: 20px; line-height: 1.6;">
@@ -589,7 +579,7 @@
         <a href="article/gray-to-brown-tips.html" style="background: #ffffff; border: 1px solid #dddddd; border-radius: 6px; padding: 16px; text-decoration: none; color: inherit; transition: all 0.2s ease; display: block;" onmouseover="this.style.borderColor='#337ab7'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#dddddd'; this.style.transform='none';">
           <div style="font-size: 11px; font-weight: bold; color: #804000; margin-bottom: 6px;">🎯 灰コーダー必見・実践Tips</div>
           <div style="font-size: 15px; font-weight: bold; color: #222222; margin-bottom: 6px;">灰レーティング脱出！茶色になるまでに絶対に押さえるべき解法 & 実践Tips</div>
-          <div style="font-size: 12.5px; color: #666666;">難解なアルゴリズムは不要！A・B問題の早解きからC問題突破に必要な3大パターンを解説。</div>
+          <div style="font-size: 12.5px; color: #666666;">難解なアルゴリズムは不要！A・B問題の早解きからC問題に取り組むための4つの基本パターンを解説。</div>
         </a>
 
         <a href="article/glossary.html" style="background: #ffffff; border: 1px solid #dddddd; border-radius: 6px; padding: 16px; text-decoration: none; color: inherit; transition: all 0.2s ease; display: block;" onmouseover="this.style.borderColor='#337ab7'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#dddddd'; this.style.transform='none';">
@@ -601,60 +591,70 @@
         <a href="article/complexity.html" style="background: #ffffff; border: 1px solid #dddddd; border-radius: 6px; padding: 16px; text-decoration: none; color: inherit; transition: all 0.2s ease; display: block;" onmouseover="this.style.borderColor='#337ab7'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#dddddd'; this.style.transform='none';">
           <div style="font-size: 11px; font-weight: bold; color: #5cb85c; margin-bottom: 6px;">🧮 計算量・TLEツール</div>
           <div style="font-size: 15px; font-weight: bold; color: #222222; margin-bottom: 6px;">計算量・TLEシミュレーター & 10⁸の壁突破ガイド</div>
-          <div style="font-size: 12.5px; color: #666666;">入力サイズ N を入れるだけで TLE 危険度をリアルタイム判定。1秒1億回の壁を体感。</div>
+          <div style="font-size: 12.5px; color: #666666;">入力サイズNと計算量から処理回数を概算。実行時間の仮定と限界も確認できます。</div>
         </a>
       </div>
     </section>
 
-    <h2>安心・安全に使用するための規約適合性</h2>
+    <h2>動作の仕組みとデータの扱い</h2>
     <div class="compliance-box">
       <div class="compliance-title">
-        <span>🛡️</span> 競技規約への適合性とセキュリティについて
+        <span>🛡️</span> 実行先・保存先・利用条件について
       </div>
       <div class="compliance-item">
-        <strong>生成AI・自動入力補完機能の排除:</strong> アルゴリズム自体の考案・記述プロセスをユーザー自らの力で行えるよう、カンニングや規約違反のリスクに繋がる生成AI補助やインテリセンス機能はあえて非搭載としています。
+        <strong>生成AIによる解答生成なし:</strong> 解法を考え、コードを記述するのは利用者自身です。エディタの括弧補完やインデントなどの入力支援と、生成AIによる解答生成は区別しています。
       </div>
       <div class="compliance-item">
-        <strong>完全ローカル完結型設計:</strong> 外部に独自の中継サーバーを一切持たず、提出やコードテストはユーザー自身のブラウザセッション（Cookie）から直接公式APIへ安全に通信するため、不正アクセスや資格情報の流出がありません。
+        <strong>保存はブラウザ内、実行と提出はAtCoder:</strong> ソースコードや設定はブラウザ内に保存します。テスト・提出時にはコードと必要な入力をAtCoderへ直接送信します。開発者が運営する独自の中継サーバーは使用しません。詳細は<a href="privacy.html">プライバシーポリシー</a>をご覧ください。
       </div>
       <div class="compliance-item">
-        <strong>過度なリクエストの制限:</strong> 提出状況のポーリング間隔やテスト実行は、AtCoder公式のサーバー負荷規約に準拠したウェイト（待機時間）を設けており、意図しない負荷をかけません。
+        <strong>利用条件の確認:</strong> テストや提出結果の取得には待機間隔を設けています。コンテスト中の利用可否は、<a href="https://atcoder.jp/tos">AtCoderの利用規約</a>と各コンテストのルール・告知を確認してください。本拡張はAtCoder公式の提供・承認を示すものではありません。
       </div>
     </div>
 
     <h2>よくある質問 (FAQ)</h2>
     <div class="faq-section">
       <div class="faq-item">
-        <div class="faq-question">AtCoderの環境構築が難しくてできません。GCCのインストールやVSCodeの設定をせずにC++やPythonでAtCoderを解く方法はありますか？</div>
-        <div class="faq-answer">
-          はい、あります。Google Chrome拡張機能<strong>「AtCoder Workspace」</strong>をインストールするだけで、お使いのブラウザ上の問題ページがVSCodeと同じMonaco Editorを使用したIDE（開発環境）に変わります。コンパイラのインストールやパス設定といった難しい環境構築は一切不要で、すぐにコードを書いて実行・提出できます。
-        </div>
+        <h3 class="faq-question">コンパイラのインストールは必要ですか？</h3>
+        <div class="faq-answer">不要です。Chromeに拡張機能を追加すると、問題ページでコードを編集できます。実行と提出にはAtCoderの機能を利用します。</div>
       </div>
-
       <div class="faq-item">
-        <div class="faq-question">AtCoderが使いづらい（使いずらい）と感じます。特に問題文とコードテスト画面の切り替えやサンプルのコピペが面倒です。解決策はありますか？</div>
-        <div class="faq-answer">
-          まさにその不便さを解決するために本拡張機能は開発されました。インストールすると、問題文のすぐ右側にコードエディタが左右分割で表示されます。また、問題ページ内のサンプル入出力を自動抽出し、ワンクリックでテスト実行・期待値とのDiff比較を行えるため、画面の往復やコピー＆ペーストの作業は完全にゼロになります。
-        </div>
+        <h3 class="faq-question">テストはパソコン内で実行されますか？</h3>
+        <div class="faq-answer">実行先はAtCoderです。テスト時にはソースコードと入力をAtCoderへ送信し、返ってきた出力をサンプルの期待値と比較します。パソコン内でのオフライン実行ではありません。</div>
       </div>
-
       <div class="faq-item">
-        <div class="faq-question">この拡張機能を使うことで、AtCoderの規約違反（カンニング等）になりませんか？</div>
-        <div class="faq-answer">
-          ご安心ください。本拡張機能には、自動で回答コードを生成するような生成AI機能やカンニングを補助するシステムは意図的に搭載していません。また、提出やテスト実行はAtCoder公式のサーバー負荷制限ルールを遵守し、ユーザーご自身のブラウザセッションを使用して安全に通信します。安心してお使いいただけます。
-        </div>
+        <h3 class="faq-question">ログインやインターネット接続は必要ですか？</h3>
+        <div class="faq-answer">はい。テストと提出にはAtCoderへのログインとインターネット接続が必要です。ログインできない場合は、先にAtCoderの通常画面でログインしてください。</div>
       </div>
-
       <div class="faq-item">
-        <div class="faq-question">利用料金はかかりますか？また、対応しているプログラミング言語は何ですか？</div>
-        <div class="faq-answer">
-          完全無料（MITライセンス）でご利用いただけます。対応言語は、AtCoder公式の「コードテスト」機能がサポートしている全プログラミング言語（C++, Python, Java, Go, Rust等）に対応しています。
-        </div>
+        <h3 class="faq-question">保存したコードは別の端末でも使えますか？</h3>
+        <div class="faq-answer">コードと設定はブラウザのローカル領域に保存され、自動的には端末間で同期されません。保存データの削除やアンインストール前に、必要なコードをコピーするか、設定画面のエクスポート機能でバックアップしてください。</div>
+      </div>
+      <div class="faq-item">
+        <h3 class="faq-question">サンプルがすべて通ればACになりますか？</h3>
+        <div class="faq-answer">いいえ。サンプルは一部の入力例です。境界値や最大入力なども確認し、提出後にAtCoderの本判定を確認してください。</div>
+      </div>
+      <div class="faq-item">
+        <h3 class="faq-question">コンテスト中にも使えますか？</h3>
+        <div class="faq-answer">生成AIによる解答生成機能はありませんが、それだけで全コンテストの利用条件を保証するものではありません。<a href="https://atcoder.jp/tos">利用規約</a>と参加するコンテストのルール・最新の告知を確認してください。</div>
+      </div>
+      <div class="faq-item">
+        <h3 class="faq-question">料金・対応ブラウザ・対応言語は？</h3>
+        <div class="faq-answer">無料・MITライセンスで公開しているGoogle Chrome向け拡張です。他ブラウザでの動作は保証していません。実行言語はAtCoderから取得した選択肢に従います。</div>
+      </div>
+      <div class="faq-item">
+        <h3 class="faq-question">動かない場合はどうすればよいですか？</h3>
+        <div class="faq-answer">AtCoderへのログイン状態と拡張機能が有効かを確認し、問題ページを再読み込みしてください。改善しない場合は、製品バージョン・問題URL・再現手順を<a href="https://github.com/rikutoyamada01/atcoder-workspace/issues">GitHub Issues</a>へお知らせください。ログイン情報は記載しないでください。</div>
       </div>
     </div>
+    <div class="install-actions"><a class="install-button" href="https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh?hl=ja">Chromeに追加（無料）</a><a href="#getting-started">導入手順を確認する</a></div>
+
   </div>
 
-  <div id="site-footer"></div>
+  <footer>
+    <p>AtCoder Workspace · MIT License · AtCoderの非公式プロジェクト</p>
+    <p><a href="presentation.html">製品紹介</a> | <a href="article.html">記事一覧</a> | <a href="privacy.html">プライバシー</a> | <a href="https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh?hl=ja">Chromeに追加</a> | <a href="https://github.com/rikutoyamada01/atcoder-workspace">GitHub</a></p>
+  </footer>
 
   <script src="components.js?v=1.8.0"></script>
   <script src="presentation.js"></script>

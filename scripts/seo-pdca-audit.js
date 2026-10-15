@@ -240,27 +240,42 @@ async function fetchGscMetrics() {
       siteUrl
     )}/searchAnalytics/query`;
 
-    const recentData = await httpsPostJson(
-      apiEndpoint,
-      {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-      {
-        startDate: formatDate(10),
-        endDate: formatDate(3),
-        dimensions: ['query', 'page'],
-        rowLimit: 50,
-      }
+    const period = { startDate: formatDate(30), endDate: formatDate(3) };
+    const [totalsData, pagesData, recentData] = await Promise.all(
+      [[], ['page'], ['query', 'page']].map((dimensions) =>
+        httpsPostJson(
+          apiEndpoint,
+          { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+          { ...period, dimensions, rowLimit: 25000, type: 'web', dataState: 'final' }
+        )
+      )
     );
 
     const rows = recentData.rows || [];
+    const totals = (totalsData.rows || [])[0];
+    console.log(`📅 [GSC] ${period.startDate} to ${period.endDate} (28 days, final Web data)`);
+    if (totals) {
+      console.log(
+        `   Site total: ${totals.impressions} impressions, ${totals.clicks} clicks, ${(totals.ctr * 100).toFixed(1)}% CTR, average position ${totals.position.toFixed(2)}`
+      );
+    }
+    (pagesData.rows || []).forEach((row) => {
+      console.log(`   Page: ${row.keys[0]} — ${row.impressions} impressions, ${row.clicks} clicks`);
+    });
+    console.log('ℹ️  [GSC] Query rows omit anonymized queries; do not sum them for site totals.');
+    if (!totals || totals.impressions < 100) {
+      console.log(
+        'ℹ️  [GSC] Small sample: prioritize discovery and crawling before CTR judgments.'
+      );
+    }
     console.log(`✅ [GSC] Retrieved ${rows.length} query/page rows for ${siteUrl}`);
-    const lowCtrOpportunities = rows.filter((r) => r.impressions >= 20 && r.ctr < 0.03);
-    const strikingDistance = rows.filter((r) => r.position >= 5 && r.position <= 20);
+    const lowCtrOpportunities = rows.filter((r) => r.impressions >= 100 && r.ctr < 0.03);
+    const strikingDistance = rows.filter(
+      (r) => r.impressions >= 20 && r.position >= 5 && r.position <= 20
+    );
 
     if (lowCtrOpportunities.length > 0) {
-      console.log('🎯 [GSC] High-Impression / Low-CTR Opportunities:');
+      console.log('🎯 [GSC] CTR candidates to review against position, device, and search intent:');
       lowCtrOpportunities.slice(0, 5).forEach((r) => {
         console.log(
           `   - "${r.keys[0]}" (${r.keys[1]}): ${r.impressions} imp, ${(r.ctr * 100).toFixed(
@@ -277,7 +292,14 @@ async function fetchGscMetrics() {
         );
       });
     }
-    return { rows, lowCtrOpportunities, strikingDistance };
+    return {
+      period,
+      totals,
+      pages: pagesData.rows || [],
+      rows,
+      lowCtrOpportunities,
+      strikingDistance,
+    };
   } catch (err) {
     console.warn(`⚠️  [GSC] Failed to query Search Console API: ${err.message}`);
     return null;
@@ -287,6 +309,13 @@ async function fetchGscMetrics() {
 function extractMeta(html, regex) {
   const m = html.match(regex);
   return m ? m[1].trim() : null;
+}
+
+function localPublicPath(value, pageUrl) {
+  const url = new URL(value, pageUrl);
+  if (!url.href.startsWith(`${baseUrl}/`)) return null;
+  const relativePath = decodeURIComponent(url.pathname.slice(new URL(baseUrl).pathname.length + 1));
+  return path.join(pagesDir, relativePath || 'index.html');
 }
 
 function auditPages() {
@@ -317,28 +346,43 @@ function auditPages() {
 
     const issues = [];
     if (isRedirect) {
-      issues.push('Uses meta refresh redirect (weak for SEO/AEO)');
+      if (!/content=["']0\s*;/i.test(html)) {
+        issues.push('Delayed meta refresh: use an immediate redirect for a permanent move');
+      }
     } else {
       if (!title) issues.push('Missing <title>');
       if (!description) issues.push('Missing <meta name="description">');
       if (!canonical) issues.push('Missing <link rel="canonical">');
       if (!ogTitle) issues.push('Missing og:title');
       if (!ogImage) issues.push('Missing og:image');
-      if (jsonLdMatches.length === 0) {
-        issues.push('Missing JSON-LD structured data (<script type="application/ld+json">)');
-      } else {
-        jsonLdMatches.forEach((m, idx) => {
-          try {
-            JSON.parse(m[1]);
-          } catch (e) {
-            issues.push(`Invalid JSON-LD block #${idx + 1}: ${e.message}`);
-          }
-        });
+      if (canonical && canonical !== `${baseUrl}/${relFromPages}`) {
+        issues.push('Canonical differs from the page URL; verify the intended canonical target');
       }
     }
 
+    jsonLdMatches.forEach((m, idx) => {
+      try {
+        JSON.parse(m[1]);
+      } catch (e) {
+        issues.push(`Invalid JSON-LD block #${idx + 1}: ${e.message}`);
+      }
+    });
+
+    const resources = new Set(
+      [...html.matchAll(/(?:href|src)=["']([^"']+)["']/gi)].map((match) => match[1])
+    );
+    if (ogImage) resources.add(ogImage);
+    resources.forEach((resource) => {
+      try {
+        const localPath = localPublicPath(resource, `${baseUrl}/${relFromPages}`);
+        if (localPath && !fs.existsSync(localPath))
+          issues.push(`Missing deployed resource: ${resource}`);
+      } catch {
+        issues.push(`Invalid resource URL: ${resource}`);
+      }
+    });
+
     warningCount += issues.length;
-    const stat = fs.statSync(filePath);
     pageReports.push({
       relFromPages,
       url: `${baseUrl}/${relFromPages}`,
@@ -347,7 +391,6 @@ function auditPages() {
       description: description || '',
       canonical,
       jsonLdCount: jsonLdMatches.length,
-      lastmod: stat.mtime.toISOString().slice(0, 10),
       issues,
     });
   });
@@ -359,7 +402,7 @@ function auditPages() {
     p.issues.forEach((iss) => console.log(`     • ${iss}`));
   });
 
-  const requiredAssets = ['sitemap.xml', 'robots.txt', 'llms.txt'];
+  const requiredAssets = ['sitemap.xml'];
   requiredAssets.forEach((asset) => {
     const exists = fs.existsSync(path.join(pagesDir, asset));
     if (!exists) {
@@ -369,6 +412,12 @@ function auditPages() {
       console.log(` - pages/${asset}: ✅ Present`);
     }
   });
+  console.log(
+    'ℹ️  robots.txt must be hosted at the origin root; submit this project sitemap in GSC.'
+  );
+  console.log(
+    'ℹ️  llms.txt and JSON-LD on every page are not requirements for Google AI features.'
+  );
 
   if (shouldWrite) {
     writeSeoAeoAssets(pageReports);
@@ -385,7 +434,6 @@ function writeSeoAeoAssets(pageReports) {
     .map(
       (p) => `  <url>
     <loc>${p.canonical || p.url}</loc>
-    <lastmod>${p.lastmod}</lastmod>
   </url>`
     )
     .join('\n');
@@ -410,13 +458,25 @@ Sitemap: ${baseUrl}/sitemap.xml
     .join('\n');
   const llmsTxt = `# AtCoder Workspace (Competitive Programming Workspace)
 
-> AtCoderの問題ページを、ブラウザ上の統合開発環境（オンラインIDE）に変える無料・オープンソース（MIT License）のGoogle Chrome拡張機能です。環境構築不要（GCCやVSCodeの設定不要）、サンプル入出力のコピペ不要（ワンクリック自動テスト・Diff比較）、画面やタブの移動不要で、問題を開いた瞬間からC++・Python・Rust・Java等のコーディングと提出を完結できます。生成AIによる自動解答生成機能を排除しているため、AtCoderの競技規約に完全準拠しています。
+> AtCoderの問題ページでコード編集・サンプルテスト・出力比較・提出を行う、無料・MITライセンスのGoogle Chrome拡張です。AtCoderの非公式プロジェクトです。保存はブラウザ内、テストと提出はAtCoderで行います。実行と提出にはAtCoderへのログインとインターネット接続が必要です。
+
+## インストール
+
+- [Chrome Web Store](https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh?hl=ja)
+- [導入手順とFAQ](${baseUrl}/presentation.html#getting-started)
 
 ## 解決する課題と主な特徴
 
-- **環境構築ゼロで即開始**: コンパイラ導入やローカルエディタ設定で挫折することなく、Chrome拡張機能を追加するだけでMonaco Editor（VSCode同等）による分割画面コーディングが可能。
+- **コンパイラ導入不要**: Chrome拡張を追加し、AtCoderにログインして問題を開くと、Monaco Editorによる分割画面でコードを編集できます。
 - **ワンクリック自動サンプルテスト**: 問題ページ内のサンプル入力・出力例を自動抽出し、AtCoder公式カスタムテストAPIでバックグラウンド実行、AC/WA/TLE/REの判定とDiff表示を自動実行。
 - **自動保存と復習ステータス管理**: キー入力停止1.5秒でローカル自動保存。さらに「自力AC」「解説AC」の個別ステータス記録・絞り込みによる復習管理に対応。
+
+## 条件とデータの扱い
+
+- テスト時はコードと入力を、提出時はコードと言語などの情報をAtCoderへ直接送信します。独自の中継サーバーは使用しません。
+- 保存データはブラウザ内にあり、別の端末へ自動同期されません。
+- サンプル通過は本提出のACを保証しません。
+- 生成AIによる解答生成はありません。競技中の利用条件はAtCoderの利用規約と各コンテストのルール・告知を確認してください。
 
 ## ドキュメント・解説記事一覧
 
@@ -431,8 +491,11 @@ async function main() {
     await runLocalOAuthFlow();
   }
   console.log('🚀 Running AtCoder Workspace SEO & AEO PDCA Audit...\n');
-  await fetchGscMetrics();
-  auditPages();
+  if (!process.argv.includes('--local-only')) await fetchGscMetrics();
+  const { warningCount } = auditPages();
+  if (process.argv.includes('--check') && warningCount > 0) process.exitCode = 1;
 }
 
-main();
+if (require.main === module) main();
+
+module.exports = { auditPages, writeSeoAeoAssets };

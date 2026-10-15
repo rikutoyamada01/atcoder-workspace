@@ -3,14 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>「小数で解くな、整数で解け！」競プロにおける浮動小数点数・切り捨て罠の完全回避ガイド | AtCoder Workspace Articles</title>
-  <meta name="description" content="AtCoder等の競技プログラミングで頻出する「整数除算による切り捨て」や「double型の精度誤差」の罠を完全解説。式全体を1000倍・定数倍して整数（long long）だけで安全に解くテクニックを紹介。">
+  <title>C++・Pythonの整数除算と浮動小数点誤差｜整数化の使い方 | AtCoder Workspace</title>
+  <meta property="og:image" content="https://rikutoyamada01.github.io/atcoder-workspace/assets/icon128.png">
+  <meta property="og:image:alt" content="AtCoder Workspaceのアイコン">
+  <link rel="icon" href="../assets/icon128.png" type="image/png">
+  <link rel="canonical" href="https://rikutoyamada01.github.io/atcoder-workspace/article/integerization-tips.html">
+  <meta name="description" content="C++とPython 3の除算の違い、浮動小数点の丸め誤差、整数化による比較を解説。ABC113 Bを例に、分母の符号とオーバーフローの注意点も紹介します。">
   <meta name="keywords" content="AtCoder,競プロ,浮動小数点数,double,精度誤差,切り捨て,型キャスト,ABC113B,定数倍,整数化">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:title" content="「小数で解くな、整数で解け！」競プロにおける浮動小数点数・切り捨て罠の完全回避ガイド">
-  <meta property="og:description" content="なぜ 6 / 1000 は 0 になるのか？double 型の罠を回避し、式全体を定数倍して整数型だけで 100% 安全に解く最強の実践テクニック。">
+  <meta property="og:title" content="C++・Pythonの整数除算と浮動小数点誤差｜整数化の使い方 | AtCoder Workspace">
+  <meta property="og:description" content="C++とPython 3の除算の違い、浮動小数点の丸め誤差、整数化による比較を解説。ABC113 Bを例に、分母の符号とオーバーフローの注意点も紹介します。">
   <meta property="og:url" content="https://rikutoyamada01.github.io/atcoder-workspace/article/integerization-tips.html">
 
   <link rel="stylesheet" href="../site.css?v=1.8.0">
@@ -147,17 +151,72 @@
       font-size: 16px;
     }
   </style>
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "C++・Pythonの整数除算と浮動小数点誤差：整数化の使い方",
+      "description": "C++とPython 3の除算の違い、浮動小数点の丸め誤差、整数化による比較を解説。ABC113 Bを例に、分母の符号とオーバーフローの注意点も紹介します。",
+      "inLanguage": "ja",
+      "dateModified": "2026-10-15",
+      "author": {
+        "@type": "Person",
+        "name": "rikuto yamada",
+        "url": "https://github.com/rikutoyamada01"
+      },
+      "mainEntityOfPage": "https://rikutoyamada01.github.io/atcoder-workspace/article/integerization-tips.html",
+      "image": "https://rikutoyamada01.github.io/atcoder-workspace/assets/icon128.png"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "AtCoder Workspace",
+          "item": "https://rikutoyamada01.github.io/atcoder-workspace/presentation.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "記事一覧",
+          "item": "https://rikutoyamada01.github.io/atcoder-workspace/article.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "C++・Pythonの整数除算と浮動小数点誤差：整数化の使い方",
+          "item": "https://rikutoyamada01.github.io/atcoder-workspace/article/integerization-tips.html"
+        }
+      ]
+    }
+  ]
+}
+  </script>
 </head>
-<body>
+<body data-math>
 
-  <div id="site-header"></div>
+  <nav class="navbar" aria-label="メインナビゲーション">
+    <a class="navbar-brand" href="../presentation.html">AtCoder Workspace</a>
+    <div class="navbar-links">
+      <a class="nav-link" href="../presentation.html">製品紹介</a>
+      <a class="nav-link" href="../article.html">記事一覧</a>
+      <a class="nav-link" href="../article/glossary.html">用語辞典</a>
+      <a class="nav-link" href="../article/complexity.html">計算量ツール</a>
+      <a class="nav-link" href="../roadmap.html">ロードマップ</a>
+      <a class="nav-link install-link" href="https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh?hl=ja">Chromeに追加</a>
+    </div>
+  </nav>
 
   <main class="container">
 
     <article class="article-container">
 
       <header class="article-hero">
-        <h1>「小数で解くな、整数で解け！」競プロにおける浮動小数点数・切り捨て罠の完全回避ガイド</h1>
+        <h1>C++・Pythonの整数除算と浮動小数点誤差：整数化の使い方</h1>
+      <p class="article-byline">著者: <a href="https://github.com/rikutoyamada01">rikuto yamada</a> · 更新日: <time datetime="2026-10-15">2026年10月15日</time></p>
         <div class="article-meta-info">
           <span>対象: <span class="badge-target">灰〜緑コーダー (Rating 0 ~ 1199)</span></span>
           <span>分野: 競プロテクニック / 数値計算</span>
@@ -173,18 +232,23 @@
         コンピュータの数値表現の仕組み上、小数を含む計算には<strong>「整数割り算によるゼロ切り捨て」</strong>や<strong>「浮動小数点数（double型）の丸め誤差」</strong>という危険な罠が潜んでいます。
       </p>
       <p>
-        この記事では、小数が引き起こすバグの仕組みをわかりやすく整理した上で、競プロで最も安全・強力な回避テクニックである<strong>「式全体を定数倍して整数化する（整数だけで解く）」</strong>手法を徹底解説します！
+        この記事では、小数が引き起こすバグの仕組みをわかりやすく整理した上で、丸め誤差を避けるための<strong>「式全体を定数倍して整数化する（整数だけで解く）」</strong>手法を徹底解説します！
       </p>
 
       <h2>1. 小数が引き起こすバグの 2 大原因</h2>
 
       <h3>① 整数同士の割り算による「切り捨て (Truncation)」</h3>
       <p>
-        C++ や Java、Python などの多くの言語では、<strong>整数型同士の除算 `/` は「小数点以下が切り捨てられた整数」</strong>になります。
+        C++ や Java では、<strong>整数型同士の除算 <code>/</code> は小数部分をゼロ方向に切り捨てます</strong>。Python 3 の <code>/</code> は異なり、整数同士でも浮動小数点数を返します。
       </p>
       <div class="code-snippet">// C++ での計算例
 int a = 6 / 1000;   // 0.006 ではなく「0」になる！
 int b = 9 / 10;     // 0.9 ではなく「0」になる！</div>
+      <div class="code-snippet"># Python 3 での計算例
+6 / 1000    # 0.006（浮動小数点除算）
+6 // 1000   # 0（床除算）
+-9 // 10    # -1（負の無限大方向。C++ の -9 / 10 は 0）</div>
+      <p>言語別の仕様は<a href="https://docs.python.org/3/reference/expressions.html#binary-arithmetic-operations">Python公式の算術演算仕様</a>と<a href="https://eel.is/c++draft/expr.mul">C++標準草案の除算仕様</a>で確認できます。</p>
 
       <div class="tip-box warning">
         <h4>🚨 実際の競プロでの被弾例: ABC113 B - Palace</h4>
@@ -196,7 +260,7 @@ int b = 9 / 10;     // 0.9 ではなく「0」になる！</div>
 double temp = T - H[i] * (6 / 1000); // (6 / 1000) が 0 に評価されてしまう！</div>
         <p>
           `(6 / 1000)` が `0` に計算されるため、`H[i]` が何であれ `temp = T - 0 = T` となります。<br>
-          結果として<strong>すべての地点で温度が全く同じ（T）に判定され、答えが一意に定まらず WA</strong> になります。
+          すべての地点の温度を同じ（T）と扱ってしまい、<strong>本来選ぶべき地点と異なる答えを出す原因</strong>になります。
         </p>
       </div>
 
@@ -212,13 +276,13 @@ if (x == 0.3) {
   // ここは実行されない（一致しない）！
 }</div>
       <p>
-        また、`floor` や `ceil` などの関数を使った後で `(int)` にキャストする際、内部で `4.99999999999` になっていた場合、キャストにより `4` に切り捨てられて予想外のバグになります。
+        例えば、本来5になる計算結果が丸め誤差で <code>4.99999999999</code> になると、<code>floor(x)</code> や整数へのキャストは4になります。<code>ceil</code> は切り上げなので、同じ値には5を返します。
       </p>
 
-      <h2>2. 最強の回避策: 「式全体を定数倍して整数化する」</h2>
+      <h2>2. 比較を正確にする方法: 「式全体を定数倍して整数化する」</h2>
 
       <p>
-        競プロにおける小数の罠を 100% 回避する最強の原則、それが<strong>「小数を使わず、式全体を定数倍して整数（long long）だけで計算する」</strong>ことです。
+        分数や有限小数を含む比較では、<strong>式全体を正の定数倍して整数だけで計算する</strong>と、浮動小数点の丸め誤差を避けられます。ただし、途中の積や差も含めて整数型の範囲に収まることを確認してください。
       </p>
 
       <div class="tip-box success">
@@ -251,13 +315,14 @@ if (x == 0.3) {
       </div>
 
       <p>
-        この値が最小となる地点 $i$ を探せば、<strong>`double` や小数を一切使わずに整数（`long long`）演算だけで 100% 誤差ゼロ・切り捨てゼロで AC できます</strong>！
+        この値が最小となる地点 $i$ を探せば、<strong>この比較を浮動小数点の丸め誤差なしに計算できます</strong>。問題の制約から、途中の積と差が <code>long long</code> の範囲に収まることも確認します。
       </p>
 
-      <div class="code-snippet">// 1000倍して整数化（完全ACコード例: C++）
+      <div class="code-snippet">// ABC113 B の制約で1000倍して整数化する例（C++）
 #include &lt;iostream&gt;
 #include &lt;vector&gt;
-#include &lt;cmath&gt;
+#include &lt;cstdlib&gt;
+#include &lt;limits&gt;
 using namespace std;
 
 int main() {
@@ -265,7 +330,7 @@ int main() {
   long long T, A;
   cin &gt;&gt; N &gt;&gt; T &gt;&gt; A;
 
-  long long min_diff = 1e18; // 非常に大きな初期値
+  long long min_diff = numeric_limits&lt;long long&gt;::max();
   int best_index = 1;
 
   for (int i = 1; i &lt;= N; i++) {
@@ -290,18 +355,18 @@ int main() {
         2 つの割合や平均値を比較したい時、`(double)A / B < (double)C / D` と計算するのは精度落ちの危険があります。
       </p>
       <p>
-        両辺に正の数 $B \times D$ を掛けて<strong>通分（クロス掛け算）</strong>しましょう:
+        $B$ と $D$ が正である場合、両辺に正の数 $B \times D$ を掛けて<strong>通分（クロス掛け算）</strong>できます:
       </p>
       <div class="formula-card">
         $A \times D < C \times B$
       </div>
       <p>
-        これにより、割り算を一度も使わずに整数のみで正確に比較できます。
+        これにより、積が整数型の範囲に収まれば正確に比較できます。分母が0の式は扱えません。負の分母は先に符号を分子へ移すか、掛ける数が負なら不等号が逆になることを考慮します。
       </p>
 
       <h3>【実践例 3】 平均値 $\sum A_i / N \ge X$ の判定</h3>
       <p>
-        平均値が $X$ 以上かを判定する場合も、両辺に $N$ を掛けます:
+        要素数 $N$ が正で、平均値が $X$ 以上かを判定する場合も、両辺に $N$ を掛けます:
       </p>
       <div class="formula-card">
         $\sum A_i \ge X \times N$
@@ -318,8 +383,8 @@ int main() {
 
       <ul class="checklist">
         <li><strong>定数は `.0` を付ける:</strong> `6 / 1000` ではなく `6.0 / 1000.0` と書き、小数演算であることを明示する</li>
-        <li><strong>桁数指定を出力する:</strong> C++ では `cout << fixed << setprecision(10) << ans;` で十分な精度（10桁以上）を出力する</li>
-        <li><strong>`EPS`（微小値）の考慮:</strong> `floor(x)` などの前に `floor(x + 1e-9)` と微小値を加えて丸め誤差を防ぐ</li>
+        <li><strong>出力精度を確認する:</strong> C++ の <code>setprecision</code> などで、問題が指定する絶対誤差・相対誤差に合った桁数を出力する</li>
+        <li><strong>誤差の扱いを決める:</strong> 固定の <code>1e-9</code> を足せば常に正しくなるわけではない。値の大きさや境界条件を確認し、整数化できる比較は整数で行う</li>
       </ul>
 
       <h2>4. まとめ & ポカミス防止チェックリスト</h2>
@@ -327,9 +392,9 @@ int main() {
       <div class="tip-box warning">
         <h4>📌 今日の要点まとめ</h4>
         <ol style="margin-left: 20px; padding-left: 0;">
-          <li><strong>整数同士の割り算 `/` は切捨て（ゼロ）になる</strong>ことに注意（例: `6 / 1000 = 0`）</li>
-          <li><strong>比較や最小化では「式全体を定数倍」して整数（long long）だけで解くのが最強</strong></li>
-          <li>分数の比較 $A / B < C / D$ は **通分して $A \times D < C \times B$** に変換する</li>
+          <li><strong>除算の仕様を言語別に確認する:</strong> C++の整数 <code>6 / 1000</code> は0、Python 3の同じ式は0.006</li>
+          <li><strong>比較や最小化では整数化を検討し、途中計算のオーバーフローも確認する</strong></li>
+          <li>分母が正の分数の比較 $A / B < C / D$ は、積の範囲を確認して $A \times D < C \times B$ に変換する</li>
         </ol>
       </div>
 
@@ -337,7 +402,15 @@ int main() {
 
   </main>
 
-  <div id="site-footer"></div>
+  <aside class="container related-links" aria-label="関連記事">
+    <h2>関連記事・ツール</h2>
+    <ul><li><a href="complexity.html">計算量・TLEシミュレーター｜計算回数と実行時間の目安 | AtCoder Workspace</a></li><li><a href="glossary.html">競プロ初心者向け アルゴリズム & 用語解説ガイド | AtCoder Workspace Articles</a></li><li><a href="../article.html">記事一覧</a></li><li><a href="../presentation.html#getting-started">AtCoder Workspaceの導入方法</a></li></ul>
+  </aside>
+
+  <footer>
+    <p>AtCoder Workspace · MIT License · AtCoderの非公式プロジェクト</p>
+    <p><a href="../presentation.html">製品紹介</a> | <a href="../article.html">記事一覧</a> | <a href="../privacy.html">プライバシー</a> | <a href="https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh?hl=ja">Chromeに追加</a> | <a href="https://github.com/rikutoyamada01/atcoder-workspace">GitHub</a></p>
+  </footer>
 
   <script src="../components.js?v=1.8.0"></script>
 </body>

@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>プライバシーポリシー | AtCoder Workspace Pages</title>
+  <meta property="og:image" content="https://rikutoyamada01.github.io/atcoder-workspace/assets/icon128.png">
+  <meta property="og:image:alt" content="AtCoder Workspaceのアイコン">
+  <link rel="icon" href="assets/icon128.png" type="image/png">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="プライバシーポリシー | AtCoder Workspace">
+  <meta property="og:url" content="https://rikutoyamada01.github.io/atcoder-workspace/privacy.html">
+  <link rel="canonical" href="https://rikutoyamada01.github.io/atcoder-workspace/privacy.html">
+  <meta name="description" content="AtCoder Workspaceの保存先、テスト・提出時のAtCoderとの通信、使用権限とプライバシー方針をご案内します。">
   <link rel="stylesheet" href="site.css?v=1.8.0">
   <style>
     .page-header {
@@ -105,7 +113,17 @@
   </style>
 </head>
 <body>
-  <div id="site-header"></div>
+  <nav class="navbar" aria-label="メインナビゲーション">
+    <a class="navbar-brand" href="presentation.html">AtCoder Workspace</a>
+    <div class="navbar-links">
+      <a class="nav-link" href="presentation.html">製品紹介</a>
+      <a class="nav-link" href="article.html">記事一覧</a>
+      <a class="nav-link" href="article/glossary.html">用語辞典</a>
+      <a class="nav-link" href="article/complexity.html">計算量ツール</a>
+      <a class="nav-link" href="roadmap.html">ロードマップ</a>
+      <a class="nav-link install-link" href="https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh?hl=ja">Chromeに追加</a>
+    </div>
+  </nav>
 
   <div class="container">
     <div class="page-header">
@@ -122,14 +140,14 @@
       <section id="ja-policy" class="policy-section ja">
         <h2>プライバシーポリシー (日本語)</h2>
         <p class="highlight-box">
-          本拡張機能「AtCoder Workspace」は、利用者の個人情報を収集、送信、蓄積することは一切ありません。完全なローカル設計で動作します。
+          本拡張機能はコードや設定をブラウザ内に保存します。テスト・提出時には、利用者の操作に応じてコードと必要な入力をAtCoderへ直接送信します。開発者が運営する独自の中継サーバーやアクセス解析サービスへ送信することはありません。
         </p>
 
         <h3>1. 情報の収集と利用目的</h3>
-        <p>本拡張機能は、ユーザーのソースコードや設定、AtCoderのログイン情報などの個人データを外部のサーバーに送信または収集することはありません。</p>
+        <p>保存と実行ではデータの扱いが異なります。AtCoderとの通信には利用者のブラウザのログイン済みセッションを使用します。開発者側でログイン情報を収集する仕組みはありません。</p>
         <ul>
-          <li><strong>ソースコードと設定データ:</strong> 記述されたプログラムコードやエディタのレイアウト（分割比率など）は、ブラウザのローカル領域 (<code>chrome.storage.local</code>) のみに保存され、第三者に共有されることはありません。</li>
-          <li><strong>コードの実行と提出:</strong> サンプルケースのローカルテストおよびコードの提出処理は、利用者のアクティブなブラウザセッションを通じてAtCoder公式ウェブサイト (`https://atcoder.jp`) と直接通信され、バックグラウンドで安全に実行されます。</li>
+          <li><strong>ソースコードと設定データ:</strong> 記述中のコードや設定、学習メモなどは <code>chrome.storage.local</code> に保存します。コードの復元用バックアップにはブラウザの <code>localStorage</code> も利用します。端末間の自動同期は行いません。</li>
+          <li><strong>コードの実行と提出:</strong> テスト時はソースコードと入力を、提出時はソースコードと言語などの提出情報を <a href="https://atcoder.jp/">AtCoder</a> へ直接送信します。実行・判定はAtCoderが行い、提出したコードの公開範囲などはAtCoderの設定・ルールに従います。</li>
         </ul>
 
         <h3>2. 使用する権限とその必要性</h3>
@@ -142,7 +160,7 @@
         </ul>
 
         <h3>3. 外部モジュール・アナリティクス</h3>
-        <p>本拡張機能には、Google Analyticsなどのアクセス解析やトラッキングツール、外部広告モジュールは一切含まれていません。完全ローカルのオープンソースツールです。</p>
+        <p>本拡張機能には、Google Analyticsなどのアクセス解析やトラッキングツール、外部広告モジュールは一切含まれていません。保存をブラウザ内で行うオープンソースツールです。</p>
 
         <h3>4. お問い合わせ</h3>
         <p>プライバシーに関するご質問やご報告がございましたら、GitHubのIssueリクエストよりお気軽にご連絡ください。</p>
@@ -153,14 +171,14 @@
       <section id="en-policy" class="policy-section en">
         <h2>Privacy Policy (English)</h2>
         <p class="highlight-box">
-          "AtCoder Workspace" does NOT collect, store, or transmit any user personal data. It operates fully locally within your browser.
+          AtCoder Workspace stores code and settings in your browser. When you run tests or submit a solution, it sends code and the required input or submission details directly to AtCoder. It does not send them to a developer-operated relay server or analytics service.
         </p>
 
         <h3>1. Information Collection and Use</h3>
-        <p>This extension does not transmit or gather your source code, configuration details, or AtCoder login credentials to any external servers.</p>
+        <p>Storage and execution have different data flows. Requests to AtCoder use your existing browser session. The developer does not operate a service that collects your login credentials.</p>
         <ul>
-          <li><strong>Source Code & Layout Data:</strong> Any written code and editor layouts (such as split ratio) are stored strictly inside your browser's local storage (<code>chrome.storage.local</code>) and are never shared.</li>
-          <li><strong>Code Run & Submission:</strong> The running of local tests and submissions are processed directly through your browser's active session to the official AtCoder website (`https://atcoder.jp`) in a secure background context.</li>
+          <li><strong>Source Code & Layout Data:</strong> Code drafts, settings, and learning notes are stored in <code>chrome.storage.local</code>. Recovery backups also use browser <code>localStorage</code>. Data is not automatically synchronized between devices.</li>
+          <li><strong>Code Run & Submission:</strong> Tests send your source code and input directly to <a href="https://atcoder.jp/">AtCoder</a>; submissions send source code and submission details such as the selected language. AtCoder executes and judges the code. Visibility of submitted code follows AtCoder settings and rules.</li>
         </ul>
 
         <h3>2. Permissions Required & Justifications</h3>
@@ -181,7 +199,10 @@
     </div>
   </div>
 
-  <div id="site-footer"></div>
+  <footer>
+    <p>AtCoder Workspace · MIT License · AtCoderの非公式プロジェクト</p>
+    <p><a href="presentation.html">製品紹介</a> | <a href="article.html">記事一覧</a> | <a href="privacy.html">プライバシー</a> | <a href="https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh?hl=ja">Chromeに追加</a> | <a href="https://github.com/rikutoyamada01/atcoder-workspace">GitHub</a></p>
+  </footer>
 
   <script src="components.js?v=1.8.0"></script>
 </body>

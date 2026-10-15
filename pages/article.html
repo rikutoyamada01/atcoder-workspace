@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>記事一覧 | AtCoder Workspace Knowledge Hub</title>
+  <meta property="og:image" content="https://rikutoyamada01.github.io/atcoder-workspace/assets/icon128.png">
+  <meta property="og:image:alt" content="AtCoder Workspaceのアイコン">
+  <link rel="icon" href="assets/icon128.png" type="image/png">
+  <link rel="canonical" href="https://rikutoyamada01.github.io/atcoder-workspace/article.html">
   <meta name="description" content="競プロ（AtCoder）初心者向けのアルゴリズム解説、計算量シミュレーター、TLE・WAのバグ解決法などをまとめた技術記事・ノウハウポータル。">
   <meta name="keywords" content="AtCoder,競プロ,記事,二分探索,DP,計算量,TLE,アルゴリズム入門,初心者">
 
@@ -136,7 +140,17 @@
 </head>
 <body>
 
-  <div id="site-header"></div>
+  <nav class="navbar" aria-label="メインナビゲーション">
+    <a class="navbar-brand" href="presentation.html">AtCoder Workspace</a>
+    <div class="navbar-links">
+      <a class="nav-link" href="presentation.html">製品紹介</a>
+      <a class="nav-link active" aria-current="page" href="article.html">記事一覧</a>
+      <a class="nav-link" href="article/glossary.html">用語辞典</a>
+      <a class="nav-link" href="article/complexity.html">計算量ツール</a>
+      <a class="nav-link" href="roadmap.html">ロードマップ</a>
+      <a class="nav-link install-link" href="https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh?hl=ja">Chromeに追加</a>
+    </div>
+  </nav>
 
   <header class="blog-hero">
     <h1>📚 AtCoder Workspace 競プロ解説 & 記事一覧</h1>
@@ -152,8 +166,8 @@
         <div class="card-banner cause" style="background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);">🔢</div>
         <div class="card-content">
           <span class="card-category" style="color: #1d4ed8;">競プロテクニック・数値計算</span>
-          <h2 class="card-title-text">「小数で解くな、整数で解け！」競プロにおける浮動小数点数・切り捨て罠の完全回避ガイド</h2>
-          <p class="card-excerpt">なぜ 6 / 1000 は 0 になるのか？double 型の精度落ちや切り捨ての罠を回避し、式全体を定数倍して整数型（long long）だけで 100% 安全に解く実践テクニックを徹底解説。</p>
+          <h2 class="card-title-text">C++・Pythonの整数除算と浮動小数点誤差：整数化の使い方</h2>
+          <p class="card-excerpt">C++とPython 3の除算の違い、丸め誤差を避ける整数化を解説。分母の符号やオーバーフローなど、適用する条件も確認します。</p>
           <div class="card-meta">
             <span>精度誤差・切り捨て回避ガイド</span>
             <span class="read-more">記事を読む →</span>
@@ -195,7 +209,7 @@
         <div class="card-content">
           <span class="card-category">実践ツール & ガイド</span>
           <h2 class="card-title-text">計算量・TLEシミュレーター & 10^8 の壁突破ガイド</h2>
-          <p class="card-excerpt">N の数値とアルゴリズム（O(N log N) や O(N^2) 等）を選ぶだけで実行時間と TLE 危険度を自動判定するインタラクティブツール。</p>
+          <p class="card-excerpt">Nと計算量から処理回数を概算するツール。速度の仮定と実測の違い、問題ごとの時間制限の確認方法を解説します。</p>
           <div class="card-meta">
             <span>計算量シミュレーター</span>
             <span class="read-more">ツールを使う →</span>
@@ -209,7 +223,7 @@
         <div class="card-content">
           <span class="card-category">製品紹介</span>
           <h2 class="card-title-text">環境構築不要！ブラウザを競プロIDEに変える拡張機能</h2>
-          <p class="card-excerpt">問題文の隣にエディタを配置し、サンプルテスト自動生成・ワンクリック実行・即提出で競プロの摩擦をゼロにする Chrome 拡張機能のご紹介。</p>
+          <p class="card-excerpt">問題文の隣にエディタを配置し、サンプル入出力の自動抽出・ワンクリック実行・即提出で競プロの摩擦をゼロにする Chrome 拡張機能のご紹介。</p>
           <div class="card-meta">
             <span>プロダクトビジョン</span>
             <span class="read-more">記事を読む →</span>
@@ -235,7 +249,10 @@
 
   </main>
 
-  <div id="site-footer"></div>
+  <footer>
+    <p>AtCoder Workspace · MIT License · AtCoderの非公式プロジェクト</p>
+    <p><a href="presentation.html">製品紹介</a> | <a href="article.html">記事一覧</a> | <a href="privacy.html">プライバシー</a> | <a href="https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh?hl=ja">Chromeに追加</a> | <a href="https://github.com/rikutoyamada01/atcoder-workspace">GitHub</a></p>
+  </footer>
 
   <script src="components.js?v=1.8.0"></script>
 </body>

@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>灰レーティング脱出！茶色になるまでに絶対押さえるべき解法 & 実践Tips | AtCoder Workspace Articles</title>
+  <meta property="og:image" content="https://rikutoyamada01.github.io/atcoder-workspace/assets/icon128.png">
+  <meta property="og:image:alt" content="AtCoder Workspaceのアイコン">
+  <link rel="icon" href="../assets/icon128.png" type="image/png">
+  <link rel="canonical" href="https://rikutoyamada01.github.io/atcoder-workspace/article/gray-to-brown-tips.html">
   <meta name="description" content="AtCoder灰レーティングから脱出して茶色を目指す初心者向けの実践ガイド。A・B問題の早解きからC問題突破に必要な4大解法パターン、TLE・オーバーフローの回避コツを徹底解説。">
   <meta name="keywords" content="AtCoder,灰レーティング,灰脱出,茶色,初心者,競プロ,ABC,二分探索,全探索,累積和">
 
@@ -137,10 +141,64 @@
       font-size: 16px;
     }
   </style>
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "灰レーティング脱出！茶色になるまでに絶対に押さえるべき解法 & 実践Tips",
+      "description": "AtCoder灰レーティングから脱出して茶色を目指す初心者向けの実践ガイド。A・B問題の早解きからC問題突破に必要な4大解法パターン、TLE・オーバーフローの回避コツを徹底解説。",
+      "inLanguage": "ja",
+      "dateModified": "2026-10-15",
+      "author": {
+        "@type": "Person",
+        "name": "rikuto yamada",
+        "url": "https://github.com/rikutoyamada01"
+      },
+      "mainEntityOfPage": "https://rikutoyamada01.github.io/atcoder-workspace/article/gray-to-brown-tips.html",
+      "image": "https://rikutoyamada01.github.io/atcoder-workspace/assets/icon128.png"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "AtCoder Workspace",
+          "item": "https://rikutoyamada01.github.io/atcoder-workspace/presentation.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "記事一覧",
+          "item": "https://rikutoyamada01.github.io/atcoder-workspace/article.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "灰レーティング脱出！茶色になるまでに絶対に押さえるべき解法 & 実践Tips",
+          "item": "https://rikutoyamada01.github.io/atcoder-workspace/article/gray-to-brown-tips.html"
+        }
+      ]
+    }
+  ]
+}
+  </script>
 </head>
-<body>
+<body data-math>
 
-  <div id="site-header"></div>
+  <nav class="navbar" aria-label="メインナビゲーション">
+    <a class="navbar-brand" href="../presentation.html">AtCoder Workspace</a>
+    <div class="navbar-links">
+      <a class="nav-link" href="../presentation.html">製品紹介</a>
+      <a class="nav-link" href="../article.html">記事一覧</a>
+      <a class="nav-link" href="../article/glossary.html">用語辞典</a>
+      <a class="nav-link" href="../article/complexity.html">計算量ツール</a>
+      <a class="nav-link" href="../roadmap.html">ロードマップ</a>
+      <a class="nav-link install-link" href="https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh?hl=ja">Chromeに追加</a>
+    </div>
+  </nav>
 
   <main class="container">
 
@@ -148,6 +206,7 @@
 
       <header class="article-hero">
         <h1>灰レーティング脱出！茶色になるまでに絶対に押さえるべき解法 & 実践Tips</h1>
+      <p class="article-byline">著者: <a href="https://github.com/rikutoyamada01">rikuto yamada</a> · 更新日: <time datetime="2026-10-15">2026年10月15日</time></p>
         <div class="article-meta-info">
           <span>対象: <span class="badge-gray">灰コーダー (Rating 0 ~ 399)</span> → <span class="badge-brown">目標: 茶コーダー (Rating 400+)</span></span>
           <span>読了時間: 約 5 分</span>
@@ -156,18 +215,18 @@
 
       <p>
         「AtCoder を始めたけど、なかなか灰色を脱出できない」「C問題になると急に解けなくなる……」とお悩みではありませんか？<br>
-        安心してください。茶色レーティングになるために、難解な高等アルゴリズム（セグメント木や複雑なグラフ理論）を覚える必要は<strong>一切ありません</strong>。
+        まずは全探索やソートなどの基本的な解法から練習できます。必要な知識は問題によって異なるため、このガイドを出発点にして解ける問題を増やしていきましょう。
       </p>
       <p>
-        灰脱出に必要なのは、基本となる<strong>「4つの必須パターン」</strong>を習得し、<strong>「ペナルティ（WA・TLE）を出さない丁寧さ」</strong>を身につけることです。この記事では、灰コーダーが茶色になるための最も効率的な実践Tipsをまとめました！
+        ここでは基本となる<strong>「4つのパターン」</strong>を練習し、<strong>「ペナルティ（WA・TLE）を出さない丁寧さ」</strong>を身につけることです。この記事では、灰コーダーが茶色になるための最も効率的な実践Tipsをまとめました！
       </p>
 
-      <h2>1. 灰脱出に必要な「3大必須解法パターン」</h2>
-      <p>ABC（AtCoder Beginner Contest）の A・B・C 問題で頻出する3つのパターンです。難解なアルゴリズムを覚える前に、まずこの3つを完璧にしましょう。</p>
+      <h2>1. 灰脱出に向けて練習したい「4つの基本パターン」</h2>
+      <p>ABC（AtCoder Beginner Contest）の A・B・C 問題で取り組む際に役立つ4つのパターンです。出題内容や必要な知識は回によって変わるため、まず基本の練習に使ってください。</p>
 
       <h3>① 全探索（全ペア比較・二重ループ）</h3>
       <p>
-        考えられる全ての可能性を試す最も確実な解法です。制約 $N \le 2000$ 程度であれば、二重ループ $O(N^2)$ の全探索で正解（AC）になります。
+        考えられる全ての可能性を試す最も確実な解法です。制約 $N \le 2000$ 程度なら、二重ループ $O(N^2)$ の全探索を検討できます。正しさ・1回あたりの処理・時間制限を確認してください。
       </p>
       <div class="code-snippet">// 全ペア (i, j) の組み合わせを調べる全探索例 (C++)
 for (int i = 0; i &lt; N; i++) {
@@ -178,7 +237,7 @@ for (int i = 0; i &lt; N; i++) {
 
       <h3>② ソート ＋ 二分探索 (`std::lower_bound`)</h3>
       <p>
-        $N = 10^5$ を超えると二重ループは TLE（タイムアウト）します。配列を <code>std::sort</code> で昇順に並び替え、<code>std::lower_bound</code>（二分探索）を使うことで、$O(N \log N)$ に高速化できます。
+        $N = 10^5$ 程度で全組を走査する二重ループは、処理回数が約10¹⁰回になり実行時間が厳しくなります。配列を <code>std::sort</code> で昇順に並び替え、<code>std::lower_bound</code>（二分探索）を使うことで、$O(N \log N)$ に高速化できます。
       </p>
       <div class="code-snippet">// ソート後に二分探索で条件を満たす要素を探す (C++)
 sort(a.begin(), a.end());
@@ -198,37 +257,37 @@ long long sum = S[R + 1] - S[L];</div>
         「コマが上下左右に動く」「指示通りに操作を $K$ 回繰り返す」といった問題です。問題文の指示をそのまま素直にコード（二次元配列など）へ落とし込む力（実装力）が試されます。
       </p>
 
-      <h2>2. TLE（タイムアウト）を出さない「10⁸ルール」Tips</h2>
+      <h2>2. TLEを避けるために計算回数を見積もる</h2>
       <p>
         灰コーダーが一番ハマりやすいのが「答えは合っているのに TLE（時間制限超過）になる」という罠です。
       </p>
       
       <div class="tip-box">
-        <h4>⚡ 鉄則: 1秒間に計算できるのは約 1億回 (10⁸ 回) まで！</h4>
+        <h4>⚡ 10⁸回という値を速度保証にしない</h4>
         <p>
-          AtCoder の制限時間（通常2秒）では、計算回数が <strong>2 × 10⁸ 回 (2億回)</strong> を超えると TLE になります。<br>
-          - $N = 10^5$ のときに $O(N^2)$ の二重ループを書く $\rightarrow$ $10^{10}$ 回になり**確定で TLE**！<br>
+          時間制限は問題ごとに異なります。計算回数から時間を考える際は、言語・処理内容・定数倍・入出力のコストも確認してください。<br>
+          - $N = 10^5$ のときに $O(N^2)$ の二重ループを書く $\rightarrow$ $10^{10}$ 回になり実行時間が厳しくなる可能性が高い！<br>
           - 二分探索やソートを用いて $O(N \log N)$ に落とす必要があります。
         </p>
       </div>
 
       <h2>3. 提出前に必ず確認！「ポカミス防止」チェックリスト</h2>
       <p>
-        1回の誤答（WA や RE）は **5分のペナルティ** になり、レーティングに大きく響きます。提出ボタンを押す前に以下をチェックしましょう。
+        誤答へのペナルティや対象となる判定はコンテストのルールによって異なります。提出ボタンを押す前に以下をチェックしましょう。
       </p>
 
       <ul class="checklist">
         <li><strong>オーバーフローのチェック:</strong> 大きな数値の掛け算（$10^5 \times 10^5 = 10^{10}$）を <code>int</code> 型で受けていないか？（<code>long long</code> を使う）</li>
         <li><strong>$N = 1$ のコーナーケース:</strong> 要素が1個だけのとき、配列外参照やループ不成立が起きないか？</li>
         <li><strong>初期化忘れ:</strong> ループやテストケースの先頭で、合計値変数 <code>sum = 0;</code> をリセットしているか？</li>
-        <li><strong>Python の提出言語:</strong> Python の場合、<code>CPython</code> ではなく <strong><code>PyPy3</code></strong> で提出しているか？（速度が数倍〜数十倍速くなります）</li>
+        <li><strong>Pythonの実行環境:</strong> CPythonとPyPyで速度やメモリ使用量が変わります。PyPyが常に速いわけではないため、処理内容と利用可能な環境を確認し、必要に応じて実測します。</li>
       </ul>
 
       <h2>4. コンテスト本番の立ち回り Tips</h2>
       <div class="tip-box warning">
         <h4>💡 A・B 問題の早解きでアドバンテージを取る</h4>
         <p>
-          ABC コンテストでは、A・B 問題をノーミスで速く解くだけでもパフォーマンスが大幅に上がります。<br>
+          ABC コンテストでは、A・B問題を安定して解けるようにすると、次の問題を考える時間を確保しやすくなります。<br>
           C問題で詰まった時は、焦らず手元のノートに <strong>$N = 3$ や $N = 4$ の具体的な小さな例を手書きで書いて観察する</strong> のが解法のヒントを見つける一番の近道です！
         </p>
       </div>
@@ -237,7 +296,15 @@ long long sum = S[R + 1] - S[L];</div>
 
   </main>
 
-  <div id="site-footer"></div>
+  <aside class="container related-links" aria-label="関連記事">
+    <h2>関連記事・ツール</h2>
+    <ul><li><a href="complexity.html">計算量・TLEシミュレーター｜計算回数と実行時間の目安 | AtCoder Workspace</a></li><li><a href="glossary.html">競プロ初心者向け アルゴリズム & 用語解説ガイド | AtCoder Workspace Articles</a></li><li><a href="../article.html">記事一覧</a></li><li><a href="../presentation.html#getting-started">AtCoder Workspaceの導入方法</a></li></ul>
+  </aside>
+
+  <footer>
+    <p>AtCoder Workspace · MIT License · AtCoderの非公式プロジェクト</p>
+    <p><a href="../presentation.html">製品紹介</a> | <a href="../article.html">記事一覧</a> | <a href="../privacy.html">プライバシー</a> | <a href="https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh?hl=ja">Chromeに追加</a> | <a href="https://github.com/rikutoyamada01/atcoder-workspace">GitHub</a></p>
+  </footer>
 
   <script src="../components.js?v=1.8.0"></script>
 </body>

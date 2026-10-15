@@ -3,14 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>計算量・TLEシミュレーター | AtCoder Workspace Articles</title>
-  <meta name="description" content="AtCoderでTLE（実行時間制限超過）にならないための計算量判定ツール。Nの数値を入力するだけで、O(N log N) や O(N^2) の実行時間をリアルタイムシミュレーション。">
+  <title>計算量・TLEシミュレーター｜計算回数と実行時間の目安 | AtCoder Workspace</title>
+  <meta property="og:image" content="https://rikutoyamada01.github.io/atcoder-workspace/assets/icon128.png">
+  <meta property="og:image:alt" content="AtCoder Workspaceのアイコン">
+  <link rel="icon" href="../assets/icon128.png" type="image/png">
+  <link rel="canonical" href="https://rikutoyamada01.github.io/atcoder-workspace/article/complexity.html">
+  <meta name="description" content="入力サイズNと計算量から処理回数を概算するツール。速度の仮定、言語や処理による違い、時間制限の確認方法を解説します。ACやTLEの判定を行うものではありません。">
   <meta name="keywords" content="AtCoder,計算量,TLE,オーダー,O(N log N),O(N^2),実行時間制限,シミュレーター,競プロ">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:title" content="計算量・TLEシミュレーター | AtCoder Workspace">
-  <meta property="og:description" content="N の値を入力するだけで実行時間と TLE 危険度を自動判定するインタラクティブツール。">
+  <meta property="og:title" content="計算量・TLEシミュレーター｜計算回数と実行時間の目安 | AtCoder Workspace">
+  <meta property="og:description" content="入力サイズNと計算量から処理回数を概算するツール。速度の仮定、言語や処理による違い、時間制限の確認方法を解説します。ACやTLEの判定を行うものではありません。">
   <meta property="og:url" content="https://rikutoyamada01.github.io/atcoder-workspace/article/complexity.html">
 
   <link rel="stylesheet" href="../site.css?v=1.8.0">
@@ -97,13 +101,13 @@
       border: 1px solid #b6d4f5;
     }
 
-    .result-box.tle {
+    .result-box.over {
       background-color: #f2dede;
       border-color: #ebccd1;
       color: #a94442;
     }
 
-    .result-box.ac {
+    .result-box.within {
       background-color: #dff0d8;
       border-color: #d6e9c6;
       color: #3c763d;
@@ -142,24 +146,81 @@
       margin-bottom: 16px;
     }
   </style>
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "🧮 計算量・TLEシミュレーター 計算回数と時間の目安を比べる",
+      "description": "入力サイズNと計算量から処理回数を概算するツール。速度の仮定、言語や処理による違い、時間制限の確認方法を解説します。ACやTLEの判定を行うものではありません。",
+      "inLanguage": "ja",
+      "dateModified": "2026-10-15",
+      "author": {
+        "@type": "Person",
+        "name": "rikuto yamada",
+        "url": "https://github.com/rikutoyamada01"
+      },
+      "mainEntityOfPage": "https://rikutoyamada01.github.io/atcoder-workspace/article/complexity.html",
+      "image": "https://rikutoyamada01.github.io/atcoder-workspace/assets/icon128.png"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "AtCoder Workspace",
+          "item": "https://rikutoyamada01.github.io/atcoder-workspace/presentation.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "記事一覧",
+          "item": "https://rikutoyamada01.github.io/atcoder-workspace/article.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "🧮 計算量・TLEシミュレーター 計算回数と時間の目安を比べる",
+          "item": "https://rikutoyamada01.github.io/atcoder-workspace/article/complexity.html"
+        }
+      ]
+    }
+  ]
+}
+  </script>
 </head>
 <body>
 
-  <div id="site-header"></div>
+  <nav class="navbar" aria-label="メインナビゲーション">
+    <a class="navbar-brand" href="../presentation.html">AtCoder Workspace</a>
+    <div class="navbar-links">
+      <a class="nav-link" href="../presentation.html">製品紹介</a>
+      <a class="nav-link" href="../article.html">記事一覧</a>
+      <a class="nav-link" href="../article/glossary.html">用語辞典</a>
+      <a class="nav-link active" aria-current="page" href="../article/complexity.html">計算量ツール</a>
+      <a class="nav-link" href="../roadmap.html">ロードマップ</a>
+      <a class="nav-link install-link" href="https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh?hl=ja">Chromeに追加</a>
+    </div>
+  </nav>
 
   <div class="container">
 
     <div class="page-header">
-      <h1>🧮 計算量・TLEシミュレーター <small>AtCoder 2秒ルールの壁を突破しよう</small></h1>
+      <h1>🧮 計算量・TLEシミュレーター <small>計算回数と時間の目安を比べる</small></h1>
+      <p class="article-byline">著者: <a href="https://github.com/rikutoyamada01">rikuto yamada</a> · 更新日: <time datetime="2026-10-15">2026年10月15日</time></p>
     </div>
 
     <!-- Simulator Tool Card -->
     <section class="tool-card">
-      <h2 class="tool-header">⚡ 計算量・実行時間 判定シミュレーター</h2>
+      <h2 class="tool-header">⚡ 計算量・実行時間の概算</h2>
+
+      <p>1秒あたり10⁸回の処理、制限時間2秒と仮定した比較ツールです。実行・正誤判定は行いません。実際の速度は言語・処理・入出力・実行環境に依存し、時間制限は問題ごとに異なります。</p>
 
       <div class="form-group">
         <label class="form-label" for="inputN">1. 入力サイズ N の数値を入力:</label>
-        <input type="number" id="inputN" class="form-input" value="200000" placeholder="例: 200000">
+        <input type="number" id="inputN" class="form-input" value="200000" min="1" step="1" placeholder="例: 200000" aria-describedby="resultStatus">
       </div>
 
       <div class="form-group">
@@ -175,11 +236,11 @@
         </div>
       </div>
 
-      <div class="result-box ac" id="resultBox">
-        <div class="result-status" id="resultStatus">判定結果: AC (安全)</div>
+      <div class="result-box within" id="resultBox" aria-live="polite">
+        <div class="result-status" id="resultStatus">概算: この仮定では2秒以内（実測が必要）</div>
         <div class="result-detail" id="resultDetail">
           計算回数目安: 約 3,500,000 回<br>
-          予想実行時間: 約 0.035 秒 (AtCoder 2秒制限に対して超高速です)
+          仮定に基づく時間: 約 0.035 秒（実際の実行時間ではありません）
         </div>
       </div>
     </section>
@@ -188,15 +249,15 @@
     <article class="guide-article">
       <h2>💡 初心者が知っておくべき「計算量と10⁸の壁」ルール</h2>
 
-      <p>AtCoder などの競技プログラミングでは、プログラムを提出した際に<strong>実行時間制限（通常 2.0 秒）</strong>が設けられています。いくら正しい答えを計算するコードを書いても、2秒を超えてしまうと <strong>TLE (Time Limit Exceeded)</strong> となり不合格になります。</p>
+      <p>AtCoderの各問題には<strong>実行時間制限</strong>が設けられています。問題文に記載された制限を超えると <strong>TLE (Time Limit Exceeded)</strong> になります。2秒はこのツールの比較用の仮定であり、全問題共通のルールではありません。</p>
 
-      <h2>1. 1秒間に実行できる計算回数は「約1億回 (10⁸回)」</h2>
-      <p>現代のコンピュータやAtCoderのサーバーは、1秒間におおむね <strong>10⁸ 回 (1億回)</strong> の基本命令を実行できます。つまり、2秒制限の問題では <strong>2 × 10⁸ 回 (2億回)</strong> のステップ数が上限の目安となります。</p>
+      <h2>1. 10⁸回という値は速度保証ではなく比較用の仮定</h2>
+      <p>このツールは1秒あたり <strong>10⁸回</strong> と置いて計算回数を秒に換算しています。ビッグOには定数倍や処理の違いが含まれないため、この値をAtCoderサーバーの実測性能や合否の境界とは扱えません。実際のコードを問題の実行環境で測定してください。</p>
 
       <h2>2. 制約 N の大きさで選択すべきアルゴリズムが決まる</h2>
       <ul>
-        <li><strong>N ≤ 10⁵ ~ 2×10⁵:</strong> <i>O</i>(<i>N</i>) や <i>O</i>(<i>N</i> log <i>N</i>) の解法（二分探索、ソート、累積和、尺取り法）が必要。<i>O</i>(<i>N</i>²) の二重ループは確定で TLE します。</li>
-        <li><strong>N ≤ 2000:</strong> <i>O</i>(<i>N</i>²) の二重ループ（全対比較、ワーシャルフロード法等）でも間に合います (4 × 10⁶ 回)。</li>
+        <li><strong>N ≤ 10⁵ ~ 2×10⁵:</strong> <i>O</i>(<i>N</i>) や <i>O</i>(<i>N</i> log <i>N</i>) の解法（二分探索、ソート、累積和、尺取り法）が必要。<i>O</i>(<i>N</i>²) の二重ループは処理回数が大きく、実用上厳しくなります。</li>
+        <li><strong>N ≤ 2000:</strong> <i>O</i>(<i>N</i>²) の全対比較などは約4 × 10⁶回です。言語・処理・時間制限を確認します。ワーシャルフロイド法は <i>O</i>(<i>N</i>³) です。</li>
         <li><strong>N ≤ 15 ~ 20:</strong> <i>O</i>(2ᴺ) のビット全探索や再帰が使えます。</li>
       </ul>
 
@@ -208,7 +269,7 @@
           <thead>
             <tr style="background-color: #f5f5f5; border-bottom: 2px solid #dddddd;">
               <th style="padding: 10px; border: 1px solid #dddddd; text-align: left; width: 15%;">オーダー</th>
-              <th style="padding: 10px; border: 1px solid #dddddd; text-align: left; width: 18%;">許容 N の上限</th>
+              <th style="padding: 10px; border: 1px solid #dddddd; text-align: left; width: 18%;">検討する N の目安（保証なし）</th>
               <th style="padding: 10px; border: 1px solid #dddddd; text-align: left; width: 33%;">代表的な標準関数 & 処理</th>
               <th style="padding: 10px; border: 1px solid #dddddd; text-align: left; width: 34%;">代表的なアルゴリズム & 解法</th>
             </tr>
@@ -216,8 +277,8 @@
           <tbody>
             <tr>
               <td style="padding: 10px; border: 1px solid #dddddd; font-weight: bold; color: #3c763d; font-family: var(--font-mono);">O(1)</td>
-              <td style="padding: 10px; border: 1px solid #dddddd;">制限なし</td>
-              <td style="padding: 10px; border: 1px solid #dddddd;">四則演算 (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>)<br>配列アクセス (<code>a[i]</code>)<br><code>vector::push_back()</code><br><code>swap()</code>, <code>min()</code>, <code>max()</code>, <code>abs()</code></td>
+              <td style="padding: 10px; border: 1px solid #dddddd;">計算回数はNに依存しない</td>
+              <td style="padding: 10px; border: 1px solid #dddddd;">固定長整数の四則演算・配列アクセス<br><code>string::length()</code>, <code>vector::front()</code><br><code>vector::push_back()</code> は償却O(1)</td>
               <td style="padding: 10px; border: 1px solid #dddddd;">O(1) 数式解法, 定数時間判定</td>
             </tr>
             <tr style="background-color: #fafafa;">
@@ -229,33 +290,34 @@
             <tr>
               <td style="padding: 10px; border: 1px solid #dddddd; font-weight: bold; color: #31708f; font-family: var(--font-mono);">O(N)</td>
               <td style="padding: 10px; border: 1px solid #dddddd;"><i>N</i> ≤ 10<sup>7</sup> ～ 10<sup>8</sup></td>
-              <td style="padding: 10px; border: 1px solid #dddddd;">単一ループ (<code>for</code> 1回)<br><code>std::find()</code>, <code>count()</code>, <code>accumulate()</code><br><code>string::length()</code>, <code>vector::front()</code></td>
+              <td style="padding: 10px; border: 1px solid #dddddd;">単一ループ (<code>for</code> 1回)<br><code>std::find()</code>, <code>count()</code>, <code>accumulate()</code></td>
               <td style="padding: 10px; border: 1px solid #dddddd;">尺取り法, 累積和 (Prefix Sum)<br>いもす法, 木・グラフの全走査 (BFS/DFS)</td>
             </tr>
             <tr style="background-color: #fafafa;">
               <td style="padding: 10px; border: 1px solid #dddddd; font-weight: bold; color: #8a6d3b; font-family: var(--font-mono);">O(N log N)</td>
               <td style="padding: 10px; border: 1px solid #dddddd;"><i>N</i> ≤ 5 × 10<sup>5</sup></td>
-              <td style="padding: 10px; border: 1px solid #dddddd;"><code>std::sort()</code>, <code>stable_sort()</code><br><code>priority_queue</code> の <i>N</i> 回操作<br><code>map</code> の全走査</td>
-              <td style="padding: 10px; border: 1px solid #dddddd;">ソート, ダイクストラ法 (最短経路)<br>クラスカル法, Segment Tree (セグ木)</td>
+              <td style="padding: 10px; border: 1px solid #dddddd;"><code>std::sort()</code><br><code>stable_sort()</code>（補助メモリがある場合）<br><code>priority_queue</code> の <i>N</i> 回操作</td>
+              <td style="padding: 10px; border: 1px solid #dddddd;">比較ソート、セグメント木でN回の更新・照会<br>ダイクストラ法は辺数E・頂点数Vにも依存</td>
             </tr>
             <tr>
               <td style="padding: 10px; border: 1px solid #dddddd; font-weight: bold; color: #a94442; font-family: var(--font-mono);">O(N²)</td>
               <td style="padding: 10px; border: 1px solid #dddddd;"><i>N</i> ≤ 3000</td>
-              <td style="padding: 10px; border: 1px solid #dddddd;">二重ループ (<code>for</code> のネスト)<br><code>string</code> の全対比較<br>二次元配列の全面アクセス</td>
+              <td style="padding: 10px; border: 1px solid #dddddd;">O(1)の処理を行う二重ループ<br>N × N配列の全要素走査<br>文字列比較は文字数のコストも考慮</td>
               <td style="padding: 10px; border: 1px solid #dddddd;">二次元DP, 全対比較<br>隣接行列を用いたグラフ探索</td>
             </tr>
             <tr style="background-color: #fafafa;">
               <td style="padding: 10px; border: 1px solid #dddddd; font-weight: bold; color: #a94442; font-family: var(--font-mono);">O(N³)</td>
               <td style="padding: 10px; border: 1px solid #dddddd;"><i>N</i> ≤ 400</td>
               <td style="padding: 10px; border: 1px solid #dddddd;">三重ループ (<code>for</code> の 3重ネスト)<br>行列の掛け算</td>
-              <td style="padding: 10px; border: 1px solid #dddddd;">ワーシャルフロード法 (全点対最短経路)<br>区間DP</td>
+              <td style="padding: 10px; border: 1px solid #dddddd;">ワーシャルフロイド法 (全点対最短経路)<br>区間DP</td>
             </tr>
             <tr>
-              <td style="padding: 10px; border: 1px solid #dddddd; font-weight: bold; color: #d9534f; font-family: var(--font-mono);">O(2ᴺ) / O(N!)</td>
+              <td style="padding: 10px; border: 1px solid #dddddd; font-weight: bold; color: #d9534f; font-family: var(--font-mono);">O(2ᴺ)</td>
               <td style="padding: 10px; border: 1px solid #dddddd;"><i>N</i> ≤ 15 ～ 20</td>
-              <td style="padding: 10px; border: 1px solid #dddddd;"><code>1 &lt;&lt; N</code> (ビット演算)<br><code>next_permutation()</code> (順列全生成)</td>
-              <td style="padding: 10px; border: 1px solid #dddddd;">ビット全探索 (組み合わせ)<br>再帰全探索 (バックトラック), 巡回セールスマン</td>
+              <td style="padding: 10px; border: 1px solid #dddddd;">2ᴺ個の部分集合を列挙<br>各集合をO(1)で処理する場合</td>
+              <td style="padding: 10px; border: 1px solid #dddddd;">部分集合の列挙<br>各集合のNビットを走査するとO(N × 2ᴺ)</td>
             </tr>
+            <tr><td style="padding: 10px; border: 1px solid #dddddd;">O(N × N!)</td><td style="padding: 10px; border: 1px solid #dddddd;">N ≤ 8〜10程度を検討</td><td style="padding: 10px; border: 1px solid #dddddd;"><code>next_permutation()</code>で全順列を列挙し、各順列をO(N)で処理</td><td style="padding: 10px; border: 1px solid #dddddd;">順序の全探索。候補数はN!</td></tr>
           </tbody>
         </table>
       </div>
@@ -272,7 +334,7 @@
       <div style="background-color: #fff8f8; border-left: 4px solid #d9534f; padding: 15px 20px; margin-bottom: 20px; border-radius: 0 4px 4px 0;">
         <h3 style="font-size: 15px; color: #a94442; margin-bottom: 8px;">2. 文字列の <code>s = s + ch;</code> は O(N)！<code>s += ch;</code> を使おう</h3>
         <p style="font-size: 13px; color: #555555; margin-bottom: 0;">
-          <code>s = s + ch;</code> は毎回新しい文字列オブジェクトを生成して全体をコピーするため <i>O</i>(<i>N</i>) かかります。末尾追加は <code>s += ch;</code> または <code>s.push_back(ch);</code> を使うと <i>O</i>(1) で高速です。
+          <code>s = s + ch;</code> は毎回新しい文字列オブジェクトを生成して全体をコピーするため <i>O</i>(<i>N</i>) かかります。C++の1文字の末尾追加は <code>s += ch;</code> や <code>s.push_back(ch);</code> を使うと償却 <i>O</i>(1) で行えます。Pythonの文字列は別の仕様なので区別してください。
         </p>
       </div>
 
@@ -282,11 +344,20 @@
           配列感覚で `mp[key]` を参照すると、裏で二分探索木を走査するため毎回 <i>O</i>(log <i>N</i>) のコストがかかります。ループ内で同じキーを何度も参照する場合は変数に保持するか、<i>O</i>(1) 平均の <code>unordered_map</code> を検討しましょう。
         </p>
       </div>
+      <p>仕様の参照: <a href="https://eel.is/c++draft/string.capacity">C++標準草案の文字列サイズ取得</a>、<a href="https://eel.is/c++draft/alg.permutation.generators">順列生成</a>。グラフの計算量は頂点数V・辺数Eで、Pythonの大きな整数演算は桁数のコストも考慮してください。</p>
     </article>
 
   </div>
 
-  <div id="site-footer"></div>
+  <aside class="container related-links" aria-label="関連記事">
+    <h2>関連記事・ツール</h2>
+    <ul><li><a href="glossary.html">競プロ初心者向け アルゴリズム & 用語解説ガイド | AtCoder Workspace Articles</a></li><li><a href="gray-to-brown-tips.html">灰レーティング脱出！茶色になるまでに絶対押さえるべき解法 & 実践Tips | AtCoder Workspace Articles</a></li><li><a href="../article.html">記事一覧</a></li><li><a href="../presentation.html#getting-started">AtCoder Workspaceの導入方法</a></li></ul>
+  </aside>
+
+  <footer>
+    <p>AtCoder Workspace · MIT License · AtCoderの非公式プロジェクト</p>
+    <p><a href="../presentation.html">製品紹介</a> | <a href="../article.html">記事一覧</a> | <a href="../privacy.html">プライバシー</a> | <a href="https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh?hl=ja">Chromeに追加</a> | <a href="https://github.com/rikutoyamada01/atcoder-workspace">GitHub</a></p>
+  </footer>
 
   <script src="../components.js?v=1.8.0"></script>
   <script>
@@ -311,7 +382,13 @@
       inputN.addEventListener('input', calculate);
 
       function calculate() {
-        const N = parseFloat(inputN.value) || 0;
+        const N = Number(inputN.value);
+        if (!Number.isSafeInteger(N) || N < 1) {
+          resultBox.className = 'result-box';
+          resultStatus.textContent = '入力を確認してください: Nは1以上の安全に表現できる整数です';
+          resultDetail.textContent = '1〜9,007,199,254,740,991の整数を入力してください。';
+          return;
+        }
         let ops = 0;
         let name = '';
 
@@ -334,26 +411,28 @@
           ops = N * N * N;
           name = 'O(N³)';
         } else if (selectedType === 'O2N') {
-          ops = Math.pow(2, Math.min(60, N));
+          ops = Math.pow(2, N);
           name = 'O(2ᴺ)';
         }
 
         const seconds = ops / 1e8;
-        const formattedOps = ops > 1e15 ? '10¹⁵ 以上 (膨大)' : Math.round(ops).toLocaleString() + ' 回';
+        const formattedOps = !Number.isFinite(ops)
+          ? '数値で表現できる範囲を超えています'
+          : (ops > 1e15 ? ops.toExponential(2) + ' 回（概算）' : Math.round(ops).toLocaleString() + ' 回');
         const formattedTime = seconds < 0.001 ? '0.001 秒未満' : (seconds > 1000 ? '1,000 秒以上' : seconds.toFixed(3) + ' 秒');
 
         if (seconds <= 2.0) {
-          resultBox.className = 'result-box ac';
-          resultStatus.textContent = '判定結果: ✅ AC (制限時間 2秒以内に安全に完了)';
+          resultBox.className = 'result-box within';
+          resultStatus.textContent = '概算: この仮定では2秒以内（実測が必要）';
         } else {
-          resultBox.className = 'result-box tle';
-          resultStatus.textContent = '判定結果: ⚠️ TLE (実行時間制限 2秒を超過して不合格)';
+          resultBox.className = 'result-box over';
+          resultStatus.textContent = '概算: この仮定では2秒超（実測が必要）';
         }
 
         resultDetail.innerHTML = `
           計算量オーダー: <strong>${name}</strong><br>
           計算ステップ数目安: <strong>${formattedOps}</strong><br>
-          予想実行時間: <strong>約 ${formattedTime}</strong> (AtCoderの2秒ルール上限: 約 2億回)
+          仮定に基づく時間: <strong>約 ${formattedTime}</strong>（1秒あたり10⁸回の仮定。実際の合否は判定しません）
         `;
       }
 

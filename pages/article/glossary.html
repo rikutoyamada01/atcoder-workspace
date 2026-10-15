@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>競プロ初心者向け アルゴリズム & 用語解説ガイド | AtCoder Workspace Articles</title>
+  <meta property="og:image" content="https://rikutoyamada01.github.io/atcoder-workspace/assets/icon128.png">
+  <meta property="og:image:alt" content="AtCoder Workspaceのアイコン">
+  <link rel="icon" href="../assets/icon128.png" type="image/png">
+  <link rel="canonical" href="https://rikutoyamada01.github.io/atcoder-workspace/article/glossary.html">
   <meta name="description" content="競プロ（AtCoder）初心者必見！二分探索、DP、尺取り法などの主要アルゴリズムから、コーナーケース、オーバーフロー、TLEなどのエラー要因までわかりやすく解説した用語ガイド。">
   <meta name="keywords" content="AtCoder,競プロ,二分探索,DP,動的計画法,尺取り法,累積和,コーナーケース,オーバーフロー,TLE,アルゴリズム,初心者">
 
@@ -227,13 +231,68 @@
       display: none;
     }
   </style>
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "📖 競プロ初心者向け アルゴリズム & 用語解説ガイド",
+      "description": "競プロ（AtCoder）初心者必見！二分探索、DP、尺取り法などの主要アルゴリズムから、コーナーケース、オーバーフロー、TLEなどのエラー要因までわかりやすく解説した用語ガイド。",
+      "inLanguage": "ja",
+      "dateModified": "2026-10-15",
+      "author": {
+        "@type": "Person",
+        "name": "rikuto yamada",
+        "url": "https://github.com/rikutoyamada01"
+      },
+      "mainEntityOfPage": "https://rikutoyamada01.github.io/atcoder-workspace/article/glossary.html",
+      "image": "https://rikutoyamada01.github.io/atcoder-workspace/assets/icon128.png"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "AtCoder Workspace",
+          "item": "https://rikutoyamada01.github.io/atcoder-workspace/presentation.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "記事一覧",
+          "item": "https://rikutoyamada01.github.io/atcoder-workspace/article.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "📖 競プロ初心者向け アルゴリズム & 用語解説ガイド",
+          "item": "https://rikutoyamada01.github.io/atcoder-workspace/article/glossary.html"
+        }
+      ]
+    }
+  ]
+}
+  </script>
 </head>
-<body>
-  <div id="site-header"></div>
+<body data-math>
+  <nav class="navbar" aria-label="メインナビゲーション">
+    <a class="navbar-brand" href="../presentation.html">AtCoder Workspace</a>
+    <div class="navbar-links">
+      <a class="nav-link" href="../presentation.html">製品紹介</a>
+      <a class="nav-link" href="../article.html">記事一覧</a>
+      <a class="nav-link active" aria-current="page" href="../article/glossary.html">用語辞典</a>
+      <a class="nav-link" href="../article/complexity.html">計算量ツール</a>
+      <a class="nav-link" href="../roadmap.html">ロードマップ</a>
+      <a class="nav-link install-link" href="https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh?hl=ja">Chromeに追加</a>
+    </div>
+  </nav>
 
   <!-- Hero Section -->
   <header class="hero">
     <h1>📖 競プロ初心者向け アルゴリズム & 用語解説ガイド</h1>
+      <p class="article-byline">著者: <a href="https://github.com/rikutoyamada01">rikuto yamada</a> · 更新日: <time datetime="2026-10-15">2026年10月15日</time></p>
     <p>AtCoder Workspace の学習タグ機能に対応した用語辞書です。「二分探索ってなに？」「なぜオーバーフローで落とされるの？」といった疑問をスッキリ解決します。</p>
 
     <div class="search-container">
@@ -477,19 +536,19 @@ long long ans2 = (long long)a * b; // ○ (10^12 が正しく入る)</div>
             <span class="card-tag cause">#TLE(計算量)</span>
           </div>
           <div class="card-body">
-            <p>プログラムの計算に時間がかかりすぎ、制限時間（通常2秒）を超過したエラーです。</p>
+            <p>プログラムの計算に時間がかかりすぎ、問題ごとの制限時間を超過したエラーです。</p>
             <ul>
-              <li><strong>目安:</strong> AtCoder の 2 秒制限は、おおむね <strong>10<sup>8</sup> 回（1億回）の計算</strong>が限界です。</li>
-              <li><strong>例:</strong> <i>N</i> = 10<sup>5</sup> のときに <i>O</i>(<i>N</i><sup>2</sup>) = 10<sup>10</sup> 回の二重ループを書くと確定で TLE します。<i>O</i>(<i>N</i> log <i>N</i>) などに改善しましょう。</li>
+              <li><strong>見積もり:</strong> 計算回数だけでは時間を保証できません。言語・処理・入出力によって速度が異なるので、問題の時間制限を確認し、実際のコードを測定します。</li>
+              <li><strong>例:</strong> <i>N</i> = 10<sup>5</sup> のときに <i>O</i>(<i>N</i><sup>2</sup>) = 10<sup>10</sup> 回の二重ループは、実行時間が厳しくなる可能性が高くなります。<i>O</i>(<i>N</i> log <i>N</i>) などに改善しましょう。</li>
             </ul>
-            <div class="code-block">// TLE 例: N = 10^5 のときに 10^10 回計算してタイムアウト
+            <div class="code-block">// 処理回数が多い例: N = 10^5 のとき約 10^10 回
 for (int i = 0; i &lt; N; i++) {
-  for (int j = 0; j &lt; N; j++) { ... } // TLE! (2秒オーバー)
+  for (int j = 0; j &lt; N; j++) { ... } // 1回の処理内容や時間制限も確認
 }
 
-// AC 例: 二分探索で O(N log N) に改善してクリア
+// 改善例: ソート済み配列に二分探索を行い O(N log N) に
 for (int i = 0; i &lt; N; i++) {
-  binary_search(...); // AC! (約 10^5 * 17 回で約 0.01 秒)
+  binary_search(...); // 約 10^5 * 17 回が目安。正しさと実行時間は別途確認
 }</div>
           </div>
         </article>
@@ -543,7 +602,15 @@ for (int t = 0; t &lt; T; t++) {
 
   </main>
 
-  <div id="site-footer"></div>
+  <aside class="container related-links" aria-label="関連記事">
+    <h2>関連記事・ツール</h2>
+    <ul><li><a href="complexity.html">計算量・TLEシミュレーター｜計算回数と実行時間の目安 | AtCoder Workspace</a></li><li><a href="gray-to-brown-tips.html">灰レーティング脱出！茶色になるまでに絶対押さえるべき解法 & 実践Tips | AtCoder Workspace Articles</a></li><li><a href="../article.html">記事一覧</a></li><li><a href="../presentation.html#getting-started">AtCoder Workspaceの導入方法</a></li></ul>
+  </aside>
+
+  <footer>
+    <p>AtCoder Workspace · MIT License · AtCoderの非公式プロジェクト</p>
+    <p><a href="../presentation.html">製品紹介</a> | <a href="../article.html">記事一覧</a> | <a href="../privacy.html">プライバシー</a> | <a href="https://chromewebstore.google.com/detail/atcoder-workspace/apoklhnhpoljcmnhcglejgjopfolhaeh?hl=ja">Chromeに追加</a> | <a href="https://github.com/rikutoyamada01/atcoder-workspace">GitHub</a></p>
+  </footer>
 
   <!-- Shared Component JS -->
   <script src="../components.js?v=1.8.0"></script>
