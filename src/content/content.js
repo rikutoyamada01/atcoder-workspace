@@ -88,13 +88,16 @@
           }
           if (!scraper) return;
           scraper.loadNavigationUrls(contestId, (prevUrl, nextUrl) => {
-            // Detect page dark mode based on background brightness
+            // Detect page dark mode based on opaque background brightness
             const bodyBg = window.getComputedStyle(document.body).backgroundColor;
-            const rgb = bodyBg.match(/\d+/g);
-            let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            if (rgb && rgb.length >= 3) {
+            const rgba = bodyBg.match(/[\d.]+/g);
+            let isDark = false;
+            if (rgba && rgba.length >= 3 && (rgba.length < 4 || parseFloat(rgba[3]) > 0)) {
               const brightness =
-                (parseInt(rgb[0]) * 299 + parseInt(rgb[1]) * 587 + parseInt(rgb[2]) * 114) / 1000;
+                (parseInt(rgba[0], 10) * 299 +
+                  parseInt(rgba[1], 10) * 587 +
+                  parseInt(rgba[2], 10) * 114) /
+                1000;
               isDark = brightness < 125;
             }
 

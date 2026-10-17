@@ -864,11 +864,13 @@ body.vs-dark-theme .monaco-editor .cursors-layer .cursor {
 
 /* Force Monaco background as fallback */
 body.vs-theme .monaco-editor,
-body.vs-theme .monaco-editor .margin {
+body.vs-theme .monaco-editor .margin,
+body.vs-theme .monaco-editor .monaco-editor-background {
   background-color: #ffffff !important;
 }
 body.vs-dark-theme .monaco-editor,
-body.vs-dark-theme .monaco-editor .margin {
+body.vs-dark-theme .monaco-editor .margin,
+body.vs-dark-theme .monaco-editor .monaco-editor-background {
   background-color: #1e1e1e !important;
 }
 

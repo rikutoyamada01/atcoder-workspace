@@ -153,4 +153,52 @@ describe('Layout Module Tests', () => {
     expect(cssContent).toMatch(/box-shadow:\s*0px\s+0px\s+10px\s+5px\s+#888888/);
     expect(cssContent).toMatch(/background:\s*#ffffff/);
   });
+
+  test('editor.css enforces matching .monaco-editor-background and cursor colors for both themes (#31)', () => {
+    const editorCssPath = path.resolve(__dirname, '../src/editor/editor.css');
+    const editorCss = fs.readFileSync(editorCssPath, 'utf8');
+
+    expect(editorCss).toMatch(/body\.vs-theme\s+\.monaco-editor\s+\.monaco-editor-background/);
+    expect(editorCss).toMatch(/body\.vs-dark-theme\s+\.monaco-editor\s+\.monaco-editor-background/);
+    expect(editorCss).toMatch(/body\.vs-theme\s+\.monaco-editor\s+\.cursors-layer\s+\.cursor/);
+    expect(editorCss).toMatch(/body\.vs-dark-theme\s+\.monaco-editor\s+\.cursors-layer\s+\.cursor/);
+  });
+
+  test('content.js treats transparent rgba(0, 0, 0, 0) body background as light theme (#31)', () => {
+    const contentJsPath = path.resolve(__dirname, '../src/content/content.js');
+    const contentJs = fs.readFileSync(contentJsPath, 'utf8');
+
+    window.history.pushState({}, '', '/contests/abc300/tasks/abc300_a');
+    document.body.innerHTML =
+      '<div id="main-container"></div><select name="data.LanguageId"><option value="5001">C++</option></select>';
+    jest.spyOn(window, 'getComputedStyle').mockReturnValue({ backgroundColor: 'rgba(0, 0, 0, 0)' });
+
+    const postMessageMock = jest.fn();
+    const iframeWin = { postMessage: postMessageMock };
+    window.AtCoderWorkspace.Layout = {
+      init: (cb) => cb(),
+      getIframe: () => ({ contentWindow: iframeWin }),
+    };
+    window.AtCoderWorkspace.Scraper = {
+      loadNavigationUrls: (_contestId, cb) => cb(null, null),
+    };
+
+    const script = document.createElement('script');
+    script.textContent = contentJs;
+    document.body.appendChild(script);
+
+    const msgEvent = new MessageEvent('message', {
+      data: { type: 'editor-ready' },
+    });
+    Object.defineProperty(msgEvent, 'source', { value: iframeWin });
+    window.dispatchEvent(msgEvent);
+
+    expect(postMessageMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'init-config',
+        isDark: false,
+      }),
+      '*'
+    );
+  });
 });
