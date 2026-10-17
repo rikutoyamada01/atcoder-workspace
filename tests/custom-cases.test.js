@@ -408,4 +408,85 @@ describe('Custom Test Cases Module Tests', () => {
     const reloadBtn = document.getElementById('context-reload-btn');
     expect(reloadBtn).not.toBeNull();
   });
+
+  test('preserves custom test cases section and edit UI during and after test execution', () => {
+    const key = 'custom_test_cases:abc300:abc300_p8';
+    store[key] = [
+      {
+        id: 'custom_test_1',
+        name: 'Corner Case 1',
+        input: '1\n',
+        expected: '2\n',
+        createdAt: Date.now(),
+      },
+    ];
+
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        data: {
+          type: 'init-config',
+          contestId: 'abc300',
+          problemId: 'abc300_p8',
+          selectedLanguageId: '5001',
+          languages: [{ value: '5001', text: 'C++ (GCC 12.2)' }],
+          isDark: false,
+        },
+      })
+    );
+
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        data: {
+          type: 'test-start',
+          total: 2,
+        },
+      })
+    );
+
+    expect(document.getElementById('custom-cases-section')).not.toBeNull();
+    expect(document.querySelectorAll('.custom-case-card').length).toBe(1);
+
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        data: {
+          type: 'test-case-result',
+          index: 0,
+          status: 'AC',
+          time: 10,
+          memory: 1024,
+          output: '2\n',
+          expected: '2\n',
+        },
+      })
+    );
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        data: {
+          type: 'test-case-result',
+          index: 1,
+          status: 'AC',
+          time: 12,
+          memory: 1024,
+          output: '2\n',
+          expected: '2\n',
+          name: 'Corner Case 1',
+          isCustom: true,
+        },
+      })
+    );
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        data: {
+          type: 'test-complete',
+        },
+      })
+    );
+
+    const section = document.getElementById('custom-cases-section');
+    expect(section).not.toBeNull();
+    const editBtn = section.querySelector('.btn-edit-custom-case');
+    expect(editBtn).not.toBeNull();
+    editBtn.click();
+    expect(document.getElementById('custom-case-form').style.display).toBe('flex');
+  });
 });

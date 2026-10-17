@@ -1432,6 +1432,7 @@ impl UnionFind {
           }
           consoleResults.appendChild(row);
         }
+        renderCustomTestCases();
         renderLearningNotesAndTags();
         saveConsoleState(contestId, problemId);
         break;
