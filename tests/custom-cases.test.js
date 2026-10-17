@@ -13,6 +13,7 @@ const editorJs = fs.readFileSync(path.resolve(__dirname, '../src/editor/editor.j
 
 describe('Custom Test Cases Module Tests', () => {
   let store = {};
+  let editorPort;
   let postMessageMock;
   let monacoMock;
   let eventListeners = [];
@@ -20,6 +21,13 @@ describe('Custom Test Cases Module Tests', () => {
 
   beforeEach(() => {
     store = {};
+    const listeners = [];
+    editorPort = {
+      postMessage: jest.fn(),
+      onMessage: { addListener: (listener) => listeners.push(listener) },
+      onDisconnect: { addListener: jest.fn() },
+      receiveEvent: (event) => listeners.forEach((listener) => listener(event.data)),
+    };
     eventListeners = [];
     global.i18n = i18n;
 
@@ -35,7 +43,7 @@ describe('Custom Test Cases Module Tests', () => {
     );
 
     postMessageMock = jest.fn();
-    window.parent.postMessage = postMessageMock;
+    editorPort.postMessage = postMessageMock;
 
     global.require = jest.fn((deps, cb) => cb());
     global.require.config = jest.fn();
@@ -74,6 +82,7 @@ describe('Custom Test Cases Module Tests', () => {
     global.chrome = {
       runtime: {
         id: 'dummy-extension-id',
+        connect: jest.fn(() => editorPort),
         getURL: jest.fn((p) => p),
       },
       i18n: {
@@ -141,7 +150,7 @@ describe('Custom Test Cases Module Tests', () => {
   });
 
   test('renders custom test cases section and empty placeholder initially', () => {
-    window.dispatchEvent(
+    editorPort.receiveEvent(
       new MessageEvent('message', {
         data: {
           type: 'init-config',
@@ -163,7 +172,7 @@ describe('Custom Test Cases Module Tests', () => {
   });
 
   test('toggles add custom case form and creates a new custom case', () => {
-    window.dispatchEvent(
+    editorPort.receiveEvent(
       new MessageEvent('message', {
         data: {
           type: 'init-config',
@@ -215,7 +224,7 @@ describe('Custom Test Cases Module Tests', () => {
   });
 
   test('validates required input stdin before saving', () => {
-    window.dispatchEvent(
+    editorPort.receiveEvent(
       new MessageEvent('message', {
         data: {
           type: 'init-config',
@@ -255,7 +264,7 @@ describe('Custom Test Cases Module Tests', () => {
       },
     ];
 
-    window.dispatchEvent(
+    editorPort.receiveEvent(
       new MessageEvent('message', {
         data: {
           type: 'init-config',
@@ -309,7 +318,7 @@ describe('Custom Test Cases Module Tests', () => {
       },
     ];
 
-    window.dispatchEvent(
+    editorPort.receiveEvent(
       new MessageEvent('message', {
         data: {
           type: 'init-config',
@@ -346,7 +355,7 @@ describe('Custom Test Cases Module Tests', () => {
       },
     ];
 
-    window.dispatchEvent(
+    editorPort.receiveEvent(
       new MessageEvent('message', {
         data: {
           type: 'init-config',
@@ -375,13 +384,12 @@ describe('Custom Test Cases Module Tests', () => {
             expected: '',
           },
         ],
-      }),
-      '*'
+      })
     );
   });
 
   test('should display reload banner when extension context is invalidated', () => {
-    window.dispatchEvent(
+    editorPort.receiveEvent(
       new MessageEvent('message', {
         data: {
           type: 'init-config',

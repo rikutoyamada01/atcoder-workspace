@@ -16,11 +16,21 @@ const editorJs = fs.readFileSync(path.resolve(__dirname, '../src/editor/editor.j
 
 describe('Templates and Custom Snippets Integration Tests', () => {
   let store = {};
+  let editorPort;
 
   let onChangedListeners = [];
 
   beforeEach(() => {
     store = {};
+    localStorage.clear();
+    sessionStorage.clear();
+    const listeners = [];
+    editorPort = {
+      postMessage: jest.fn(),
+      onMessage: { addListener: (listener) => listeners.push(listener) },
+      onDisconnect: { addListener: jest.fn() },
+      receiveEvent: (event) => listeners.forEach((listener) => listener(event.data)),
+    };
     onChangedListeners = [];
     global.i18n = i18n;
 
@@ -47,6 +57,7 @@ describe('Templates and Custom Snippets Integration Tests', () => {
     global.chrome = {
       runtime: {
         id: 'dummy-extension-id',
+        connect: jest.fn(() => editorPort),
         getURL: jest.fn((p) => p),
         openOptionsPage: jest.fn(),
       },
@@ -434,6 +445,90 @@ describe('Templates and Custom Snippets Integration Tests', () => {
       delete global.monaco;
     });
 
+    test('page and sourceless messages cannot change drafts or submission history', () => {
+      editorPort.receiveEvent({
+        data: {
+          type: 'init-config',
+          contestId: 'abc300',
+          problemId: 'abc300_a',
+          selectedLanguageId: '5001',
+          languages: [{ value: '5001', text: 'C++' }],
+        },
+      });
+      const snapshot = JSON.stringify(store);
+      const payloads = [
+        {
+          type: 'init-config',
+          contestId: 'other',
+          problemId: 'other_a',
+          selectedLanguageId: '5001',
+          languages: [{ value: '5001', text: 'C++' }],
+        },
+        { type: 'latest-submission-loaded', mode: 'cpp', code: 'attacker replacement' },
+        { type: 'language-change', languageId: '5002' },
+        {
+          type: 'pending-submit-complete',
+          status: 'WA',
+          submissionId: 'fake',
+          contestId: 'other',
+          problemId: 'other_a',
+          code: 'attacker',
+        },
+      ];
+      for (const data of payloads) {
+        window.dispatchEvent(
+          new MessageEvent('message', { data, source: window.parent, origin: 'https://atcoder.jp' })
+        );
+        window.dispatchEvent(new MessageEvent('message', { data }));
+      }
+      expect(JSON.stringify(store)).toBe(snapshot);
+      expect(mockEditor.setModel).not.toHaveBeenCalled();
+    });
+
+    test('reconnects after disconnect and ignores messages from the obsolete port', () => {
+      jest.useFakeTimers();
+      const oldPort = editorPort;
+      const config = {
+        type: 'init-config',
+        contestId: 'abc300',
+        problemId: 'abc300_a',
+        selectedLanguageId: '5001',
+        languages: [{ value: '5001', text: 'C++' }],
+      };
+      oldPort.receiveEvent({ data: config });
+      mockEditor.setValue('// unsaved draft');
+      const currentModel = mockEditor.getModel();
+      oldPort.onDisconnect.addListener.mock.calls[0][0]();
+      editorPort = {
+        ...oldPort,
+        postMessage: jest.fn(),
+        onMessage: { addListener: jest.fn() },
+        onDisconnect: { addListener: jest.fn() },
+      };
+      jest.advanceTimersByTime(500);
+      expect(chrome.runtime.connect).toHaveBeenCalledTimes(2);
+      const snapshot = JSON.stringify(store);
+      oldPort.receiveEvent({ data: { type: 'language-change', languageId: 'forged' } });
+      expect(JSON.stringify(store)).toBe(snapshot);
+      const receive = editorPort.onMessage.addListener.mock.calls[0][0];
+      receive({ type: 'workspace-connected' });
+      expect(editorPort.postMessage).toHaveBeenCalledWith({ type: 'editor-ready' });
+      receive(config);
+      expect(monaco.editor.create).toHaveBeenCalledTimes(1);
+      expect(mockEditor.setModel).not.toHaveBeenCalled();
+      expect(currentModel.dispose).not.toHaveBeenCalled();
+      expect(mockEditor.getValue()).toBe('// unsaved draft');
+      document.getElementById('test-btn').click();
+      expect(editorPort.postMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'run-tests',
+          code: '// unsaved draft',
+          languageId: '5001',
+        })
+      );
+      jest.useRealTimers();
+    });
+
     test('Auto Template inserts if code history is empty', () => {
       // Simulate init-config payload with no language code history
       const configMsg = {
@@ -446,7 +541,7 @@ describe('Templates and Custom Snippets Integration Tests', () => {
       };
 
       // Trigger message listener
-      window.dispatchEvent(new MessageEvent('message', { data: configMsg }));
+      editorPort.receiveEvent(new MessageEvent('message', { data: configMsg }));
 
       // Editor should create with default C++ template (since local storage config is empty)
       expect(global.monaco.editor.create).toHaveBeenCalled();
@@ -457,9 +552,7 @@ describe('Templates and Custom Snippets Integration Tests', () => {
     });
 
     test('fetches latest submission from AtCoder if local code history is empty', async () => {
-      const parentPostMessageMock = jest
-        .spyOn(window.parent, 'postMessage')
-        .mockImplementation(() => {});
+      const parentPostMessageMock = editorPort.postMessage;
 
       const configMsg = {
         type: 'init-config',
@@ -470,15 +563,14 @@ describe('Templates and Custom Snippets Integration Tests', () => {
         isDark: true,
       };
 
-      window.dispatchEvent(new MessageEvent('message', { data: configMsg }));
+      editorPort.receiveEvent(new MessageEvent('message', { data: configMsg }));
 
       expect(parentPostMessageMock).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'fetch-latest-submission',
           languageId: '5001',
           mode: 'cpp',
-        }),
-        '*'
+        })
       );
 
       const submissionLoadedMsg = {
@@ -487,7 +579,7 @@ describe('Templates and Custom Snippets Integration Tests', () => {
         mode: 'cpp',
       };
 
-      window.dispatchEvent(new MessageEvent('message', { data: submissionLoadedMsg }));
+      editorPort.receiveEvent(new MessageEvent('message', { data: submissionLoadedMsg }));
 
       expect(global.monaco.editor.createModel).toHaveBeenCalledWith(
         '// previously submitted solution code',
@@ -500,8 +592,6 @@ describe('Templates and Custom Snippets Integration Tests', () => {
           'code:abc300:abc300_a:5001': '// previously submitted solution code',
         })
       );
-
-      parentPostMessageMock.mockRestore();
     });
 
     test('Snippets Drawer lists custom snippets alongside presets and search filters them', () => {
@@ -536,7 +626,7 @@ describe('Templates and Custom Snippets Integration Tests', () => {
         languages: [{ value: '5001', text: 'C++ (GCC 12.2)' }],
         isDark: false,
       };
-      window.dispatchEvent(new MessageEvent('message', { data: configMsg }));
+      editorPort.receiveEvent(new MessageEvent('message', { data: configMsg }));
 
       const snippetsBtn = document.getElementById('snippets-btn');
       const snippetsDrawer = document.getElementById('snippets-drawer');
@@ -601,7 +691,7 @@ describe('Templates and Custom Snippets Integration Tests', () => {
         languages: [{ value: '5001', text: 'C++ (GCC 12.2)' }],
         isDark: false,
       };
-      window.dispatchEvent(new MessageEvent('message', { data: configMsg }));
+      editorPort.receiveEvent(new MessageEvent('message', { data: configMsg }));
 
       // 2. Verify initial translation is loaded
       const snippetsBtn = document.getElementById('snippets-btn');
@@ -662,7 +752,7 @@ describe('Templates and Custom Snippets Integration Tests', () => {
         isDark: false,
       };
 
-      window.dispatchEvent(new MessageEvent('message', { data: configMsg }));
+      editorPort.receiveEvent(new MessageEvent('message', { data: configMsg }));
 
       expect(global.monaco.editor.create).toHaveBeenCalledWith(
         expect.anything(),
@@ -693,7 +783,7 @@ describe('Templates and Custom Snippets Integration Tests', () => {
         isDark: false,
       };
 
-      window.dispatchEvent(new MessageEvent('message', { data: configMsg }));
+      editorPort.receiveEvent(new MessageEvent('message', { data: configMsg }));
 
       expect(global.monaco.editor.create).toHaveBeenCalledWith(
         expect.anything(),
@@ -721,7 +811,7 @@ describe('Templates and Custom Snippets Integration Tests', () => {
         isDark: false,
       };
 
-      window.dispatchEvent(new MessageEvent('message', { data: configMsg }));
+      editorPort.receiveEvent(new MessageEvent('message', { data: configMsg }));
 
       expect(global.monaco.editor.create).toHaveBeenCalledWith(
         expect.anything(),

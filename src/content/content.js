@@ -10,6 +10,7 @@
 
   let langSelect = null;
   let isEditorReady = false;
+  let editorPort = null;
   const messageQueue = [];
 
   /**
@@ -67,10 +68,57 @@
     const layout = window.AtCoderWorkspace.Layout;
     const scraper = window.AtCoderWorkspace.Scraper;
     const runner = window.AtCoderWorkspace.Runner;
+    const pendingPorts = new Map();
+    let expectedBridgeId = null;
 
-    window.addEventListener('message', (e) => {
-      const iframe = layout ? layout.getIframe() : null;
-      if (!iframe || e.source !== iframe.contentWindow) return;
+    const bindEditor = (bridgeId, port) => {
+      if (bridgeId !== expectedBridgeId) return;
+      if (editorPort && editorPort !== port) editorPort.disconnect();
+      editorPort = port;
+      isEditorReady = false;
+      port.postMessage({ type: 'workspace-connected' });
+    };
+
+    // This browser-generated event identifies the managed iframe only. Commands
+    // and data still travel exclusively through the authenticated runtime Port.
+    window.addEventListener('message', (event) => {
+      if (
+        !event.isTrusted ||
+        event.origin !== chrome.runtime.getURL('').replace(/\/$/, '') ||
+        event.source !== layout.getIframe()?.contentWindow ||
+        event.data?.type !== 'workspace-identify' ||
+        typeof event.data.bridgeId !== 'string'
+      )
+        return;
+      expectedBridgeId = event.data.bridgeId;
+      const port = pendingPorts.get(expectedBridgeId);
+      if (port) bindEditor(expectedBridgeId, port);
+    });
+
+    chrome.runtime.onConnect.addListener((port) => {
+      if (port.name !== 'workspace-editor' || port.sender?.id !== chrome.runtime.id) return;
+      port.onMessage.addListener((data) => {
+        if (data?.type === 'workspace-identify' && typeof data.bridgeId === 'string') {
+          pendingPorts.set(data.bridgeId, port);
+          bindEditor(data.bridgeId, port);
+        } else if (editorPort === port) {
+          handleEditorMessage({ data });
+        }
+      });
+      port.onDisconnect.addListener(() => {
+        // Read lastError here so Chrome does not report an unchecked disconnect error.
+        void chrome.runtime.lastError;
+        for (const [bridgeId, pending] of pendingPorts) {
+          if (pending === port) pendingPorts.delete(bridgeId);
+        }
+        if (editorPort === port) {
+          editorPort = null;
+          isEditorReady = false;
+        }
+      });
+    });
+
+    function handleEditorMessage(e) {
       if (!e.data || typeof e.data !== 'object') return;
 
       console.log(
@@ -528,7 +576,7 @@
           }
           break;
       }
-    });
+    }
   }
 
   /**
@@ -536,7 +584,7 @@
    * @param {Object} message
    */
   function notifyEditor(message) {
-    if (!isEditorReady) {
+    if (!isEditorReady || !editorPort) {
       console.log(
         '[AtCoder Workspace] Content Script: Queueing message to iframe (editor not ready yet)',
         message.type,
@@ -546,15 +594,13 @@
       return;
     }
 
-    const layout = window.AtCoderWorkspace.Layout;
-    const iframe = layout ? layout.getIframe() : null;
-    if (iframe && iframe.contentWindow) {
+    if (editorPort) {
       console.log(
         '[AtCoder Workspace] Content Script: Sending message to iframe',
         message.type,
         message
       );
-      iframe.contentWindow.postMessage(message, '*');
+      editorPort.postMessage(message);
     } else {
       console.log(
         '[AtCoder Workspace] Content Script: Queueing message (iframe not available)',
