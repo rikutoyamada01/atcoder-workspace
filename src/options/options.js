@@ -477,8 +477,8 @@ func main() {
           </div>
         </td>
         <td class="col-actions">
-          <button class="btn btn-secondary btn-xs edit-btn" data-id="${item.id}" style="margin-right: 4px;">${escapeHtml(i18nProvider.t('settings_snippets_table_edit'))}</button>
-          <button class="btn btn-danger btn-xs delete-btn" data-id="${item.id}">${escapeHtml(i18nProvider.t('settings_snippets_table_delete'))}</button>
+          <button class="btn btn-secondary btn-xs edit-btn" data-id="${escapeHtml(String(item.id))}" style="margin-right: 4px;">${escapeHtml(i18nProvider.t('settings_snippets_table_edit'))}</button>
+          <button class="btn btn-danger btn-xs delete-btn" data-id="${escapeHtml(String(item.id))}">${escapeHtml(i18nProvider.t('settings_snippets_table_delete'))}</button>
         </td>
       `;
 
@@ -1269,7 +1269,7 @@ func main() {
         <td><a href="${problemUrl}" target="_blank" class="status-table-link">${escapeHtml(formattedProblem)}</a></td>
         <td class="status-select-cell">
           <div style="display: flex; align-items: center;">
-            <span class="status-badge-dot ${dotClass}" id="dot-${problemKey.replace(':', '-')}"></span>
+            <span class="status-badge-dot ${dotClass}" id="dot-${escapeHtml(problemKey.replace(':', '-'))}"></span>
             <select class="form-control status-select" data-contest="${escapeHtml(contestId)}" data-problem="${escapeHtml(problemId)}" data-key="${escapeHtml(problemKey)}">
               <option value="unsolved" ${currentStatus === 'unsolved' ? 'selected' : ''}>${escapeHtml(i18nProvider.t('options_status_option_unsolved'))}</option>
               <option value="self_ac" ${currentStatus === 'self_ac' ? 'selected' : ''}>${escapeHtml(i18nProvider.t('options_status_option_self'))}</option>

@@ -7,13 +7,75 @@
   <meta name="description" content="AtCoderが使いづらいと感じる初心者必見！環境構築不要でブラウザをIDE化するChrome拡張機能「AtCoder Workspace」のご紹介。問題文の隣にエディタを表示し、自動テストや自動提出で競プロの摩擦をゼロにします。">
   <meta name="keywords" content="AtCoder,使いづらい,使いずらい,競プロ,環境構築,Chrome拡張機能,自動テスト,Monaco Editor,VSCode">
 
+  <link rel="canonical" href="https://rikutoyamada01.github.io/atcoder-workspace/presentation.html">
+
   <!-- Open Graph -->
-  <meta property="og:type" content="article">
+  <meta property="og:type" content="website">
   <meta property="og:title" content="AtCoder Workspace - コンセプトプレゼンテーション">
   <meta property="og:description" content="AtCoderが使いづらいと感じる初心者向けの環境構築不要エディタ。コピペゼロ、画面遷移ゼロで即AC。">
   <meta property="og:url" content="https://rikutoyamada01.github.io/atcoder-workspace/presentation.html">
+  <meta property="og:image" content="https://rikutoyamada01.github.io/atcoder-workspace/icons/icon128.png">
 
-  <link rel="stylesheet" href="site.css?v=1.8.0">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "name": "AtCoder Workspace",
+        "alternateName": "Competitive Programming Workspace",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Chrome, Chromium",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "JPY"
+        },
+        "description": "AtCoderの問題ページを、エディタ・自動ローカルテスト・提出が統合されたブラウザ上の開発環境（オンラインIDE）に変えるGoogle Chrome拡張機能。",
+        "url": "https://rikutoyamada01.github.io/atcoder-workspace/presentation.html"
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "AtCoderの環境構築が難しくてできません。GCCのインストールやVSCodeの設定をせずにC++やPythonでAtCoderを解く方法はありますか？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Google Chrome拡張機能「AtCoder Workspace」をインストールするだけで、ブラウザ上の問題ページがMonaco Editorを使用したIDE（開発環境）に変わります。コンパイラのインストールやパス設定は不要で、すぐにコードを書いて実行・提出できます。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "AtCoderが使いづらいと感じます。問題文とコードテスト画面の切り替えやサンプルのコピペをなくす解決策はありますか？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "AtCoder Workspaceを導入すると問題文のすぐ右側にコードエディタが左右分割で表示され、サンプル入出力の自動抽出とワンクリック実行・Diff比較が可能になります。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "この拡張機能を使うことで、AtCoderの規約違反（カンニング等）になりませんか？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "自動で回答コードを生成する生成AI機能やカンニング補助システムは非搭載であり、AtCoder公式のサーバー負荷制限ルールを遵守してユーザー自身のセッションで通信するため安全です。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "利用料金はかかりますか？また、対応しているプログラミング言語は何ですか？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "完全無料（MITライセンス）で利用可能です。AtCoder公式のコードテスト機能がサポートしている全プログラミング言語（C++, Python, Java, Go, Rust等）に対応しています。"
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
+  <link rel="stylesheet" href="site.css?v=1.8.1">
 
   <style>
     .faq-section {
@@ -594,7 +656,7 @@
 
   <div id="site-footer"></div>
 
-  <script src="components.js?v=1.8.0"></script>
+  <script src="components.js?v=1.8.1"></script>
   <script src="presentation.js"></script>
 </body>
 </html>

@@ -1,5 +1,10 @@
 [
   {
+    "version": "1.8.1",
+    "date": "2026-10-18",
+    "content": "### Added\n- feat(seo): support OAuth 2.0 refresh token flow in seo-pdca-audit.js ([#26](https://github.com/rikutoyamada01/atcoder-workspace/pull/26))\n- feat(seo): add automated GSC/SEO/AEO PDCA pipeline and Search Console verification ([#25](https://github.com/rikutoyamada01/atcoder-workspace/pull/25))\n\n### Fixed\n- fix(editor): エディタのカーソルが白くなり背景と同化して見えなくなる問題を修正 ([#32](https://github.com/rikutoyamada01/atcoder-workspace/pull/32))\n- fix(security): エディタ・コンテンツ間のランタイムPort通信境界強化およびOptions画面の属性エスケープ修正 ([#30](https://github.com/rikutoyamada01/atcoder-workspace/pull/30))\n- fix(editor): テスト実行時・結果画面でカスタムテストケースUIが消失する問題を修正 ([#28](https://github.com/rikutoyamada01/atcoder-workspace/pull/28))"
+  },
+  {
     "version": "1.8.0",
     "date": "2026-10-12",
     "content": "### Added\r\n- **カスタムテストケース追加機能**: 問題ごとに自作テストケース（入力・期待出力）をローカル保存・編集・削除し、サンプルケースと一括テスト実行できる機能を追加\r\n- **学習ダッシュボード＆エラー傾向分析**: 設定画面にタブUIを導入し、自力AC/解説AC比率、解法・原因タグ集計ランキング、コンテスト別進捗テーブルを追加\r\n- **AtCoder 32言語サポートの拡張**: 設定画面のテンプレート・自作スニペット管理、Monaco エディタのシンタックスハイライト、提出コード自動取得を AtCoder 主要・人気の 32 言語へ全面拡張\r\n- **拡張機能更新・切断検知と安全なリロード案内**: `Extension context invalidated` 検知時のリロード案内バナー表示および `localStorage` への自動コード退避・復元機能を追加\r\n- **ライセンスおよびサードパーティ通知の明記**: `license-trace` による依存ライブラリのライセンス解析と `THIRD_PARTY_LICENSES.md` の同梱・配布設定\r\n\r\n### Fixed\r\n- **fix: エディタ格納時の問題領域背景色・シャドウ消失の修正 (#21)** ([#22](https://github.com/rikutoyamada01/atcoder-workspace/pull/22))\r\n- **タグ選択時にタグ一覧が表示されない不具合の修正**: コンソール再生成時のタグチップ描画スキップ解消とフェイルセーフ処理の追加\r\n- **リリースノート（Changelog）の非同期読み込み競合の修正**: `initChangelog` の Promise 管理化によりモーダル本文が空になる不具合を解消\r\n\r\n### Changed\r\n- **docs: Git-flowブランチ戦略・Issueライフサイクル規約・セキュリティポリシーの制定** ([#23](https://github.com/rikutoyamada01/atcoder-workspace/pull/23))\r\n- **開発ロードマップ更新**: `customtest`（カスタムテストケース追加）および `dashboard`（学習ダッシュボード）を実装済（COMPLETED）に更新"

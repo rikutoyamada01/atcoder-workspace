@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - main
+      - develop
     paths:
       - 'pages/**'
       - '.github/workflows/deploy-pages.yml'

@@ -7,6 +7,38 @@
   let contestId = null;
   let problemId = null;
   let currentLanguageId = null;
+  let contentPort = null;
+
+  function sendToContent(message) {
+    if (contentPort) contentPort.postMessage(message);
+  }
+
+  function connectToContent() {
+    if (!chrome.runtime.id) return;
+    const port = chrome.runtime.connect({ name: 'workspace-editor' });
+    contentPort = port;
+    port.onMessage.addListener((data) => {
+      if (contentPort !== port || !data || typeof data !== 'object') return;
+      if (data.type === 'workspace-identify') {
+        window.parent.postMessage(
+          { type: 'workspace-identify', bridgeId: data.bridgeId },
+          'https://atcoder.jp'
+        );
+      } else if (data.type === 'workspace-connected') {
+        sendToContent({ type: 'editor-ready' });
+      } else {
+        handleContentMessage({ data });
+      }
+    });
+    port.onDisconnect.addListener(() => {
+      void chrome.runtime.lastError;
+      if (contentPort !== port) return;
+      saveCodeSync();
+      contentPort = null;
+      // A suspended/restarted service worker must not strand the open editor.
+      setTimeout(connectToContent, 500);
+    });
+  }
 
   let prevUrl = null;
   let nextUrl = null;
@@ -671,20 +703,17 @@ impl UnionFind {
       customCasesCount: currentCustomCases.length,
     });
 
-    window.parent.postMessage(
-      {
-        type: 'run-tests',
-        code: editor.getValue(),
-        languageId: currentLanguageId,
-        customCases: currentCustomCases.map((c) => ({
-          id: c.id,
-          name: c.name,
-          input: c.input,
-          expected: c.expected,
-        })),
-      },
-      '*'
-    );
+    sendToContent({
+      type: 'run-tests',
+      code: editor.getValue(),
+      languageId: currentLanguageId,
+      customCases: currentCustomCases.map((c) => ({
+        id: c.id,
+        name: c.name,
+        input: c.input,
+        expected: c.expected,
+      })),
+    });
   };
 
   submitBtn.onclick = () => {
@@ -708,14 +737,11 @@ impl UnionFind {
       codeLength: editor.getValue().length,
     });
 
-    window.parent.postMessage(
-      {
-        type: 'submit-code',
-        code: editor.getValue(),
-        languageId: currentLanguageId,
-      },
-      '*'
-    );
+    sendToContent({
+      type: 'submit-code',
+      code: editor.getValue(),
+      languageId: currentLanguageId,
+    });
   };
 
   if (settingsBtn) {
@@ -910,18 +936,13 @@ impl UnionFind {
     return map[mode] || mode;
   }
 
-  // Notify parent content script that editor is ready
-  window.parent.postMessage({ type: 'editor-ready' }, '*');
-
-  // Listen for messages from parent content script
-  window.addEventListener('message', (e) => {
-    if (e.source && e.source !== window.parent) return;
-    if (!e.data || typeof e.data !== 'object') return;
-
-    console.log('[AtCoder Workspace] Editor: Received message from parent', e.data.type, e.data);
+  // Privileged commands arrive only over the internal extension bridge.
+  function handleContentMessage(e) {
+    console.log('[AtCoder Workspace] Editor: Received message from content', e.data.type, e.data);
 
     switch (e.data.type) {
       case 'init-config': {
+        const previousLanguageId = currentLanguageId;
         contestId = e.data.contestId;
         problemId = e.data.problemId;
         currentLanguageId = e.data.selectedLanguageId;
@@ -960,7 +981,8 @@ impl UnionFind {
           }
           setButtonsDisabled(false);
           // Load Monaco Editor
-          initMonaco(e.data.isDark);
+          if (!editor) initMonaco(e.data.isDark);
+          else if (previousLanguageId !== currentLanguageId) onLanguageChanged();
           // Update language warning overlay state
           updateEditorLanguageState();
         }
@@ -1432,6 +1454,7 @@ impl UnionFind {
           }
           consoleResults.appendChild(row);
         }
+        renderCustomTestCases();
         renderLearningNotesAndTags();
         saveConsoleState(contestId, problemId);
         break;
@@ -1622,7 +1645,9 @@ impl UnionFind {
         break;
       }
     }
-  });
+  }
+
+  connectToContent();
 
   function updateNavigationButtons() {
     if (prevUrl) {
@@ -1637,7 +1662,7 @@ impl UnionFind {
           }
         }
         saveCodeSync();
-        window.parent.postMessage({ type: 'navigate', url: prevUrl }, '*');
+        sendToContent({ type: 'navigate', url: prevUrl });
       };
     } else {
       prevBtn.disabled = true;
@@ -1655,7 +1680,7 @@ impl UnionFind {
           }
         }
         saveCodeSync();
-        window.parent.postMessage({ type: 'navigate', url: nextUrl }, '*');
+        sendToContent({ type: 'navigate', url: nextUrl });
       };
     } else {
       nextBtn.disabled = true;
@@ -1692,7 +1717,7 @@ impl UnionFind {
       }
 
       // Notify parent AtCoder page
-      window.parent.postMessage({ type: 'update-language', languageId: currentLanguageId }, '*');
+      sendToContent({ type: 'update-language', languageId: currentLanguageId });
       onLanguageChanged();
     };
   }
@@ -1866,14 +1891,11 @@ impl UnionFind {
             });
             createEditorWithCode(templateCode);
             // Request latest submission from AtCoder (instead of saving template immediately)
-            window.parent.postMessage(
-              {
-                type: 'fetch-latest-submission',
-                languageId: currentLanguageId,
-                mode: mode,
-              },
-              '*'
-            );
+            sendToContent({
+              type: 'fetch-latest-submission',
+              languageId: currentLanguageId,
+              mode: mode,
+            });
           });
         } else {
           console.log('[AtCoder Workspace] Editor: initMonaco - applying initialCode');
@@ -2110,14 +2132,11 @@ impl UnionFind {
             tplRes[templateKey] !== undefined ? tplRes[templateKey] : DEFAULT_TEMPLATES[mode] || '';
           applyModelWithCode(templateCode);
           // Request latest submission from AtCoder (instead of saving template immediately)
-          window.parent.postMessage(
-            {
-              type: 'fetch-latest-submission',
-              languageId: currentLanguageId,
-              mode: mode,
-            },
-            '*'
-          );
+          sendToContent({
+            type: 'fetch-latest-submission',
+            languageId: currentLanguageId,
+            mode: mode,
+          });
         });
       } else {
         applyModelWithCode(code);

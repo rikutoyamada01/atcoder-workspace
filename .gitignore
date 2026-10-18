@@ -18,6 +18,7 @@ docs/private/
 .env
 .env.local
 .env.*.local
+.gsc-credentials.json
 
 # Operating System files
 .DS_Store

@@ -1,6 +1,6 @@
 {
   "name": "atcoder-workspace",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "description": "Competitive Programming Workspace for AtCoder",
   "license": "MIT",
   "private": true,
@@ -20,6 +20,8 @@
     "release:prepare": "node scripts/prepare-release.js",
     "build": "node scripts/build-release.js",
     "store:upload": "node scripts/upload-webstore.js",
+    "seo:audit": "node scripts/seo-pdca-audit.js",
+    "seo:write": "node scripts/seo-pdca-audit.js --write",
     "pre-merge": "npm run version:sync && npm run format && npm run lint:fix && npm test && npm run build"
   },
   "devDependencies": {

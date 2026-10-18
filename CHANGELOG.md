@@ -5,6 +5,17 @@ All notable changes to the AtCoder Workspace extension will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.1] - 2026-10-18
+
+### Added
+- feat(seo): support OAuth 2.0 refresh token flow in seo-pdca-audit.js ([#26](https://github.com/rikutoyamada01/atcoder-workspace/pull/26))
+- feat(seo): add automated GSC/SEO/AEO PDCA pipeline and Search Console verification ([#25](https://github.com/rikutoyamada01/atcoder-workspace/pull/25))
+
+### Fixed
+- fix(editor): エディタのカーソルが白くなり背景と同化して見えなくなる問題を修正 ([#32](https://github.com/rikutoyamada01/atcoder-workspace/pull/32))
+- fix(security): エディタ・コンテンツ間のランタイムPort通信境界強化およびOptions画面の属性エスケープ修正 ([#30](https://github.com/rikutoyamada01/atcoder-workspace/pull/30))
+- fix(editor): テスト実行時・結果画面でカスタムテストケースUIが消失する問題を修正 ([#28](https://github.com/rikutoyamada01/atcoder-workspace/pull/28))
+
 ## [1.8.0] - 2026-10-12
 
 ### Added

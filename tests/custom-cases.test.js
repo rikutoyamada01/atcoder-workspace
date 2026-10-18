@@ -13,6 +13,7 @@ const editorJs = fs.readFileSync(path.resolve(__dirname, '../src/editor/editor.j
 
 describe('Custom Test Cases Module Tests', () => {
   let store = {};
+  let editorPort;
   let postMessageMock;
   let monacoMock;
   let eventListeners = [];
@@ -20,6 +21,13 @@ describe('Custom Test Cases Module Tests', () => {
 
   beforeEach(() => {
     store = {};
+    const listeners = [];
+    editorPort = {
+      postMessage: jest.fn(),
+      onMessage: { addListener: (listener) => listeners.push(listener) },
+      onDisconnect: { addListener: jest.fn() },
+      receiveEvent: (event) => listeners.forEach((listener) => listener(event.data)),
+    };
     eventListeners = [];
     global.i18n = i18n;
 
@@ -35,7 +43,7 @@ describe('Custom Test Cases Module Tests', () => {
     );
 
     postMessageMock = jest.fn();
-    window.parent.postMessage = postMessageMock;
+    editorPort.postMessage = postMessageMock;
 
     global.require = jest.fn((deps, cb) => cb());
     global.require.config = jest.fn();
@@ -74,6 +82,7 @@ describe('Custom Test Cases Module Tests', () => {
     global.chrome = {
       runtime: {
         id: 'dummy-extension-id',
+        connect: jest.fn(() => editorPort),
         getURL: jest.fn((p) => p),
       },
       i18n: {
@@ -141,7 +150,7 @@ describe('Custom Test Cases Module Tests', () => {
   });
 
   test('renders custom test cases section and empty placeholder initially', () => {
-    window.dispatchEvent(
+    editorPort.receiveEvent(
       new MessageEvent('message', {
         data: {
           type: 'init-config',
@@ -163,7 +172,7 @@ describe('Custom Test Cases Module Tests', () => {
   });
 
   test('toggles add custom case form and creates a new custom case', () => {
-    window.dispatchEvent(
+    editorPort.receiveEvent(
       new MessageEvent('message', {
         data: {
           type: 'init-config',
@@ -215,7 +224,7 @@ describe('Custom Test Cases Module Tests', () => {
   });
 
   test('validates required input stdin before saving', () => {
-    window.dispatchEvent(
+    editorPort.receiveEvent(
       new MessageEvent('message', {
         data: {
           type: 'init-config',
@@ -255,7 +264,7 @@ describe('Custom Test Cases Module Tests', () => {
       },
     ];
 
-    window.dispatchEvent(
+    editorPort.receiveEvent(
       new MessageEvent('message', {
         data: {
           type: 'init-config',
@@ -309,7 +318,7 @@ describe('Custom Test Cases Module Tests', () => {
       },
     ];
 
-    window.dispatchEvent(
+    editorPort.receiveEvent(
       new MessageEvent('message', {
         data: {
           type: 'init-config',
@@ -346,7 +355,7 @@ describe('Custom Test Cases Module Tests', () => {
       },
     ];
 
-    window.dispatchEvent(
+    editorPort.receiveEvent(
       new MessageEvent('message', {
         data: {
           type: 'init-config',
@@ -375,13 +384,12 @@ describe('Custom Test Cases Module Tests', () => {
             expected: '',
           },
         ],
-      }),
-      '*'
+      })
     );
   });
 
   test('should display reload banner when extension context is invalidated', () => {
-    window.dispatchEvent(
+    editorPort.receiveEvent(
       new MessageEvent('message', {
         data: {
           type: 'init-config',
@@ -407,5 +415,86 @@ describe('Custom Test Cases Module Tests', () => {
     expect(banner.style.display).toBe('flex');
     const reloadBtn = document.getElementById('context-reload-btn');
     expect(reloadBtn).not.toBeNull();
+  });
+
+  test('preserves custom test cases section and edit UI during and after test execution', () => {
+    const key = 'custom_test_cases:abc300:abc300_p8';
+    store[key] = [
+      {
+        id: 'custom_test_1',
+        name: 'Corner Case 1',
+        input: '1\n',
+        expected: '2\n',
+        createdAt: Date.now(),
+      },
+    ];
+
+    editorPort.receiveEvent(
+      new MessageEvent('message', {
+        data: {
+          type: 'init-config',
+          contestId: 'abc300',
+          problemId: 'abc300_p8',
+          selectedLanguageId: '5001',
+          languages: [{ value: '5001', text: 'C++ (GCC 12.2)' }],
+          isDark: false,
+        },
+      })
+    );
+
+    editorPort.receiveEvent(
+      new MessageEvent('message', {
+        data: {
+          type: 'test-start',
+          total: 2,
+        },
+      })
+    );
+
+    expect(document.getElementById('custom-cases-section')).not.toBeNull();
+    expect(document.querySelectorAll('.custom-case-card').length).toBe(1);
+
+    editorPort.receiveEvent(
+      new MessageEvent('message', {
+        data: {
+          type: 'test-case-result',
+          index: 0,
+          status: 'AC',
+          time: 10,
+          memory: 1024,
+          output: '2\n',
+          expected: '2\n',
+        },
+      })
+    );
+    editorPort.receiveEvent(
+      new MessageEvent('message', {
+        data: {
+          type: 'test-case-result',
+          index: 1,
+          status: 'AC',
+          time: 12,
+          memory: 1024,
+          output: '2\n',
+          expected: '2\n',
+          name: 'Corner Case 1',
+          isCustom: true,
+        },
+      })
+    );
+    editorPort.receiveEvent(
+      new MessageEvent('message', {
+        data: {
+          type: 'test-complete',
+        },
+      })
+    );
+
+    const section = document.getElementById('custom-cases-section');
+    expect(section).not.toBeNull();
+    const editBtn = section.querySelector('.btn-edit-custom-case');
+    expect(editBtn).not.toBeNull();
+    editBtn.click();
+    expect(document.getElementById('custom-case-form').style.display).toBe('flex');
   });
 });

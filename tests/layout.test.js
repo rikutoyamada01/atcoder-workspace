@@ -153,4 +153,73 @@ describe('Layout Module Tests', () => {
     expect(cssContent).toMatch(/box-shadow:\s*0px\s+0px\s+10px\s+5px\s+#888888/);
     expect(cssContent).toMatch(/background:\s*#ffffff/);
   });
+
+  test('editor.css enforces matching .monaco-editor-background and cursor colors for both themes (#31)', () => {
+    const editorCssPath = path.resolve(__dirname, '../src/editor/editor.css');
+    const editorCss = fs.readFileSync(editorCssPath, 'utf8');
+
+    expect(editorCss).toMatch(/body\.vs-theme\s+\.monaco-editor\s+\.monaco-editor-background/);
+    expect(editorCss).toMatch(/body\.vs-dark-theme\s+\.monaco-editor\s+\.monaco-editor-background/);
+    expect(editorCss).toMatch(/body\.vs-theme\s+\.monaco-editor\s+\.cursors-layer\s+\.cursor/);
+    expect(editorCss).toMatch(/body\.vs-dark-theme\s+\.monaco-editor\s+\.cursors-layer\s+\.cursor/);
+  });
+
+  test('content.js treats transparent rgba(0, 0, 0, 0) body background as light theme (#31)', () => {
+    const contentJsPath = path.resolve(__dirname, '../src/content/content.js');
+    const contentJs = fs.readFileSync(contentJsPath, 'utf8');
+
+    window.history.pushState({}, '', '/contests/abc300/tasks/abc300_a');
+    document.body.innerHTML =
+      '<div id="main-container"></div><select name="data.LanguageId"><option value="5001">C++</option></select>';
+    jest.spyOn(window, 'getComputedStyle').mockReturnValue({ backgroundColor: 'rgba(0, 0, 0, 0)' });
+
+    const connectListeners = [];
+    global.chrome.runtime.getURL = (p) => `chrome-extension://dummy-extension-id/${p}`;
+    global.chrome.runtime.onConnect = {
+      addListener: (fn) => connectListeners.push(fn),
+    };
+
+    const iframeWin = {};
+    window.AtCoderWorkspace.Layout = {
+      init: (cb) => cb(),
+      getIframe: () => ({ contentWindow: iframeWin }),
+    };
+    window.AtCoderWorkspace.Scraper = {
+      loadNavigationUrls: (_contestId, cb) => cb(null, null),
+    };
+
+    const addListenerSpy = jest.spyOn(window, 'addEventListener');
+    const script = document.createElement('script');
+    script.textContent = contentJs;
+    document.body.appendChild(script);
+    const identifyHandler = addListenerSpy.mock.calls.find(([type]) => type === 'message')[1];
+    addListenerSpy.mockRestore();
+
+    const msgListeners = [];
+    const mockPort = {
+      name: 'workspace-editor',
+      sender: { id: 'dummy-extension-id' },
+      postMessage: jest.fn(),
+      disconnect: jest.fn(),
+      onMessage: { addListener: (fn) => msgListeners.push(fn) },
+      onDisconnect: { addListener: jest.fn() },
+    };
+
+    connectListeners.forEach((fn) => fn(mockPort));
+    msgListeners.forEach((fn) => fn({ type: 'workspace-identify', bridgeId: 'bridge-31' }));
+    identifyHandler({
+      isTrusted: true,
+      origin: 'chrome-extension://dummy-extension-id',
+      source: iframeWin,
+      data: { type: 'workspace-identify', bridgeId: 'bridge-31' },
+    });
+    msgListeners.forEach((fn) => fn({ type: 'editor-ready' }));
+
+    expect(mockPort.postMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'init-config',
+        isDark: false,
+      })
+    );
+  });
 });
