@@ -634,14 +634,33 @@ if __name__ == '__main__':
           return;
         }
 
-        let targetLangDefault = 'cpp';
-        const fileName = file.name.toLowerCase();
-        if (fileName.includes('cpp') || fileName.includes('c++')) targetLangDefault = 'cpp';
-        else if (fileName.includes('python') || fileName.includes('py'))
-          targetLangDefault = 'python';
-        else if (fileName.includes('rust') || fileName.includes('rs')) targetLangDefault = 'rust';
-        else if (fileName.includes('java')) targetLangDefault = 'java';
-        else if (fileName.includes('go')) targetLangDefault = 'go';
+        const scopeLangMap = {
+          ...Object.fromEntries(Object.keys(DEFAULT_TEMPLATES).map((k) => [k, k])),
+          'c++': 'cpp',
+          py: 'python',
+          rs: 'rust',
+          golang: 'go',
+          js: 'javascript',
+          ts: 'typescript',
+          cs: 'csharp',
+          'c#': 'csharp',
+          fs: 'fsharp',
+          'f#': 'fsharp',
+          rb: 'ruby',
+          cr: 'crystal',
+          kt: 'kotlin',
+          hs: 'haskell',
+          ml: 'ocaml',
+          pl: 'perl',
+          jl: 'julia',
+          pas: 'pascal',
+          f90: 'fortran',
+          sh: 'shell',
+          bash: 'shell',
+        };
+
+        const fileTokens = file.name.toLowerCase().split(/[^a-z0-9+#]+/);
+        let targetLangDefault = fileTokens.map((t) => scopeLangMap[t]).find(Boolean) || 'cpp';
 
         let promptNeeded = true;
         const importedSnippets = [];
@@ -664,14 +683,7 @@ if __name__ == '__main__':
           if (value.scope) {
             snippetLangs = value.scope
               .split(',')
-              .map((s) => s.trim().toLowerCase())
-              .map((s) => {
-                if (s === 'c++') return 'cpp';
-                if (s === 'py') return 'python';
-                if (s === 'rs') return 'rust';
-                if (['cpp', 'python', 'rust', 'java', 'go'].includes(s)) return s;
-                return null;
-              })
+              .map((s) => scopeLangMap[s.trim().toLowerCase()])
               .filter(Boolean);
           }
 
@@ -680,8 +692,8 @@ if __name__ == '__main__':
               const promptMsg = i18nProvider.t('settings_snippets_import_lang_prompt');
               const userLang = prompt(promptMsg, targetLangDefault);
               if (userLang === null) return; // キャンセル
-              const normalized = userLang.toLowerCase().trim();
-              if (['cpp', 'python', 'rust', 'java', 'go'].includes(normalized)) {
+              const normalized = scopeLangMap[userLang.toLowerCase().trim()];
+              if (normalized) {
                 targetLangDefault = normalized;
               }
               promptNeeded = false;

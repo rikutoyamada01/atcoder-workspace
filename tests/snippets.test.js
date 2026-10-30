@@ -984,6 +984,10 @@ describe('Templates and Custom Snippets Integration Tests', () => {
       ['Dart (Dart 3.0.5)', 'dart'],
       ['Lua (Lua 5.4.6)', 'lua'],
       ['D (DMD 2.104.0)', 'cpp'],
+      ['TypeScript 5.1 (Node.js 18.16.1)', 'typescript'],
+      ['F# (Mono 10.2.3)', 'fsharp'],
+      ['Common Lisp (SBCL 2.3.6)', 'scheme'],
+      ['Objective-C (Clang 10.0.0)', 'plaintext'],
     ])('%s initializes editor with %s syntax highlighter', (langText, expectedMonacoLang) => {
       const configMsg = {
         type: 'init-config',
