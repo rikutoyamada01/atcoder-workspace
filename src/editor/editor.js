@@ -868,65 +868,78 @@ impl UnionFind {
   }
 
   // Helper to map AtCoder language names to recognized language IDs
+  const RUNTIME_MODE_MAP = {
+    'python:codon': 'codon',
+  };
+
+  const LANGUAGE_MODE_MAP = {
+    'c++': 'cpp',
+    'clang++': 'cpp',
+    'g++': 'cpp',
+    c: 'c',
+    gcc: 'c',
+    clang: 'c',
+    codon: 'codon',
+    python: 'python',
+    pypy: 'python',
+    rust: 'rust',
+    java: 'java',
+    go: 'go',
+    golang: 'go',
+    nim: 'nim',
+    zig: 'zig',
+    d: 'd',
+    dmd: 'd',
+    gdc: 'd',
+    ldc: 'd',
+    julia: 'julia',
+    dart: 'dart',
+    lua: 'lua',
+    haskell: 'haskell',
+    javascript: 'javascript',
+    'node.js': 'javascript',
+    node: 'javascript',
+    js: 'javascript',
+    typescript: 'typescript',
+    ts: 'typescript',
+    ruby: 'ruby',
+    crystal: 'crystal',
+    'c#': 'csharp',
+    csharp: 'csharp',
+    mono: 'csharp',
+    'f#': 'fsharp',
+    fsharp: 'fsharp',
+    php: 'php',
+    kotlin: 'kotlin',
+    swift: 'swift',
+    scala: 'scala',
+    elixir: 'elixir',
+    clojure: 'clojure',
+    perl: 'perl',
+    raku: 'perl',
+    r: 'r',
+    rscript: 'r',
+    scheme: 'scheme',
+    gauche: 'scheme',
+    lisp: 'scheme',
+    'common lisp': 'scheme',
+    sbcl: 'scheme',
+    pascal: 'pascal',
+    fpc: 'pascal',
+    ocaml: 'ocaml',
+    fortran: 'fortran',
+    bash: 'shell',
+    zsh: 'shell',
+    sh: 'shell',
+    shell: 'shell',
+  };
+
   function getLanguageMode(langText) {
     if (!langText) return 'plaintext';
-    const lower = langText.toLowerCase();
-
-    if (lower.includes('c++') || lower.includes('clang++') || lower.includes('g++')) return 'cpp';
-    if (
-      lower.startsWith('c ') ||
-      lower.startsWith('c(') ||
-      lower === 'c' ||
-      lower.includes('gcc') ||
-      lower.includes('clang')
-    )
-      return 'c';
-    if (lower.includes('codon')) return 'codon';
-    if (lower.includes('python') || lower.includes('pypy')) return 'python';
-    if (lower.includes('rust')) return 'rust';
-    if (lower.includes('java') && !lower.includes('javascript')) return 'java';
-    if (lower.includes('go') || lower.includes('golang')) return 'go';
-    if (lower.includes('nim')) return 'nim';
-    if (lower.includes('zig')) return 'zig';
-    if (
-      lower.startsWith('d ') ||
-      lower.startsWith('d(') ||
-      lower.includes('dmd') ||
-      lower.includes('ldc')
-    )
-      return 'd';
-    if (lower.includes('julia')) return 'julia';
-    if (lower.includes('dart')) return 'dart';
-    if (lower.includes('lua')) return 'lua';
-    if (lower.includes('haskell')) return 'haskell';
-    if (lower.includes('javascript') || lower.includes('node') || lower.includes('js'))
-      return 'javascript';
-    if (lower.includes('typescript') || lower.includes('ts')) return 'typescript';
-    if (lower.includes('ruby')) return 'ruby';
-    if (lower.includes('crystal')) return 'crystal';
-    if (lower.includes('c#') || lower.includes('mono')) return 'csharp';
-    if (lower.includes('f#') || lower.includes('fsharp')) return 'fsharp';
-    if (lower.includes('php')) return 'php';
-    if (lower.includes('kotlin')) return 'kotlin';
-    if (lower.includes('swift')) return 'swift';
-    if (lower.includes('scala')) return 'scala';
-    if (lower.includes('elixir')) return 'elixir';
-    if (lower.includes('clojure')) return 'clojure';
-    if (lower.includes('perl') || lower.includes('raku')) return 'perl';
-    if (lower.startsWith('r ') || lower.startsWith('r(') || lower.includes('rscript')) return 'r';
-    if (
-      lower.includes('scheme') ||
-      lower.includes('gauche') ||
-      lower.includes('lisp') ||
-      lower.includes('sbcl')
-    )
-      return 'scheme';
-    if (lower.includes('pascal') || lower.includes('fpc')) return 'pascal';
-    if (lower.includes('ocaml')) return 'ocaml';
-    if (lower.includes('fortran')) return 'fortran';
-    if (lower.includes('bash') || lower.includes('shell')) return 'shell';
-
-    return 'plaintext';
+    const [head, rest = ''] = langText.toLowerCase().split('(');
+    const lang = head.trim().replace(/[\s\d.]+$/, '');
+    const runtime = rest.trim().split(/[\s)]/)[0];
+    return RUNTIME_MODE_MAP[`${lang}:${runtime}`] || LANGUAGE_MODE_MAP[lang] || 'plaintext';
   }
 
   // Map internal language mode to Monaco syntax highlighter ID
