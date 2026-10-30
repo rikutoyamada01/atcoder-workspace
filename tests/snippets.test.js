@@ -854,6 +854,13 @@ describe('Templates and Custom Snippets Integration Tests', () => {
         })
       );
       expect(store['settings:template:python']).toBe('# Python-only template');
+      expect(global.monaco.editor.create).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          value: expect.not.stringContaining('input = sys.stdin.read'),
+          autoIndent: 'advanced',
+        })
+      );
     });
 
     test('Codon drawer lists and inserts Codon snippets without Python snippets', () => {

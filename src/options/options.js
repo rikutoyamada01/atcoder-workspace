@@ -390,7 +390,12 @@ func main() {
     fortran: '',
     shell: '',
   };
-  DEFAULT_TEMPLATES.codon = DEFAULT_TEMPLATES.python;
+  DEFAULT_TEMPLATES.codon = `def main():
+    # write code here
+    pass
+
+if __name__ == '__main__':
+    main()`;
 
   // Load template code for selected language
   const loadActiveTemplate = () => {
