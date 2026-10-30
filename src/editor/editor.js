@@ -266,6 +266,7 @@ func main() {
     fortran: '',
     shell: '',
   };
+  DEFAULT_TEMPLATES.codon = DEFAULT_TEMPLATES.python;
 
   // Preset snippets database
   const PRESET_SNIPPETS = {
@@ -875,6 +876,7 @@ impl UnionFind {
       lower.includes('clang')
     )
       return 'c';
+    if (lower.includes('codon')) return 'codon';
     if (lower.includes('python') || lower.includes('pypy')) return 'python';
     if (lower.includes('rust')) return 'rust';
     if (lower.includes('java') && !lower.includes('javascript')) return 'java';
@@ -926,6 +928,7 @@ impl UnionFind {
   function getMonacoLanguage(mode) {
     const map = {
       c: 'cpp',
+      codon: 'python',
       nim: 'python',
       zig: 'rust',
       d: 'cpp',

@@ -173,7 +173,36 @@ describe('Templates and Custom Snippets Integration Tests', () => {
       expect(templateCodeArea.value).toContain('def main():');
     });
 
-    test('Custom Snippets CRUD list management works correctly', () => {
+    test('Codon template has a default and is saved independently from Python', () => {
+      const languageSelect = document.getElementById('template-lang-select');
+      const codeArea = document.getElementById('template-code-area');
+      const saveButton = document.getElementById('save-template-btn');
+
+      languageSelect.value = 'codon';
+      languageSelect.dispatchEvent(new Event('change'));
+      expect(codeArea.value).toContain('def main():');
+      codeArea.value = '# Codon template';
+      saveButton.click();
+
+      languageSelect.value = 'python';
+      languageSelect.dispatchEvent(new Event('change'));
+      codeArea.value = '# Python template';
+      saveButton.click();
+
+      languageSelect.value = 'codon';
+      languageSelect.dispatchEvent(new Event('change'));
+      expect(codeArea.value).toBe('# Codon template');
+      codeArea.value = '# updated Codon template';
+      saveButton.click();
+
+      languageSelect.value = 'python';
+      languageSelect.dispatchEvent(new Event('change'));
+      expect(codeArea.value).toBe('# Python template');
+      expect(store['settings:template:codon']).toBe('# updated Codon template');
+      expect(store['settings:template:python']).toBe('# Python template');
+    });
+
+    test.each(['cpp', 'codon'])('Custom Snippets CRUD works for %s', (language) => {
       const addSnippetBtn = document.getElementById('add-snippet-btn');
       const snippetFormContainer = document.getElementById('snippet-form-container');
       const snippetTitleInput = document.getElementById('snippet-title-input');
@@ -196,7 +225,7 @@ describe('Templates and Custom Snippets Integration Tests', () => {
 
       // 3. Fill details and Save Custom Snippet
       snippetTitleInput.value = 'My Segment Tree';
-      snippetLangSelect.value = 'cpp';
+      snippetLangSelect.value = language;
       snippetDescInput.value = 'Range sum segment tree';
       snippetTagsInput.value = 'segtree, data-structure';
       snippetCodeInput.value = 'struct SegTree {};';
@@ -207,6 +236,7 @@ describe('Templates and Custom Snippets Integration Tests', () => {
       expect(savedSnippets).toBeDefined();
       expect(savedSnippets.length).toBe(1);
       expect(savedSnippets[0].title).toBe('My Segment Tree');
+      expect(savedSnippets[0].lang).toBe(language);
       expect(savedSnippets[0].tags).toEqual(['segtree', 'data-structure']);
 
       // Form closed and list refreshed
@@ -273,6 +303,7 @@ describe('Templates and Custom Snippets Integration Tests', () => {
         'cpp',
         'c',
         'python',
+        'codon',
         'rust',
         'java',
         'go',
@@ -771,6 +802,151 @@ describe('Templates and Custom Snippets Integration Tests', () => {
       expect(snippetList.innerHTML).not.toContain('CPP Snippet');
 
       jest.useRealTimers();
+    });
+
+    test.each([
+      ['Python (Codon 0.19.3)', 'codon', '# Codon template'],
+      ['Python (CPython 3.11.4)', 'python', '# Python template'],
+      ['Python (PyPy 3.10-v7.3.12)', 'python', '# Python template'],
+    ])('%s uses its own template with Python highlighting', (language, mode, expectedCode) => {
+      store['settings:template:python'] = '# Python template';
+      store['settings:template:codon'] = '# Codon template';
+      editorPort.receiveEvent({
+        data: {
+          type: 'init-config',
+          contestId: 'abc300',
+          problemId: 'abc300_a',
+          selectedLanguageId: '9999',
+          languages: [{ value: '9999', text: language }],
+          isDark: false,
+        },
+      });
+
+      expect(global.monaco.editor.create).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ value: expectedCode, language: 'python' })
+      );
+      expect(editorPort.postMessage).toHaveBeenCalledWith({
+        type: 'fetch-latest-submission',
+        languageId: '9999',
+        mode,
+      });
+    });
+
+    test('Codon uses its default when only a custom Python template exists', () => {
+      store['settings:template:python'] = '# Python-only template';
+      editorPort.receiveEvent({
+        data: {
+          type: 'init-config',
+          contestId: 'abc300',
+          problemId: 'abc300_a',
+          selectedLanguageId: '9999',
+          languages: [{ value: '9999', text: 'Python (Codon 0.19.3)' }],
+          isDark: false,
+        },
+      });
+
+      expect(global.monaco.editor.create).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          value: expect.stringContaining('def main():'),
+          language: 'python',
+        })
+      );
+      expect(store['settings:template:python']).toBe('# Python-only template');
+    });
+
+    test('Codon drawer lists and inserts Codon snippets without Python snippets', () => {
+      store['settings:custom_snippets'] = [
+        { id: 'codon', lang: 'codon', title: 'Codon snippet', tags: [], code: '# Codon snippet' },
+        {
+          id: 'python',
+          lang: 'python',
+          title: 'Python snippet',
+          tags: [],
+          code: '# Python snippet',
+        },
+      ];
+      editorPort.receiveEvent({
+        data: {
+          type: 'init-config',
+          contestId: 'abc300',
+          problemId: 'abc300_a',
+          selectedLanguageId: '9999',
+          languages: [{ value: '9999', text: 'Python (Codon 0.19.3)' }],
+          isDark: false,
+        },
+      });
+      document.getElementById('snippets-btn').click();
+      const snippetList = document.getElementById('snippet-list');
+      expect(snippetList.textContent).toContain('Codon snippet');
+      expect(snippetList.textContent).not.toContain('Python snippet');
+      snippetList.querySelector('.btn-insert').click();
+      expect(mockSnippetController.insert).toHaveBeenCalledWith(
+        '# Codon snippet',
+        0,
+        0,
+        false,
+        false
+      );
+    });
+
+    test('Codon rejects Python submission replies and restores Codon with Python highlighting', () => {
+      editorPort.receiveEvent({
+        data: {
+          type: 'init-config',
+          contestId: 'abc300',
+          problemId: 'abc300_a',
+          selectedLanguageId: '9999',
+          languages: [{ value: '9999', text: 'Python (Codon 0.19.3)' }],
+          isDark: false,
+        },
+      });
+      editorPort.receiveEvent({
+        data: { type: 'latest-submission-loaded', mode: 'python', code: '# Python submission' },
+      });
+      expect(global.monaco.editor.createModel).not.toHaveBeenCalled();
+
+      editorPort.receiveEvent({
+        data: { type: 'latest-submission-loaded', mode: 'codon', code: '# Codon submission' },
+      });
+      expect(global.monaco.editor.createModel).toHaveBeenCalledWith('# Codon submission', 'python');
+      expect(mockEditor.getValue()).toBe('# Codon submission');
+      expect(store['code:abc300:abc300_a:9999']).toBe('# Codon submission');
+    });
+
+    test('switching between Python and Codon keeps templates and drafts separate', () => {
+      store['settings:template:python'] = '# Python template';
+      store['settings:template:codon'] = '# Codon template';
+      editorPort.receiveEvent({
+        data: {
+          type: 'init-config',
+          contestId: 'abc300',
+          problemId: 'abc300_a',
+          selectedLanguageId: '9998',
+          languages: [
+            { value: '9998', text: 'Python (CPython 3.11.4)' },
+            { value: '9999', text: 'Python (Codon 0.19.3)' },
+          ],
+          isDark: false,
+        },
+      });
+
+      mockEditor.setValue('# Python draft');
+      const languageSelect = document.getElementById('language-select');
+      languageSelect.value = '9999';
+      languageSelect.dispatchEvent(new Event('change'));
+      expect(mockEditor.getValue()).toBe('# Codon template');
+      expect(global.monaco.editor.createModel).toHaveBeenLastCalledWith(
+        '# Codon template',
+        'python'
+      );
+
+      mockEditor.setValue('# Codon draft');
+      languageSelect.value = '9998';
+      languageSelect.dispatchEvent(new Event('change'));
+      expect(mockEditor.getValue()).toBe('# Python draft');
+      expect(store['code:abc300:abc300_a:9999']).toBe('# Codon draft');
     });
 
     test('C language uses default C template and Monaco cpp highlighting', () => {

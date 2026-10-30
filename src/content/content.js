@@ -343,6 +343,7 @@
               lower.includes('clang')
             )
               return 'c';
+            if (lower.includes('codon')) return 'codon';
             if (lower.includes('python') || lower.includes('pypy')) return 'python';
             if (lower.includes('rust')) return 'rust';
             if (lower.includes('java') && !lower.includes('javascript')) return 'java';
