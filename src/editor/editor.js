@@ -266,7 +266,12 @@ func main() {
     fortran: '',
     shell: '',
   };
-  DEFAULT_TEMPLATES.codon = DEFAULT_TEMPLATES.python;
+  DEFAULT_TEMPLATES.codon = `def main():
+    # write code here
+    pass
+
+if __name__ == '__main__':
+    main()`;
 
   // Preset snippets database
   const PRESET_SNIPPETS = {
@@ -1830,7 +1835,7 @@ impl UnionFind {
             // Coding assist features (still enabled)
             tabSize: 4,
             insertSpaces: true,
-            autoIndent: 'brackets',
+            autoIndent: 'advanced',
             autoClosingBrackets: 'always',
             autoClosingQuotes: 'always',
             formatOnType: true,
