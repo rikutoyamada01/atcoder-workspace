@@ -5,6 +5,15 @@ All notable changes to the AtCoder Workspace extension will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.2] - 2026-11-01
+
+### Added
+- feat(editor): Codonデフォルトテンプレートの簡略化とMonaco autoIndentのadvanced化 ([#35](https://github.com/rikutoyamada01/atcoder-workspace/pull/35))
+- feat: add Codon language support ([#34](https://github.com/rikutoyamada01/atcoder-workspace/pull/34))
+
+### Fixed
+- refactor(editor): 言語判定とスニペットインポートの辞書ルックアップ化（部分一致誤爆の解消） ([#36](https://github.com/rikutoyamada01/atcoder-workspace/pull/36))
+
 ## [1.8.1] - 2026-10-18
 
 ### Added

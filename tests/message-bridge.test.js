@@ -192,3 +192,107 @@ test('content handshake preserves ready queue, task context and reconnect behavi
   third.onMessage.emit({ type: 'editor-ready' });
   expect(third.postMessage).toHaveBeenCalledWith(expect.objectContaining({ type: 'init-config' }));
 });
+
+test.each([
+  {
+    name: 'Codon falls back to an earlier Codon version, skipping Python',
+    selectedLanguage: 'Python (Codon 0.19.3)',
+    mode: 'codon',
+    submissions: ['Python (CPython 3.11.4)', 'Python (Codon 0.16.3)'],
+    expectedSubmissionId: '2',
+  },
+  {
+    name: 'Python fallback skips Codon submissions',
+    selectedLanguage: 'Python (CPython 3.11.4)',
+    mode: 'python',
+    submissions: ['Python (Codon 0.19.3)', 'Python (CPython 3.10.0)'],
+    expectedSubmissionId: '2',
+  },
+  {
+    name: 'Python does not restore Codon when no Python submission exists',
+    selectedLanguage: 'Python (CPython 3.11.4)',
+    mode: 'python',
+    submissions: ['Python (Codon 0.19.3)'],
+    expectedSubmissionId: null,
+  },
+  {
+    name: 'an exact Codon language match takes priority over category fallback',
+    selectedLanguage: 'Python (Codon 0.19.3)',
+    mode: 'codon',
+    submissions: ['Python (Codon 0.16.3)', 'Python (Codon 0.19.3)'],
+    expectedSubmissionId: '2',
+  },
+])('$name', async ({ selectedLanguage, mode, submissions, expectedSubmissionId }) => {
+  const chrome = chromeMock();
+  document.body.innerHTML = `
+    <select name="data.LanguageId"><option value="9999">${selectedLanguage}</option></select>
+  `;
+  const managedWindow = {};
+  const contentWindow = {
+    location: window.location,
+    addEventListener: jest.fn(),
+    AtCoderWorkspace: {
+      Layout: {
+        init: jest.fn(),
+        getIframe: () => ({ contentWindow: managedWindow }),
+      },
+    },
+  };
+  const listUrl = '/contests/abc300/submissions/me?f.Task=abc300_a';
+  const rows = submissions
+    .map(
+      (language, index) => `
+        <tr><td>date</td><td>problem</td><td>user</td>
+          <td><a href="/contests/abc300/submissions/${index + 1}">${language}</a></td>
+        </tr>`
+    )
+    .join('');
+  const fetch = jest.fn((url) =>
+    Promise.resolve({
+      ok: true,
+      text: () =>
+        Promise.resolve(
+          url === listUrl
+            ? `<table><tbody>${rows}</tbody></table>`
+            : '<pre id="submission-code"># restored submission</pre>'
+        ),
+    })
+  );
+
+  const readyState = jest.spyOn(document, 'readyState', 'get').mockReturnValue('complete');
+  try {
+    new Function('chrome', 'window', 'document', 'fetch', contentJs)(
+      chrome,
+      contentWindow,
+      document,
+      fetch
+    );
+  } finally {
+    readyState.mockRestore();
+  }
+  const identify = contentWindow.addEventListener.mock.calls.find(
+    ([type]) => type === 'message'
+  )[1];
+  const editor = port({ id: 'extension' });
+  chrome.runtime.onConnect.emit(editor);
+  editor.onMessage.emit({ type: 'workspace-identify', bridgeId: 'codon-test' });
+  identify({
+    isTrusted: true,
+    origin: 'chrome-extension://extension',
+    source: managedWindow,
+    data: { type: 'workspace-identify', bridgeId: 'codon-test' },
+  });
+  editor.onMessage.emit({ type: 'editor-ready' });
+  editor.onMessage.emit({ type: 'fetch-latest-submission', languageId: '9999', mode });
+  await new Promise(jest.requireActual('timers').setImmediate);
+
+  const expectedUrls = expectedSubmissionId
+    ? [listUrl, `/contests/abc300/submissions/${expectedSubmissionId}`]
+    : [listUrl];
+  expect(fetch.mock.calls.map(([url]) => url)).toEqual(expectedUrls);
+  expect(editor.postMessage).toHaveBeenLastCalledWith({
+    type: 'latest-submission-loaded',
+    mode,
+    code: expectedSubmissionId ? '# restored submission' : null,
+  });
+});
